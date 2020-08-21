@@ -1,0 +1,26 @@
+= 廖浩辉主页
+
+== 教学经验
+
+* UECM3993 Predictive Modelling
+* MEME19403 Data Analytics and Visualisation (May 2020)
+* UECM1304/UECM1303 Discrete Mathematics with Applications (May 2019)
+* UECM3013 Complex Analysis (May 2019)
+* UECM3033 Numerical Methods (Jan 2019)
+* 
+
+
+== 兴趣
+
+* Numerical Methods and Their Applications
+* Python Programming Language
+* Artificial Intelligence
+* Linux System and Applications.  Currently using Arch Linux and Linux Mint.
+
+== 推荐
+
+* https://www.gnu.org/
+* 
+* https://news.ycombinator.com/
+* https://reddit.com
+* 
