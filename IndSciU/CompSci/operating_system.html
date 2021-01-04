@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.10">
-<title>廖浩辉主页</title>
+<title>操作系统 Operating Systems</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -438,227 +438,257 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article">
 <div id="header">
-<h1>廖浩辉主页</h1>
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_教学经验">教学经验</h2>
+<h2 id="_操作系统_operating_systems">操作系统 Operating Systems</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>认识电脑最基本的软件，即操作系统，可以帮助我们设置智能家居，而非由大品牌公司所垄断。</p>
+</div>
+<div class="sect2">
+<h3 id="_大纲">大纲</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>进程管理</p>
 <div class="ulist">
 <ul>
 <li>
-<p>UECM1703 Introduction to Scientific Computing (Oct 2020, 2019, 2018)</p>
+<p>概念：进程 (Process) 是"运行中的程序"</p>
 </li>
 <li>
-<p><a href="https://liaohaohui.github.io/UECM3993/">UECM3993 Predictive Modelling (May 2020, Jan 2020)</a></p>
+<p>同步进程 (Concurrent processes)</p>
 </li>
 <li>
-<p>MEME19403 Data Analytics and Visualisation (May 2020)</p>
+<p>进程的协调 (Process synchronization)</p>
 </li>
 <li>
-<p>UECM1304/UECM1303 Discrete Mathematics with Applications (May 2019)</p>
+<p>死锁 (Deadlock) 的检测与恢复</p>
 </li>
 <li>
-<p>UECM3013 Complex Analysis (May 2019)</p>
+<p>信号与会话管理: BSD vs SysV</p>
 </li>
 <li>
-<p>UECM3033 Numerical Methods (Jan 2019)</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_兴趣">兴趣</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="https://liaohaohui.github.io/IndSciU/">独立理科大学</a></p>
+<p>进程的调度 (Scheduling), fork bomb</p>
 </li>
 <li>
-<p>Artificial Intelligence</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Machine Learning: 学了一点点</p>
+<p>线程 (Threads), 纤程 (Fibres)</p>
 </li>
 <li>
-<p>Logic Programming</p>
-</li>
-<li>
-<p>Character Recognition</p>
-</li>
-<li>
-<p>Speech Processing</p>
-</li>
-<li>
-<p>Smart Home with Recyclable Energy System, Security and Health Monitoring for Parents, 3D Printers and Robots.</p>
+<p>进程间通信 (IPC): RPC?, Java RMI?</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p>Numerical Methods and Their Applications</p>
-</li>
-<li>
-<p>Numerical Methods and Their Applications</p>
+<p>中央管理器 CPU 的管理</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Linear Algebra Methods</p>
+<p>调度的方法与算法: 与具体的应用场景密切相关</p>
 </li>
 <li>
-<p>Nonlinear Solvers</p>
+<p>多处理器 (processor) 调度</p>
 </li>
 <li>
-<p>ODE Solvers</p>
+<p>单 CPU 算法: First-come-first-served, shortest-job-first, priority scheduling,
+round-robin, multilevel queue, multilevel feedback queue</p>
 </li>
 <li>
-<p>Optimisation</p>
-</li>
-<li>
-<p>PDE Solvers</p>
+<p>多 CPU 算法</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p><a href="https://www.python.org/">Python 编程语言</a></p>
-</li>
-<li>
-<p>Common Lisp</p>
-</li>
-<li>
-<p>D 语言</p>
-</li>
-<li>
-<p>Fortran 语言</p>
-</li>
-<li>
-<p>Physics, Natural Science and Applications</p>
+<p>内存 (Memory) 管理</p>
 <div class="ulist">
 <ul>
 <li>
-<p>John Baez&#8217;s This Week&#8217;s Finds.</p>
+<p>分区 (Partitioning)</p>
+</li>
+<li>
+<p>页面分配 (Paging) and segmentation</p>
+</li>
+<li>
+<p>虚拟内存 (VM), 交换区 (swap)</p>
+</li>
+<li>
+<p>页面替换算法 (replacement)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>文件系统</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Amazing Categorical Groups (<a href="http://math.ucr.edu/home/baez/week267.html" class="bare">http://math.ucr.edu/home/baez/week267.html</a>).  I love "symmetry" and this is one nice article introducing the amazing beauty of symmetry.  Picture related to Alhambra tiles are listed in <a href="http://math.ucr.edu/home/baez/alhambra" class="bare">http://math.ucr.edu/home/baez/alhambra</a></p>
+<p>PATA, SATA HDD, SATA SDD, PCIe4, NVME</p>
 </li>
-</ul>
-</div>
+<li>
+<p>文件的操作, 权限, 目录</p>
+</li>
+<li>
+<p>文件的配置 (allocation)</p>
+</li>
+<li>
+<p>格式: DOS FS, VFAT, ReiserFS, ext2, ext3, ext4, FFS, UFS 等</p>
+</li>
+<li>
+<p>文件系统的优化</p>
+</li>
+<li>
+<p>Btrfs, OpenZFS</p>
+</li>
+<li>
+<p>NFS, RFS</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p>Health Science</p>
-</li>
-<li>
-<p>GNU/Linux System and Applications</p>
+<p>设备驱动 / 硬件接口 (Hardware Interface) / I/O</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="https://www.archlinux.org/">Arch Linux</a></p>
+<p>键盘与鼠标</p>
 </li>
 <li>
-<p><a href="https://linuxmint.com/">Linux Mint</a>: 最好的 Linux 入门. 因为 Cinnamon 复杂，
-所以改用 XFCE</p>
+<p>USB 接口</p>
+</li>
+<li>
+<p>声卡</p>
 </li>
 </ul>
 </div>
 </li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_推荐电脑工具">推荐电脑工具</h2>
-<div class="sectionbody">
+<li>
+<p>网络与系统的保安</p>
 <div class="ulist">
 <ul>
 <li>
-<p>GNU Tools: <a href="https://www.gnu.org/" class="bare">https://www.gnu.org/</a></p>
+<p>网卡</p>
 </li>
 <li>
-<p>编辑器</p>
+<p>网络服务</p>
+</li>
+<li>
+<p>网络攻击与安全</p>
+</li>
+<li>
+<p>网络权限与架构</p>
+</li>
+<li>
+<p>Unix Assess matrix, SELinux (ACL), PAM</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>嵌入式系统 (Embedded system)</p>
+</li>
+<li>
+<p>操作系统的实现</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="https://www.vim.org/">Vim - the ubiquitous text editor</a></p>
+<p>Minix</p>
+</li>
+<li>
+<p>Linux</p>
+</li>
+<li>
+<p>FreeBSD, OpenBSD, NetBSD, DragonflyBSD</p>
+</li>
+<li>
+<p>OpenSolaris</p>
+</li>
+<li>
+<p>Plan 9</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_网络与视频资源">网络与视频资源</h3>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="https://www.youtube.com/watch?v=a6Q8Na575qc">Lecture 3: Editors (vim) (2020)</a></p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><a href="https://joe-editor.sourceforge.io/">JOE - Joe&#8217;s Own Editor</a>: No folding yet</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>数学工具</p>
+<p><a href="https://www.bilibili.com/video/BV1GE41157Hc?p=1" class="bare">https://www.bilibili.com/video/BV1GE41157Hc?p=1</a></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="http://maxima.sourceforge.net/">Maxima 计算机代数</a></p>
+<p><a href="https://github.com/rcore-os/rCore" class="bare">https://github.com/rcore-os/rCore</a></p>
+</li>
+<li>
+<p><a href="https://github.com/chyyuu/os_kernel_lab" class="bare">https://github.com/chyyuu/os_kernel_lab</a></p>
+</li>
+<li>
+<p><a href="https://github.com/chyyuu/ucore_os_docs" class="bare">https://github.com/chyyuu/ucore_os_docs</a></p>
+</li>
+<li>
+<p><a href="https://github.com/chyyuu/ucorebook_code" class="bare">https://github.com/chyyuu/ucorebook_code</a></p>
+</li>
+<li>
+<p><a href="https://github.com/kiukotsu/ucore" class="bare">https://github.com/kiukotsu/ucore</a></p>
 </li>
 </ul>
 </div>
 </li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_我的_linux_unix_经验">我的 Linux / Unix 经验</h2>
-<div class="sectionbody">
+<li>
+<p><a href="https://www.youtube.com/watch?v=ktkAlbcoz7o">Exploring xv6 - Introduction</a></p>
+</li>
+<li>
+<p><a href="https://www.youtube.com/channel/UCLH1aUiStr9_1PsgQJPHSFw">Neil Rhodes</a></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="https://youtu.be/6WpXsdZJdpw">Trying out OpenBSD as a Linux user</a></p>
+<p><a href="https://www.youtube.com/watch?v=RxpIyP6C-gg">CS 134 OS—6: xv6 First Process</a></p>
 </li>
 <li>
-<p><a href="https://www.youtube.com/watch?v=XBbsH-r1C34">My Linux Experience with Python</a></p>
+<p><a href="https://www.youtube.com/watch?v=S1158OShz44">CS 134 OS—13: xv6 Filesystem</a></p>
 </li>
-<li>
-<p><a href="https://www.youtube.com/watch?v=_aLcgk-wK_8">My Linux Experience: The editors</a></p>
-</li>
-<li>
-<p><a href="https://www.youtube.com/watch?v=YRdbfACAnjI">My Linux Experience</a></p>
+</ul>
+</div>
 </li>
 </ul>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_参考文献">参考文献</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Marshal Kirk McKusick, Keith Bostic, Michael J. Karels, John S. Quarterman,
+The Design and Implementation of the 4.4BSD Operating System</p>
+</li>
+<li>
+<p>Abraham Silberschatz, Peter Baer Galvin, Greg Gagne (2003). Operating
+System Concepts (6th ed.). John Wiley &amp; Sons, Inc.</p>
+</li>
+<li>
+<p>Tanenbaum, A. S. (2014). Modern operating systems. (4th ed.). Pearson.</p>
+</li>
+<li>
+<p>Stallings, W. (2014). Operating systems: Internals and design principles. (8th ed.). Pearson.</p>
+</li>
+<li>
+<p>D. Comer. (2015). Operating System Design - The Xinu Approach. (2nd ed.). CRC Press.</p>
+</li>
+</ol>
 </div>
-<div class="sect1">
-<h2 id="_社会媒体网站">社会媒体网站</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="https://youtube.com" class="bare">https://youtube.com</a></p>
-</li>
-<li>
-<p><a href="https://news.ycombinator.com/" class="bare">https://news.ycombinator.com/</a></p>
-</li>
-<li>
-<p><a href="https://reddit.com" class="bare">https://reddit.com</a>
-*</p>
-</li>
-</ul>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-12-30 10:54:49 +0800
+Last updated 2020-12-31 18:26:16 +0800
 </div>
 </div>
 </body>
