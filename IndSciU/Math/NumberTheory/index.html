@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.10">
-<title>UECM3993 Predictive Modelling (Jan 2021)</title>
+<title>数论</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -438,255 +438,364 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article">
 <div id="header">
-<h1>UECM3993 Predictive Modelling (Jan 2021)</h1>
+<h1>数论</h1>
 </div>
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>The course outcomes are</p>
+<p>The objectives of this course are to:
+1. Study the classical results in number theory.
+2. Be literate in the language and notations of number theory.
+3. Provide a theoretical background to further results in cryptology.</p>
 </div>
+<div class="paragraph">
+<p>This course uses elementary methods such as arithmetic, basic algebra and geometry to solve equations with integer or rational solutions. We begin from the basic principles of integers and congruences to more advanced techniques such as multiplicative functions and primitive roots. Then one of the most important theory in number theory, the quadratic residue theorem is discussed. Finally, we study simple nonlinear Diophantine equations or Gaussian integers.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://www.youtube.com/watch?v=cYTuaiYHw_4">Theory of numbers: Introduction</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_预备知识">预备知识</h2>
+<div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p>CO1: Describe the key concept of statistical learning;</p>
+<p>中学数学</p>
 </li>
 <li>
-<p>CO2: Compare statistical models for prediction and estimation through supervised learning;</p>
-</li>
-<li>
-<p>CO3: Identify relationship and structures from unlabelled data through unsupervised learning;</p>
-</li>
-<li>
-<p>CO4: Demonstrate supervised and unsupervised learning with statistical software;</p>
-</li>
-<li>
-<p>CO5: Interpret results from supervised and unsupervised learning.</p>
+<p>离散数学</p>
 </li>
 </ul>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_announcements">Announcements</h2>
+<h2 id="_大纲">大纲</h2>
 <div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>整数的性质</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Week 7: Answer for the Quiz is available for <a href="Quiz_MarkingGuide.pdf">download</a>.</p>
+<p>The well Ordering Principle</p>
 </li>
 <li>
-<p>Week 6: Quiz. 20 MCQs. Friday 2:30pm&#8212;&#8203;4:00pm</p>
+<p><a href="https://www.youtube.com/watch?v=8sYo06AWlOk&amp;list=PL8yHsr3EFj52Qf7lc3HHvHRdIysxEcj1H&amp;index=2">Borcherds 教授: 欧几里德定理</a></p>
 </li>
 <li>
-<p>Week 4: <a href="assgroups.pdf">The list of Assignment Groups</a>: Email me to update the list if there is anything not up-to-date.</p>
-</li>
+<p>GCD and Euclidean Algorithm</p>
+<div class="ulist">
+<ul>
 <li>
-<p>Week 3: Submission of choice of data for each assignment group.</p>
-</li>
-<li>
-<p>Week 3: Tutorial class resumes.</p>
-</li>
-<li>
-<p>Week 2: <a href="assignq.pdf">Assignment is ready</a>.  Feel free to feedback to me in class.</p>
-</li>
-<li>
-<p>Week 2: Submission of the assignment group name and member names, student id, etc.</p>
-</li>
-<li>
-<p>Week 1: Form assignment groups</p>
-</li>
-<li>
-<p>Week 1: Practical and Tutorial start from Week 1; Week 2 Thursday is
-Thaipusam, so no Tutorial in Week 2.</p>
+<p><a href="https://www.youtube.com/watch?v=JSf29MJb2r0">Borcherds 教授的课</a></p>
 </li>
 </ul>
+</div>
+</li>
+<li>
+<p>The Fundamental Theorem of Arithmetic</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=4CTZezAAfWM">Borcherds 教授的课</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>The Distribution of Primes</p>
+</li>
+<li>
+<p>Factorization Methods</p>
+</li>
+<li>
+<p>Linear Diophantine Equations</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=oVA5HkpYYOA">Borcherds 教授的课</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Congruences and Applications</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Introduction to Congruences</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=ZjaqNevrraM">Borcherds 教授的课</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Linear Congruences</p>
+</li>
+<li>
+<p>The Chinese Remainder Theorem</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=f1oO9dEkqso">Borcherds 教授的课</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Solving Polynomial Congruences</p>
+</li>
+<li>
+<p>Systems of Linear Congruences</p>
+</li>
+<li>
+<p>Factoring Using the Pollard Rho Method</p>
+</li>
+<li>
+<p>Divisibility Tests</p>
+</li>
+<li>
+<p>Hashing Functions</p>
+</li>
+<li>
+<p>Wilson’s Theorem</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=hYCp7ACy9RE">Borcherds 教授的课</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Fermat’s Little Theorem</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=CXqNKmTOb3c">Borcherds 教授的课</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Pseudoprime</p>
+</li>
+<li>
+<p>Euler’s Theorem: \(a^{\varphi(m)} \equiv 1 \pmod m, (a,m)=1\)</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=pCMfXLrNWJw">Borcherds 教授的课</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Multiplicative Functions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=wgsHfMIQGSs">Multiplicative functions</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Arithmetic functions are functions from positive numbers to integers
+or reals.  Multiplicative functions are arithmetic functions s.t.
+f(mn) = f(m)f(n) where (m,n)=1.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="https://www.youtube.com/watch?v=dTQw2zt2YVw">Dirichlet series</a></p>
+</li>
+<li>
+<p>The Euler Phi-Function</p>
+</li>
+<li>
+<p>The Sum and Number of Divisors</p>
+</li>
+<li>
+<p>Perfect Numbers and Mersenne Primes</p>
+</li>
+<li>
+<p>Mobius Inversion</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Primitive Roots</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The order of an Integers and Primitive Roots</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=a_BiEDdJrR0">Borcherds 教授的课</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Primitive Roots for Primes</p>
+</li>
+<li>
+<p>The Existence of Primitive Roots</p>
+</li>
+<li>
+<p>Index Arithmetic</p>
+</li>
+<li>
+<p>Primality Tests using Orders of integers and Primitive roots</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=9XyuyN-FOG4">Borcherds 教授的课</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Universal Exponents</p>
+</li>
+<li>
+<p>Pseudorandom Numbers</p>
+</li>
+<li>
+<p><a href="https://www.youtube.com/watch?v=AECvBJ5AwBk">Borcherds 教授: RSA cryptography</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>二次剩余</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=9r85EvSSwSM">Borcherds 教授: Chevalley-Warning theorem</a></p>
+</li>
+<li>
+<p>二次剩余与非剩余</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=X_kiAeijeK8">Borcherds 教授的课</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="https://www.youtube.com/watch?v=PKaDv0_63lE">Borcherds 教授: Gauss&#8217;s lemma</a></p>
+</li>
+<li>
+<p>The Law of Quadratic Reciprocity</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=Bg0BVGqOhFY">Borcherds 教授的课</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Jacobi 符号</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=QUXaO90vaYA">Borcherds 教授的课</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Euler Pseudoprimes</p>
+</li>
+<li>
+<p>Zero-Knowledge Proofs</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Nonlinear Diophantine Equations</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Pythagorean Triples</p>
+</li>
+<li>
+<p>Fermat’s Last Theorem</p>
+</li>
+<li>
+<p>Sum of Squares</p>
+</li>
+<li>
+<p>Pell’s Equation</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>高斯整数</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Gaussian Integers and Gaussian Primes</p>
+</li>
+<li>
+<p>Greatest Common Divisors and Unique Factorization</p>
+</li>
+<li>
+<p>Gaussian Integers and Sums of Squares</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_methods_of_assessment">Methods of Assessment</h2>
+<h2 id="_参考文献">参考文献</h2>
 <div class="sectionbody">
-<div class="ulist">
-<ul>
+<div class="olist arabic">
+<ol class="arabic">
 <li>
-<p>Quiz (12%, CO4) @ Week 6</p>
+<p>David, M.B., 2010. Elementary Number Theory. 7th ed. New York: McGraw-Hill.</p>
 </li>
 <li>
-<p>Assignment (CO4 + CO5: Total: 48%, Report 24%, Program 12%, Oral Presentation 12%)</p>
+<p>Kenneth, H.R., 2010. Elementary Number Theory.6th ed. Boston: Pearson.</p>
 </li>
 <li>
-<p>Final Assessment (40%, CO1&#8212;&#8203;CO3,CO5.  Each question corresponds to one CO)</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_lecture_notes">Lecture Notes</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="s01_intro.pdf">Overview of ``Predictive Modelling''</a></p>
+<p>George, E.A., 1971. Number Theory. W.B. Saunders Company.</p>
 </li>
 <li>
-<p><a href="s02_knn.pdf">kNN</a></p>
+<p>Underwood, D., 2008. Elementary Number Theory. 2nd ed. Dover Books.</p>
 </li>
-<li>
-<p><a href="s03_logreg.pdf">Logistic Regression</a></p>
-</li>
-<li>
-<p><a href="s09_regressions.pdf">GLM and GLMNET</a></p>
-</li>
-<li>
-<p><a href="s04_theory.pdf">Model Validation</a></p>
-<div class="ulist">
-<ul>
-<li>
-<p>Machine learning on Big Data really requires "big computers".  Watch the videos below to see how "big computers" look like.</p>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="https://www.youtube.com/watch?v=80aK2_iwMOs">Microsoft reveals its MASSIVE data center (Full Tour)</a></p>
-</li>
-<li>
-<p><a href="https://www.youtube.com/watch?v=XZmGGAbHqa0">Inside a Google data center</a></p>
-</li>
-<li>
-<p><a href="https://www.youtube.com/watch?v=zDAYZU4A3w0">Google Data Center 360° Tour</a></p>
-</li>
-<li>
-<p><a href="https://www.youtube.com/watch?v=g7JaN3rTK2A">Inside The World&#8217;s Largest Data Center</a></p>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><a href="s05_tree.pdf">Decision Trees</a></p>
-</li>
-<li>
-<p><a href="s08_nb_lda.pdf">Generative Classifiers: Naive Bayes, LDA</a></p>
-</li>
-<li>
-<p>Ensemble Methods (in preparation, do we have time?)</p>
-</li>
-<li>
-<p>PCA (in preparation)</p>
-</li>
-<li>
-<p>Clustering methods (in preparation)</p>
-</li>
-<li>
-<p>Revision ???</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_tutorials">Tutorials</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="tut01s.pdf">Tutorial 1: Basics of Statistical Learning</a></p>
-</li>
-<li>
-<p><a href="tut02s.pdf">Tutorial 2: Supervised Learning Model kNN</a></p>
-</li>
-<li>
-<p><a href="tut03s.pdf">Tutorial 3: Logistic Regression Model</a></p>
-</li>
-<li>
-<p><a href="tut04s.pdf">Tutorial 4: Model Validation Theory</a></p>
-</li>
-<li>
-<p><a href="tut05s.pdf">Tutorial 5: Tree Predictive Models</a></p>
-</li>
-<li>
-<p>Tutorial 6: Naive Bayes and LDA (in preparation)</p>
-</li>
-<li>
-<p>Tutorial 7: PCA (in preparation)</p>
-</li>
-<li>
-<p>Tutorial 8: Clustering (in preparation)</p>
-</li>
-<li>
-<p><a href="https://sites.google.com/site/liewhowhui/predmodel/tutorials">Older tutorials</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_practicals">Practicals</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p>Some data are available from <a href="https://sites.google.com/site/liewhowhui/predmodel/practical/data">here</a></p>
-</li>
-<li>
-<p><a href="p01_intro.R">Practical 1: Introduction to R</a></p>
-</li>
-<li>
-<p><a href="p02_knn.R">Practical 2: kNN</a></p>
-</li>
-<li>
-<p><a href="p03_logreg.R">Practical 3: Logistic Regression</a></p>
-</li>
-<li>
-<p>Practical 3 Extra: GLM &amp; SVM???</p>
-</li>
-<li>
-<p><a href="p04_clstree.R">Practical 4a: Classification Trees</a></p>
-</li>
-<li>
-<p><a href="p04_regtree.R">Practical 4b: Regression Trees</a></p>
-</li>
-<li>
-<p><a href="p04_ensemble.R">Practical 4c: Ensembles of Decision Trees</a></p>
-</li>
-<li>
-<p><a href="p05_naiveb.R">Practical 5a: Generative Model: Naive Bayes</a></p>
-</li>
-<li>
-<p><a href="p05_lda.R">Practical 5b: Generative Model: LDA</a></p>
-</li>
-<li>
-<p><a href="p06_pca.R">Practical 6: PCA</a></p>
-</li>
-<li>
-<p><a href="p07_cluster.R">Practical 7: Clustering</a></p>
-</li>
-<li>
-<p><a href="https://www.youtube.com/playlist?list=PL4HpvNUygBwfSy4ob-Bt8A6oFXSvSsoYn">Old YouTube video playlist</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_recommendations">Recommendations</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="https://www.youtube.com/playlist?list=PLl8OlHZGYOQ7bkVbuRthEsaLr7bONzbXS">CORNELL CS4780 "Machine Learning for Intelligent Systems</a></p>
-</li>
-</ul>
+</ol>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-03-02 10:33:34 +0800
+Last updated 2021-02-28 22:05:40 +0800
 </div>
 </div>
 </body>
