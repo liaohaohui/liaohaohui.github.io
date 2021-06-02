@@ -1,0 +1,229 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{url}
+
+\usepackage{natbib} % agsm
+
+\usepackage{amsmath}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  stepnumber=1,
+}
+\usepackage{epsfig}
+
+
+%%% The project title is clearly stated and reflects the contents of the report
+\title{Real-World Data Analysis}
+\author{Liew How Hui}
+\date{\sf January 2016}
+
+\begin{document}
+
+
+\maketitle
+%\tableofcontents
+
+\section{Objective and Scope}
+
+%%% The objectives are clear and achievable.
+This project plans to understand how to analyse real-world data or
+problems using statistical software.
+
+%%% The scope of the project is clearly stated.
+By perform a Google search on ``real-world data analysis'', a lot of
+``real-world data'' related to clinical data, big data pop up.  This
+project is not going to explore those data but is going to limit the
+scope to a UTAR data obtain during consultation and data organise from
+workload problem.
+
+%%% The rationales behind the project are discussed and they are significant.
+It is important in an information society to be able to process
+data efficiently with the right software tools.  This project is going
+to contribute to the understanding of real-world data and problems
+that one will encounter as well as to master the right software tools
+to process real-world data.
+
+
+%%% Make sure "the grammar is correct"
+
+
+
+\section{Literature Review}
+
+%%% The literature review/technical review is relevant to the project scopes.
+
+A Google search on ``real-world data analysis'' returned something
+many links on health study and big data as well as links to Coursera's
+``Data Science in Real Life by Johns Hopkins University'', ``Python
+for Data Analysis'', ``Practical Data Science Cookbook''.  We are
+interested in the later, so we will limit the search to ``books on
+data analysis'', which returns a link on ``free books for learning
+data mining and data analysis'':
+\begin{enumerate}
+\item Data Jujitsu: The Art of Turning Data into Product
+  (O'Reilly)
+\item Data Mining Algorithms in R (Wikibook)
+\item Data Mining and Analysis: Fundamental Concepts and Algorithms
+\item Introduction to Data Science (Jeffrey Stanton, using R,
+  Creative Common License)
+\item Mining of Massive Datasets (www.mdds.org)
+\item School of Data Handbook
+\end{enumerate}
+Note that a book is free does not mean that we can copy and paste from
+it without permission but we can download and read the electronic
+copy.
+
+There are also so-called ``must-read'' (popular) books based on the
+recommendation of some newspaper comments or Amazon users:
+\begin{enumerate}
+\item Big Data: A Revolution That Will Transform How We Live, Work,
+  and Think
+\item The Signal and the Noise: Why So Many Predictions Fail --- but
+  Some Don't
+\item Predictive Analytics: The Power to Predict Who Will Click,
+  Buy, Lie, or Die
+\item Web Scraping with Python: Collecting Data from the Modern Web
+\end{enumerate}
+
+
+
+
+\section{Data Analysis Procedure}
+
+%%% Research methods and/or development tools are discussed to achieve the goals of the project.
+
+%%% The methodologies and techniques used for designing, verifying and proving the proposed models/ algorithms/ theorems/ hypotheses are relevant to the problems.
+
+How could we achieve our objective.  We already know that Excel is a
+basic tool in data analysis.  However, Excel is not powerful enough to
+handle large data.  We need more powerful software.  An Internet
+search gave a list of data analysis software below:
+\begin{itemize}
+\item ELKI (Java)
+\item Weka (Java)
+\item DataMelt (Java, previously SCaVis)
+\item ROOT, PAW (Physics Analysis WOrkStation) from CERN, written in
+  C++, Fortran
+\item R
+\item Encog Machine Learning Framework
+\item SPSS (IBM)
+\item SAS
+\item Stata
+\end{itemize}
+
+UTAR does have the license for the popular commercial software SAS
+which can solve statistical and data analysis problems.  However, the
+installation of the software take up a lot of space and the knowledge
+gained from using it is only good when working in a large
+corporation.
+
+A better choice is probably a mixed of Excel and open source software
+for data analytics.  Python and R are two very popular data analysis
+software.  Syntax-wise, Python is a better choice.
+
+
+
+\section{A Section for Introduction to \LaTeX{}}
+
+Linear regression formula
+Let $\mathbf{y}$ be the respondent variable and $\mathbf{x}$ be the
+factor.  Then ...
+$$
+\mathbf{y} = (A^TA)^{-1} A^T\mathbf{x}
+$$
+
+The matrix
+$$
+\begin{bmatrix}
+%  a_{11} & a_{12} & a_{13} \\
+  a_{21} & a_{22} & a_{23} \\
+  a_{31} & a_{32} & a_{33} \\
+  b_{31} & b_{32} & b_{33} & b_{34}
+\end{bmatrix} \quad
+\begin{pmatrix}
+  a_{11} & a_{12} & a_{13} \\
+  a_{21} & a_{22} & a_{23} \\
+  a_{31} & a_{32} & a_{33} \\
+\end{pmatrix}
+\begin{vmatrix}
+  a_{11} & a_{12} & a_{13} \\
+  a_{21} & a_{22} & a_{23} \\
+  a_{31} & a_{32} & a_{33} \\
+\end{vmatrix}
+$$
+
+Integration and Differentiation
+$$
+\begin{aligned}
+  F'(x) = \frac{dF}{dx} &= f(x)\\
+  \int_a^x f(x) dx  &= F(x) - F(a)
+\end{aligned}
+$$
+or special function
+$$
+y =
+\begin{cases}
+  f_1(x) & a\le x < c\\
+  f_2(x) & c\le x \le b
+\end{cases}
+$$
+
+
+%%% Programming Code can be inserted using lstinputlisting
+%\lstinputlisting[frame=tb]{simple.py}
+
+
+\section{Project Planning}
+
+%%% The time frame and budget allocated (if any) are reasonable for each phase.
+%%% The subtasks and phases towards the end of the project are properly defined.
+
+\begin{center}
+  \begin{tabular}{|c|p{10cm}|c|}
+    \hline
+    Week & \hfil Plans & Complete?\\
+    \hline
+    2 &
+    \begin{itemize}
+    \item Check out ``United Nations Statistics Division'' at
+      \url{http://unstats.un.org/unsd/}
+    \end{itemize} &
+    \\
+    3 & Learn software for gathering and reading data &
+    \\
+    4 & Use software to collect and gather real-word data &
+    \\
+    5 & Typing the review of literature and data into the proposal &
+    \\
+    6 & Clean up and print out the proposal.  After discussion with
+    supervisor, start to transfer the results into the interim report
+    \LaTeX{} file. &
+    \\
+    7--9 & Learn how to use software to clean and format data &
+    \\
+    10--11 & Type the above research result into the interim report
+    and make a plan for the coming Project II.  Discuss with
+    supervisor to correct some mistakes in the report for the
+    submission in Week 12. &
+    \\
+    \hline
+  \end{tabular}
+\end{center}
+
+
+
+
+%http://www.ctan.org/tex-archive/macros/latex/contrib/harvard
+%\renewcommand{\bibname}{\textbf{\textsc{References}}}
+%\bibliographystyle{agsm}
+%\bibliography{bibdatabase}
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
