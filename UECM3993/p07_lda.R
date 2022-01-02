@@ -1,15 +1,18 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for LDA & QDA Models in R
-# Author : Liew How Hui (2021)
+# Author : Liew How Hui (2022)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 #  2. http://euler.stat.yale.edu/~tba3/stat665/lectures/lec11/script11.html
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 3.6 & R 4.0
+# Software: R 3.6 & R 4.x & install.packages(c("ISLR", "FNN"))
+# Duration: 1 hour
 # -------------------------------------------------------------------
 
-### Taken from p_knn.R
+# -------------------------------------------------------------------
+# Taken from p03_knn1.R (Only works properly for binary classification)
+# -------------------------------------------------------------------
 performance = function(xtab, desc=""){
     cat(desc,"\n")
     ACR = sum(diag(xtab))/sum(xtab)
@@ -21,11 +24,20 @@ performance = function(xtab, desc=""){
       sum(xtab[,1])*sum(xtab[1,]))/(sum(xtab)^2)
     Kappa = (ACR - RandomAccuracy)/(1 - RandomAccuracy)
     print(xtab)
-    cat("\n      Accuracy :", ACR, "\n\n         Kappa :", Kappa, "\n")
+    cat("\n      Accuracy :", ACR)
+    if(nrow(xtab)==2){
+    cat("\n\n         Kappa :", Kappa, "\n")
     cat("\n   Sensitivity :", TPR,   "\n   Specificity :", TNR, "\n")
     cat("Pos Pred Value :", PPV,     "\nNeg Pred Value :", NPV, "\n")
     cat("           FPR :", FPR,     "\n           FNR :", FNR, "\n")
+    }else{
+    cat("\n\nTable is ", dim(xtab), " other performance metrics are unavailable\n")
+    }
 }
+
+#
+# LDA & QDA `only' work PROPERLY with `numeric' features
+#
 
 # -------------------------------------------------------------------
 #  Analysis of the `Smarket' Dataset with LDA & QDA Classifier
@@ -49,19 +61,20 @@ yhat = predict(lda.fit,Smarket.2005)
 #names(yhat)
 # yhat$posterior -> posterior `probability'
 cfmat = table(yhat$class, Direction.2005)
-performance(cfmat)
+performance(cfmat, "Smarket data analysis with LDA")
 
 qda.fit=qda(Direction~Lag1+Lag2,data=Smarket,subset=train)
 qda.fit
 qda.class=predict(qda.fit,Smarket.2005)$class
 cfmat = table(qda.class,Direction.2005)
-performance(cfmat)
+performance(cfmat, "Smarket data analysis with QDA")
 
 # -------------------------------------------------------------------
 #  Analysis of the `Fraud' Dataset with LDA Classifier ???
 # -------------------------------------------------------------------
 
-# Impossible due to the data is not normally distributed
+# Impossible due to the data is not normally distributed ->
+# many are factors & integers
 
 # Or we can try using kNN's approach?
 
@@ -73,20 +86,22 @@ train = (Weekly$Year < 2009)
 Weekly.0910 = Weekly[!train, ]   # 2009 & 2010
 Direction.0910 = Weekly$Direction[!train]
 #lda.fit = lda(Direction ~ Lag2, data=Weekly[train,])
-lda.fit = lda(Direction ~ . - Year, data=Weekly[train,])
+#lda.fit = lda(Direction ~ . - Year, data=Weekly[train,])
+lda.fit = lda(Direction ~ . - Today - Year, data=Weekly[train,])
 
 # Q2(b)
 lda.pred = predict(lda.fit, Weekly.0910)
 cfmat = table(lda.pred$class, Direction.0910)
-performance(cfmat)
+performance(cfmat, "Weekly data analysis using LDA")
 
 # Q2(c): We can compare to kNN, LR or decision tree.
 library(class)
 # Lag2 = column 3; Direction = column 9
 #yhat = knn(as.matrix(Weekly[train,3]), as.matrix(Weekly.0910[,3]), Weekly[train,9]) #k=1
-yhat = knn(as.matrix(Weekly[train,2:8]), as.matrix(Weekly.0910[,2:8]), Weekly[train,9]) #k=1
+#yhat = knn(as.matrix(Weekly[train,2:8]), as.matrix(Weekly.0910[,2:8]), Weekly[train,9]) #k=1
+yhat = knn(as.matrix(Weekly[train,2:7]), as.matrix(Weekly.0910[,2:7]), Weekly[train,9]) #k=1
 cfmat = table(yhat, Direction.0910)
-performance(cfmat)
+performance(cfmat, "Weekly data analysis using kNN(k=1)")
 
 # Q2(d) For the Weekly Data, there is no best result when using Lag2
 # Q2(d) For the Weekly Data, LDA performs better than kNN (k=1)
@@ -97,22 +112,27 @@ performance(cfmat)
 # -------------------------------------------------------------------
 # Q3(a)
 #library(ISLR)
-Auto$mpg01 = ifelse(Auto$mpg > median(Auto$mpg), 1, 0)
+# New Target for classification: Feul efficient
+Auto$mpg01 = factor(ifelse(Auto$mpg > median(Auto$mpg), 1, 0))
 
 # Q3(b): Split train:test -> 70%:30%
 #set.seed(1)
-set.seed(100)
+#set.seed(100)
+set.seed(101)
 n = nrow(Auto)
 train.idx = sample(n, size=round(n*0.7))
+# library(caTools)
+#train.idx = sample.split(Auto$mpg01, SplitRatio=0.7)
+
 # year, name, origin, acceleration from columns 6:9 should not contribute
 # to efficiency of a car, so we remove them
 # We also don't need mpg since we created `mpg01' (categorical data)
 X_y.train = Auto[ train.idx, -c(1, 6:9)]  # removing columns 1,6,7,8,9
-X_y.test  = Auto[-train.idx, -c(1, 6:9)]
+X_y.test  = Auto[-train.idx, -c(1, 6:9)]  # column 1 = mpg (Original)
 
 # Q3(c): I will try with LDA and kNN only, you can try others.
-library(MASS)
-lda.fit  = lda(mpg01~., data=X_y.train)
+#library(MASS)
+lda.fit  = lda(mpg01~., data=X_y.train)  # 2:5 are all numeric columns
 lda.pred = predict(lda.fit, X_y.test)
 cf.mat = table(lda.pred$class, X_y.test$mpg01)
 performance(cf.mat, "\nAuto Data with LDA")
@@ -127,7 +147,9 @@ for (k in c(1,10,100)){
   cat("Accuracy (kNN, k=",k,") = ",accuracy,"\n",sep="")
 }
 
-# Conclusion: LDA and kNN seem to be good classifiers.
+# Conclusion: LDA and kNN (larger k) seem to be good classifiers
+# because the data is linear classifiable.  But LDA is better
+# because kNN will fit ``noise'' as data and predict slight poorer.
 
 
 # -------------------------------------------------------------------
@@ -158,21 +180,23 @@ for (j in iset) {
   text(-0.8,-0.7, train[j,1], cex=3, col="red")
 }
 
-Xtrain = as.matrix(train[,-1])
-Xtest  = as.matrix(test[,-1])
-ytrain = train[,1]
 ytest  = test[,1]
 
 lda.fit = lda(V1 ~ ., train)
 yhat = predict(lda.fit, test)
 cfmat = table(yhat$class, ytest)
-performance(cfmat)
+performance(cfmat, "MNIST performance with LDA")
 
-# qda? --- not working
+# qda? --- not working --- requires filtering of features
+# qda.fit = qda(V1 ~ ., train)
 
 # Compare to other models
 #predKnn = FNN::knn(Xtrain,Xtest,ytrain,k=3)  # quite slow
 library(class)
+# Splitting the Data (X,y) to X and y seperately.
+Xtrain = as.matrix(train[,-1])
+Xtest  = as.matrix(test[,-1])
+ytrain = train[,1]
 predKnn = knn(Xtrain,Xtest,ytrain,k=3)  # quite slow
 performance(table(predKnn, ytest), "\nkNN with k=3")
 
@@ -183,17 +207,21 @@ performance(table(predKnn, ytest), "\nkNN with k=3")
 #                  type="response"), 1, which.max) - 1L
 #performance(table(predLm, ytest), "\nRidge Regression")
 
+#
+# Ensemble methods
+#
 ## Random Forest is also slow but it should finish in 2 minutes. Bad performance
 #outRf = randomForest::randomForest(Xtrain, factor(ytrain), maxnodes=10)
+#outRf20 = randomForest::randomForest(Xtrain, factor(ytrain), maxnodes=20) => 85%
 #predRf = predict(outRf, Xtest)
-#performance(table(predRf, ytest), "\nRandom Forest")
+#performance(table(predRf, ytest), "\nMNIST with Random Forest")
 
 #---------------------------------------------------------------
 # Do not run the following three lines if your computer is slow
-# It is very very very slow.
+# The `SVM' predictive model is very very very slow.
 #---------------------------------------------------------------
 
-outSvm  = e1071::svm(Xtrain,  factor(ytrain), kernel="radial", cost=1)
-predSvm = predict(outSvm, Xtest)
-performance(table(predSvm, ytest), "\nSVM")
+#outSvm  = e1071::svm(Xtrain,  factor(ytrain), kernel="radial", cost=1)
+#predSvm = predict(outSvm, Xtest)
+#performance(table(predSvm, ytest), "\nMNIST with SVM")
 
