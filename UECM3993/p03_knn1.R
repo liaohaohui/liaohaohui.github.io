@@ -110,9 +110,9 @@ fraud.train.knn$base_value = normalise.vec(
 fraud.test.knn$base_value  = normalise.vec(
     fraud.test.knn$base_value, fraud.train$base_value)
 
-#
+# -------------------------------------------------------------------
 # Modelling & Evaluation
-#
+# -------------------------------------------------------------------
 cat("\nTraining and validation with kNN ...\n\n")
 yhat = knn(fraud.train.knn[,2:8], fraud.test.knn[,2:8], fraud.train.knn[,9], k=3)
 cftable.std = table(yhat, fraud.test.knn$tag)
@@ -136,4 +136,41 @@ performance = function(xtab, description=""){
 }
 
 performance(cftable.std, "Confusion matrix and performance with kNN")
+
+# Refer to "More Performance Evaluation" in Lecture Slide
+fraud_tag0 = fraud[fraud$tag=="0", ]
+fraud_tag1 = fraud[fraud$tag=="1", ]
+# Take only the odd numbers
+tag0_idx = seq(1,nrow(fraud_tag0),2)
+tag1_idx = seq(1,nrow(fraud_tag1),2)
+fraud.train     = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
+fraud.test.knn  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
+fraud.train.knn = fraud.train
+# Data Preprocessing
+fraud.train.knn$age = normalise.vec(fraud.train.knn$age,fraud.train$age)
+fraud.test.knn$age  = normalise.vec(fraud.test.knn$age, fraud.train$age)
+fraud.train.knn$base_value = normalise.vec(
+    fraud.train.knn$base_value,fraud.train$base_value)
+fraud.test.knn$base_value  = normalise.vec(
+    fraud.test.knn$base_value, fraud.train$base_value)
+yhat = knn(fraud.train.knn[,2:8], fraud.test.knn[,2:8], fraud.train.knn[,9], k=3)
+cftable.std = table(yhat, fraud.test.knn$tag)
+performance(cftable.std, "Odd index for training, even index for testing")
+
+# Now, take only the even numbers
+tag0_idx = seq(2,nrow(fraud_tag0),2)
+tag1_idx = seq(2,nrow(fraud_tag1),2)
+fraud.train     = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
+fraud.test.knn  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
+fraud.train.knn = fraud.train
+# Data Preprocessing
+fraud.train.knn$age = normalise.vec(fraud.train.knn$age,fraud.train$age)
+fraud.test.knn$age  = normalise.vec(fraud.test.knn$age, fraud.train$age)
+fraud.train.knn$base_value = normalise.vec(
+    fraud.train.knn$base_value,fraud.train$base_value)
+fraud.test.knn$base_value  = normalise.vec(
+    fraud.test.knn$base_value, fraud.train$base_value)
+yhat = knn(fraud.train.knn[,2:8], fraud.test.knn[,2:8], fraud.train.knn[,9], k=3)
+cftable.std = table(yhat, fraud.test.knn$tag)
+performance(cftable.std, "Odd index for training, even index for testing")
 

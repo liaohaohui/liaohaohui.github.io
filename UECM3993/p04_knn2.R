@@ -33,7 +33,8 @@ performance = function(xtab, desc=""){
 # Loading and transforming Fraud data
 # -------------------------------------------------------------------
 
-fraud = read.csv("DataLab/fraud.csv")
+#https://liaohaohui.github.io/UECM3993/fraud.csv
+fraud = read.csv("fraud.csv")
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 ### change data type from numeric to categorical
 fraud[col_fac] = lapply(fraud[col_fac], factor)
