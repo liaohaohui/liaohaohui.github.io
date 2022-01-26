@@ -2,7 +2,8 @@
 # Purpose: Basic Commands for Data Processing in R (Part 2)
 # Author : Liew How Hui (2022)
 # Reference: http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%202%20Lab.txt
-# Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
+# Data   : https://www.statlearning.com/resources-second-edition
+#          (Old: http://faculty.marshall.usc.edu/gareth-james/ISL/data.html)
 # License: BSD-3
 # Software: R 3.6 & R 4.x
 # Duration: 1 hour
