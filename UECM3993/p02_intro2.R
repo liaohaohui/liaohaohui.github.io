@@ -35,33 +35,38 @@ head(College)
 # Commands to understand basic statistics of a data frame
 # and commands to remove `missing values'
 #
-dim(Auto)
+dim(Auto)      # nrow(Auto)  ncol(Auto)
 names(Auto)    # column names.  Alternative: colnames(Auto)
-Auto[1:4,]
+Auto[1:4,]     # Assess particular rows / columns
+# Inside R, NA = Not Available = Missing Value
 Auto=na.omit(Auto)   # na.omit removes all rows with missing values
 dim(Auto)      # check the dimension again to see if some rows are removed
 
-### Additional Graphical and Numerical Summaries
-plot(Auto$cylinders, Auto$mpg)
-cylinders=as.factor(Auto$cylinders)
+### Additional Graphical Summaries
+# On the $ sign: Table$Column = the `Column' from `Table'
+plot(Auto$cylinders, Auto$mpg)   # scatter plot = numeric vs numeric
+cylinders=as.factor(Auto$cylinders)   # In R, factor = categorical data
 mpg = Auto$mpg
-plot(cylinders, mpg)
+plot(cylinders, mpg)   # boxplot = categorical vs numeric
 
 par(mfrow=c(2,2))   # create a 2x2 subplots
-
-
 plot(cylinders, mpg, col="red")
 plot(cylinders, mpg, col="red", varwidth=T)
-plot(cylinders, mpg, col="red", varwidth=T,horizontal=T)
+plot(cylinders, mpg, col="red", varwidth=T, horizontal=T)
 plot(cylinders, mpg, col="red", varwidth=T, xlab="cylinders", ylab="MPG")
 
+# Histogram => univariate numeric data
 par(mfrow=c(1,2))
 hist(mpg)
-hist(mpg,col=2)
+hist(mpg,col=2)  # 2 = "red" (k, rgb, cmy, gray)
+
 par(mfrow=c(1,1))
 pairs(Auto)         # Pair plots = Scatter plots for all numeric columns
 pairs(~ mpg + displacement + horsepower + weight + acceleration, Auto)
 plot(Auto$horsepower,mpg)
+
+### Numerical Summaries (less nice for numeric data?)
+# EDA = Exploratory Data Analysis
 summary(Auto)
 summary(mpg)
 
@@ -74,18 +79,28 @@ x = c(1,2,1,2,3,2)
 y = c(1,2,1,2,1,2)
 cat("similarity(",x,",",y,")=", sum(x==y)/length(x), "\n", sep="")
 
-# if-else & defining function
+# if-else (similar to C, C++, Java) & defining function
 thegrade = function(val) {
-    if (val<0 || val>100) { return("????")
-    } else if (val >= 90) { return("A+")
-    } else if (val >= 80) { return("A")
-    } else if (val >= 75) { return("A-")
-    } else if (val >= 70) { return("B+")
-    } else if (val >= 65) { return("B")
-    } else if (val >= 60) { return("B-")
-    } else if (val >= 55) { return("C+")
-    } else if (val >= 50) { return("C")
-    } else                { return("F")
+    if (val<0 || val>100) {
+		return("????")
+    } else if (val >= 90) {
+		return("A+")
+    } else if (val >= 80) {
+		return("A")
+    } else if (val >= 75) {
+		return("A-")
+    } else if (val >= 70) {
+		return("B+")
+    } else if (val >= 65) {
+		return("B")
+    } else if (val >= 60) {
+		return("B-")
+    } else if (val >= 55) {
+		return("C+")
+    } else if (val >= 50) {
+		return("C")
+    } else                {
+		return("F")
     }
 }
 
@@ -128,12 +143,15 @@ for(i in 1:ncol(hip)) {
     print(c(max(hip[,i]), min(hip[,i]), median(hip[,i]), mad(hip[,i])))
 }
 # Apply is `shorter' than using for loop
+# 1 = Row
+# 2 = Column
 apply(hip, 2, max)
 apply(hip, 2, min)
 apply(hip, 2, median)
-apply(hip, 2, mad)
+apply(hip, 2, mad)  # Median Absolute Deviation
+# summary(hip) gives max, min, median, mean
 
-# Find out how many missing values and `where' missing values are
+# Find out how many missing values (NA = Not Available) and `where' missing values are
 sum(is.na(hip[,9]))
 which(is.na(hip[,9]))
 # To skip missing values, some statistics functions in R allow
@@ -144,7 +162,13 @@ for(i in 1:ncol(hip)) {
 
 # A vector can be sorted using the Shellsort or Quicksort algorithms; rank returns the order of values in a numeric vector; and order returns a vector of indices that will sort a vector. The last of these functions, order, is often the most useful of the three, because it allows one to reorder all of the rows of a matrix according to one of the columns:
 
-sort(hip[1:10,3])
-hip[order(hip[1:10,3]),]
+# Sort column number 4:
+sort(hip[1:10,4])
+hip[order(hip[1:10,4]),]
 
+###  Arff (Attribute-Relation File Format), similar to CSV with some declarations
+# Example: https://storm.cis.fordham.edu/~gweiss/data-mining/weka-data/cpu.arff
+# https://storm.cis.fordham.edu/~gweiss/data-mining/datasets.html
+
+CPU = read.csv("https://storm.cis.fordham.edu/~gweiss/data-mining/weka-data/cpu.arff", skip=17, header=FALSE)
 
