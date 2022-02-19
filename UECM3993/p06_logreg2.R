@@ -33,7 +33,8 @@ performance = function(xtab, desc=""){
 # Loading and transforming Fraud data
 # -------------------------------------------------------------------
 
-fraud = read.csv("DataLab/fraud.csv")
+#https://liaohaohui.github.io/UECM3993/fraud.csv
+fraud = read.csv("fraud.csv")
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 ### change data type from numeric to categorical
 fraud[col_fac] = lapply(fraud[col_fac], factor)
@@ -129,7 +130,8 @@ cat("
 # -------------------------------------------------------------------
 ")
 # d.f = read.csv("https://stats.idre.ucla.edu/stat/data/hsbdemo.csv", stringsAsFactors=T)
-d.f = read.csv("DataLab/hsbdemo.csv", stringsAsFactors=TRUE)
+#https://liaohaohui.github.io/UECM3993/hsbdemo.csv
+d.f = read.csv("hsbdemo.csv", stringsAsFactors=TRUE)
 # Dummy variables `general', `vocation(al)' against `academic'
 #d.f$prog2 <- relevel(d.f$prog, ref="academic")
 #model1 <- multinom(prog2 ~ ses + write, data=d.f)

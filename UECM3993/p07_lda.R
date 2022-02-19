@@ -159,8 +159,10 @@ for (k in c(1,10,100)){
 # Download mnist_train.csv (~7M) & mnist_test.csv (~2M) from
 #  https://github.com/statsmaths/stat665/find/gh-pages
 
-train = read.csv("DataLab/mnist_train.psv", sep="|", as.is=TRUE, header=FALSE)
-test  = read.csv("DataLab/mnist_test.psv",  sep="|", as.is=TRUE, header=FALSE)
+#https://liaohaohui.github.io/UECM3993/mnist_train.psv
+train = read.csv("mnist_train.psv", sep="|", as.is=TRUE, header=FALSE)
+#https://liaohaohui.github.io/UECM3993/mnist_test.psv
+test  = read.csv("mnist_test.psv",  sep="|", as.is=TRUE, header=FALSE)
 dim(train)  # ncol(train) = 1 + 16^2
 # To look at ONE ROW.  Note: First column is the `label'.
 X = matrix(as.matrix(train[3400,-1]),16,16,byrow=TRUE)

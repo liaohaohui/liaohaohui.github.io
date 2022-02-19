@@ -36,13 +36,12 @@ performance = function(xtab, desc=""){
 
 # If there is a column with categorical data, using stringsAsFactors=TRUE
 # is more convenient.
-fraud = read.csv("DataLab/fraud.csv")  # categorical data are encoded as integers
-sapply(fraud,class)   # Many columns are regarded as `integer'
+#https://liaohaohui.github.io/UECM3993/fraud.csv
+fraud = read.csv("fraud.csv")  # categorical data are encoded as integers
 
-# change data type from integer to categorical
+# change data type from integer to categorical (mentioned in Practical 3)
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud[col_fac] = lapply(fraud[col_fac], factor)
-sapply(fraud,class)
 
 ### Stratified sampling (mentioned in Practical 2)
 set.seed(123)
@@ -105,7 +104,8 @@ performance(cfmat, "Performance of Naive Bayes with Laplace Smoothing")
 # CRISP-DM's Deployment:
 # Score new fraud data using naive bayes model
 #
-fraud_new = read.csv("DataLab/fraud_new.csv")
+#https://liaohaohui.github.io/UECM3993/fraud_new.csv
+fraud_new = read.csv("fraud_new.csv")
 col_fac2 = c("gender", "status", "employment", "account_link", "supplement")
 # there is no `tag' column in fraud_new
 fraud_new[col_fac2] <- lapply(fraud_new[col_fac2], factor)
@@ -118,8 +118,9 @@ print(head(fraud_new))
 #    Dataset 2: Spam Filtering with Naive Bayes Model
 # -------------------------------------------------------------------
 
-# http://www.dbenson.co.uk/Rparts/subpages/spamR/sms_spam.csv
-sms = read.csv('DataLab/sms_spam.csv')
+# Original Source: http://www.dbenson.co.uk/Rparts/subpages/spamR/sms_spam.csv
+#https://liaohaohui.github.io/UECM3993/sms_spam.csv
+sms = read.csv('sms_spam.csv')
 # head, names
 sms$type = factor(sms$type)  # not necessary for R 3.6 and below
 table(sms$type)

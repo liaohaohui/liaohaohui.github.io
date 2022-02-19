@@ -10,7 +10,7 @@
 # -------------------------------------------------------------------
 
 #install.packages("ISLR")
-library(ISLR)
+library(ISLR)   # provides the Smarket (US Stock Market 2001-2005 data)
 
 # -------------------------------------------------------------------
 # Split data into train set and validation set
@@ -137,7 +137,9 @@ performance = function(xtab, description=""){
 
 performance(cftable.std, "Confusion matrix and performance with kNN")
 
+#
 # Refer to "More Performance Evaluation" in Lecture Slide
+#
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
 # Take only the odd numbers

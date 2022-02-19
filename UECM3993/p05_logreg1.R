@@ -9,23 +9,27 @@
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
-# Topic 1 Slide
-    oneh = caret::dummyVars( ~ ., data=df)
-    final_df = data.frame(predict(oneh, newdata=df))
+library(ISLR)
 
+#
+# We are not working with caret in Physical Lab because the dependencies
+# in caret library is more than 20 and a lot of packages need to be
+# downloaded manual which is a pain which can't be endured.
+#
 ### caret provides `dummyVars' which is very difficult to achieve
 ### using plain R --- in such cases, it is reasonable to use `caret'
 ### But for the situation where simple R will do, don't install
 ### too many packages.
 # One-hot encode --> retain only the features and not sale price
-full_rank = caret::dummyVars(Sale_Price~., data=ames_full, fullRank=TRUE)
-ames_1hot = predict(full_rank, ames_full)
-ames_1hot_scaled = as.data.frame(scale(ames_1hot))
-# Note: ames_1hot[,"Neighborhood.Hayden_Lake"] are all zero,
-# after scaling, it becomes NaN!
-ames_1hot_scaled$Neighborhood.Hayden_Lake = NULL
-dim(ames_1hot_scaled)  # Large dimensions than the original data `ames_full'
+#full_rank = caret::dummyVars(Sale_Price~., data=???, fullRank=TRUE)
 
+## Topic 3 page 21
+#oneh = caret::dummyVars(~ student, data=Default, fullRank=TRUE)
+#data_1hot = data.frame(predict(oneh, newdata=Default[,c("student"),drop=FALSE]))
+## compare to Default$student
+#print(names(data_1hot))
+##data_1hot_scaled = as.data.frame(scale(data_1hot))
+##dim(data_1hot_scaled)
 
 # -------------------------------------------------------------------
 # Taken from p03_knn1.R (Only works properly for binary classification)
@@ -53,10 +57,8 @@ cat("
 # -------------------------------------------------------------------
 ")
 
-library(ISLR)  # the Stock Market Data from ISLR package
-
 ### Explore the dataset
-#View(Smarket)
+#View(Smarket)   # From ISLR
 names(Smarket)   # or colnames
 summary(Smarket) # Except for the 1st & last columns, the rests are numerics
 pairs(Smarket)   # Practical 1: scatter plots of all columns
@@ -118,11 +120,11 @@ cat("
 # -------------------------------------------------------------------
 ")
 
-fraud = read.csv("DataLab/fraud.csv")
-### change data type from numerical to categorical
+#https://liaohaohui.github.io/UECM3993/fraud.csv
+fraud = read.csv("fraud.csv")
+### change data type from integer to categorical (mentioned in Practical 3)
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud[col_fac] = lapply(fraud[col_fac], factor)
-sapply(fraud,class)   # or summary(fraud)
 
 ### Stratified sampling --- Three methods from Practical Lab 2
 set.seed(123)
@@ -152,12 +154,19 @@ yhat = ifelse(fraud.test.prob < 0.5, "pred_0", "pred_1")
 cfmat = table(yhat, fraud.test$tag)
 performance(cfmat, "Performance of the Logistic Regression Model")
 
-### Deployment: score new data (fraud_new.xlsx) using `best' LR model
-fraud_new = read.csv("DataLab/fraud_new.csv")
+cat("
+# -------------------------------------------------------------------
+# Deployment: detecting fraud with new data using `best' LR model
+# There is nothing to compare, so no `performance'
+# -------------------------------------------------------------------
+")
+#https://liaohaohui.github.io/UECM3993/fraud_new.csv
+fraud_new = read.csv("fraud_new.csv")
 col_fac_new <- c("gender", "status", "employment", "account_link", "supplement")
 fraud_new[col_fac_new] <- lapply(fraud_new[col_fac_new], factor)
 fraud_new.prob <- predict(logreg_model,fraud_new,type = "response")
 fraud_new.pred <- ifelse(fraud_new.prob < 0.5, "pred_0", "pred_1")
 fraud_new.result <- data.frame(fraud_new,round(fraud_new.prob,4),fraud_new.pred)
+print(summary(fraud_new.result))
 
 
