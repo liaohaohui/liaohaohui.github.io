@@ -76,8 +76,6 @@ performance(cfmat, "Smarket data analysis with QDA")
 # Impossible due to the data is not normally distributed ->
 # many are factors & integers
 
-# Or we can try using kNN's approach?
-
 # -------------------------------------------------------------------
 #  Analysis of the `Weekly' Dataset with LDA Classifier
 # -------------------------------------------------------------------

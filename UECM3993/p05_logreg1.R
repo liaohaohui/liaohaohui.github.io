@@ -116,7 +116,7 @@ print(summary(lr.model))
 
 cat("
 # -------------------------------------------------------------------
-#  Analysis of the `Fraud' Dataset using Logistic Regression glm
+#  Analysis of the original `Fraud' Dataset using Logistic Regression glm
 # -------------------------------------------------------------------
 ")
 
@@ -151,6 +151,41 @@ fraud.test.prob = predict(logreg_model,
   newdata=subset(fraud.test,select=c(1:8)), type='response')
 #fraud.test.prob = predict(logreg_model, newdata=fraud.test[ ,1:8], type='response')
 yhat = ifelse(fraud.test.prob < 0.5, "pred_0", "pred_1")
+cfmat = table(yhat, fraud.test$tag)
+performance(cfmat, "Performance of the Logistic Regression Model")
+
+cat("
+# -------------------------------------------------------------------
+#  Analysis of the standardised `Fraud' Dataset using Logistic Regression
+# -------------------------------------------------------------------
+")
+summary(fraud)
+
+normalise.vec <- function(column,ref.col) {
+    return ((column - mean(ref.col)) / sd(ref.col))
+}
+fraud.tran.std     = fraud.train
+fraud.test.std     = fraud.test
+#fraud.tran.std$age = normalise.vec(fraud.tran.std$age, fraud.train$age)
+#fraud.test.std$age = normalise.vec(fraud.test.std$age, fraud.train$age)
+mu_age = mean(fraud.train$age)
+si_age = sd(  fraud.train$age)
+fraud.tran.std$age = scale(fraud.tran.std$age,mu_age,si_age)[,1]
+fraud.test.std$age = scale(fraud.test.std$age,mu_age,si_age)[,1]
+
+mu_bsv = mean(fraud.train$base_value)
+si_bsv = sd(  fraud.train$base_value)
+fraud.tran.std$base_value = scale(fraud.tran.std$base_value, mu_bsv, si_bsv)[,1]
+fraud.test.std$base_value = scale(fraud.test.std$base_value, mu_bsv, si_bsv)[,1]
+
+model.for.scaleddata = glm(tag~., data=fraud.tran.std[,2:9], family=binomial)
+summary(model.for.scaleddata)
+
+#
+# Logit can be used instead of probability in prediction
+#
+fraud.test.logit = predict(model.for.scaleddata, fraud.test.std[,2:8])
+yhat = ifelse(fraud.test.logit > 0, "pred_1", "pred_0")
 cfmat = table(yhat, fraud.test$tag)
 performance(cfmat, "Performance of the Logistic Regression Model")
 
