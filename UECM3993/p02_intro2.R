@@ -70,6 +70,14 @@ plot(Auto$horsepower,mpg)
 summary(Auto)
 summary(mpg)
 
+#
+# pairs is for numeric vs numeric
+# boxplot is for numeric vs categorical
+# barplot is for categorical vs categorical
+# Ref: https://ademos.people.uic.edu/Chapter11.html#5_bar_graphs
+#
+
+
 # -------------------------------------------------------------------
 #  Practical: IO, if-else, for, and defining functions
 # -------------------------------------------------------------------
