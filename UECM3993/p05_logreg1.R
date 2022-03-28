@@ -90,6 +90,7 @@ summary(logreg.fits)
 # Response = P(Y=1 | X=x) = 1/(1 + exp(-(DefaultT)))
 # DefaultT = beta0 + beta1*x1 + ... + betap*xp
 logreg.probs = predict(logreg.fits, newdata=Smarket.2005, type="response")
+# contrasts is used for the construction of one-hot encoding
 contrasts(Smarket$Direction)    # To show the value (1/0) for level (Up/Down)
 ### Make prediction based on the probability computed (>=0.5 is Up)
 predicted = ifelse(logreg.probs < 0.5, "Down", "Up")

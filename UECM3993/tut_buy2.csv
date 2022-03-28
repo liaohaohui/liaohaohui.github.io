@@ -1,0 +1,17 @@
+Age,Race,Gender,Income,Buy
+Adult,Malay,Male,high,Not Buy
+Young,Chinese,Male,high,Buy
+Young,Indian,Male,high,Buy
+Young,Indian,Female,high,Buy
+Young,Malay,Female,high,Buy
+Adult,Malay,Female,low,Not Buy
+Adult,Malay,Male,high,Not Buy
+Adult,Indian,Female,low,Not Buy
+Young,Chinese,Male,high,Buy
+Young,Malay,Male,high,Buy
+Young,Indian,Female,low,Not Buy
+Adult,Indian,Female,low,Not Buy
+Adult,Malay,Female,high,Not Buy
+Adult,Chinese,Female,high,Buy
+Adult,Indian,Female,low,Not Buy
+Adult,Indian,Male,low,Buy

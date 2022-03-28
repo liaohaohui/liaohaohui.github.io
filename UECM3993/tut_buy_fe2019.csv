@@ -1,0 +1,11 @@
+Obs,Age,Race,Gender,Income,Buy
+1,52,Indian,Male,11500,Not_Buy
+2,22,Chinese,Female,6500,Buy
+3,30,Chinese,Male,8000,Buy
+4,26,Malay,Male,8500,Buy
+5,27,Indian,Female,6500,Buy
+6,32,Chinese,Female,9500,Not_Buy
+7,33,Indian,Male,4000,Not_Buy
+8,50,Malay,Female,10000,Buy
+9,31,Chinese,Female,5500,Buy
+10,27,Malay,Male,9200,Not_Buy
