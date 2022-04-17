@@ -9,7 +9,9 @@
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
-# Normalization
+#
+# Min-Max scaling functions
+#
 #library(scales)
 rescale = function(x, to = c(0, 1), from = range(x, na.rm = TRUE, finite = TRUE), ...) {
   (x - from[1]) / diff(from) * diff(to) + to[1]
@@ -41,6 +43,7 @@ km.out$cluster
 plot(x, col=km.out$cluster, main="K-Means Clustering Results with K=2", 
   xlab="x", ylab="y", pch=20, cex=2)
 
+dev.new()
 set.seed(3)
 km.out=kmeans(x,3,nstart=20)  # 20 random centroids get the one with min WSS
 plot(x, col=km.out$cluster, main="K-Means Clustering Results with K=3", 
@@ -52,10 +55,7 @@ plot(x, col=km.out$cluster, main="K-Means Clustering Results with K=3",
 #-------------------------------------------------------------------------
 
 #https://liaohaohui.github.io/UECM3993/clustering.csv
-X = read.csv("clustering.csv")
-names(X)
-# exclude variable "id"
-X = X[,-1]   # Alternatives: X = X[,2:3] or X$id = NULL
+X = read.csv("clustering.csv", row.names="id") # "id" or column 1 are fine
 
 # plot scatterplot of x1 vs x2
 plot(X) #plot(X$x1,X$x2)
@@ -65,28 +65,29 @@ set.seed(2)
 # set.seed(22)  # gives a different clustering which is funny
 km.out = kmeans(X, 4)  # With/Without nstart=20
 
-# get cluster means 
-km.out$centers
-
-X_group = data.frame(X, km.out$cluster)
+# Compare to Excel
+X_group = data.frame(X, cluster.lab=km.out$cluster)
 head(X_group)
 
 # plot data with cluster assigned
 plot(X,col=km.out$cluster+1,xlab = "x1",ylab = "x2", pch=15, cex=2)
+# plot cluster centroids
+points(km.out$centers, col="brown", cex=2, pch=19)
 
-# WSS = Within Sum of Squares
-# get the best k
+#
+# Identify the best k using WSS (Within Sum of Squares)
+# 
 total.wss = (nrow(X)-1)*sum(apply(X,2,var)) #for k=1
 for (k in 2:15) {
-  total.wss[k] <- sum(kmeans(X, centers=k, nstart=20)$withinss)
+  total.wss[k] <- kmeans(X, centers=k, nstart=20)$tot.withinss
 }
-# Shorter: total.wss = sapply(1:15, function(k){kmeans(X, centers=k, nstart=20)$tot.withinss})
+# Without for loop: total.wss = sapply(1:15, function(k){kmeans(X, centers=k, nstart=20)$tot.withinss})
 plot(total.wss, type="b", xlab="Number of Clusters", ylab="Within groups sum of squares")
 # -> Elbow method
 
 # standardisation is not going to eliminate the `local' minimum problem
-X_std = as.data.frame(lapply(X, scale))
-head(X_std)
+X_std = as.data.frame(scale(X))
+#head(X_std)
 plot(X_std)
 
 set.seed(3)
@@ -114,9 +115,26 @@ for(k in c(2,3,4,6)) {
       main=sprintf("k-Means with k=%d",k))
 }
 
+par(mfrow=c(1,2))
 # PAM (k-Medoids)
 kmd = cluster::pam(X, 4)   # cluster is in the Base R
-plot(X, col=kmd$clustering, pch=16, cex=2)
+plot(X, col=kmd$clustering, pch=16, cex=2, main="PAM (k=4)")
+points(kmd$medoids, pch=15, cex=2, col="brown")
+km  = kmeans(X, 4, nstart=20)
+plot(X, col=km$cluster, pch=16, cex=2, main="kmeans (k=4)")
+points(km$centers, pch=15, cex=2, col="brown")
+
+#
+# Centroids (k-means) vs Medoids (PAM)
+#
+par(mfrow=c(1,2))
+km = kmeans(X, 2, nstart=20)
+plot(X, col=km$cluster, pch=16, cex=2, main="kmeans (k=2)")
+points(km$centers, pch=18, cex=2, col="red")
+# To prevent PAM from falling into local-minima
+kmd = cluster::pam(X, 2, nstart=20)   # cluster is in the Base R
+plot(X, col=kmd$clustering, pch=16, cex=2, main="PAM (k=2)")
+points(kmd$medoids, pch=18, cex=2, col="red")
 
 ## GMM (Gaussian Mixture Model)
 #library(mclust, quietly=TRUE)  #install.packages("mclust")
@@ -171,7 +189,8 @@ cls1 = cutree(hc.complete, h=4)
 plot(x, col=cls1, pch=15, cex=1.5, main="Complete-2 (height=4)")
 cls2 = cutree(hc.average,  h=3)
 plot(x, col=cls2, pch=15, cex=1.5, main="Average (height=3)")
-cls5 = cutree(hclust(dist.mat, method="ward.D2"), h=3)
+hc.ward2 = hclust(dist.mat, method="ward.D2")
+cls5 = cutree(hc.ward2, h=5)
 plot(x, col=cls5, pch=15, cex=1.5, main="Ward (height=3)")
 cls4 = cutree(hc.single,  h=1)
 plot(x, col=cls4, pch=15, cex=1.5, main="Single (height=1)")
@@ -179,7 +198,7 @@ plot(x, col=cls4, pch=15, cex=1.5, main="Single (height=1)")
 # Scaled data: No difference compare to the original data
 x.norm = rescale(x, to=c(0,1))
 par(mfrow=c(1,2))
-plot(hc.complete,main="Complete Linkage", xlab="", sub="", cex=.9)
+plot(hc.complete,main="Original Data (Complete Linkage)", xlab="", sub="", cex=.9)
 plot(hclust(dist(x.norm), method="complete"),
   main="Normalized Complete Linkage", xlab="", sub="", cex=.9)
 # hc.norm = hclust(dist(x.norm), method="complete")
@@ -193,13 +212,14 @@ plot(hclust(dist(x.norm), method="complete"),
 #-------------------------------------------------------------------------
 
 library(ISLR)
-nci.labs=NCI60$labs    # Mentioned in Practical 6
+nci.labs=NCI60$labs    # Mentioned in Practical 11
 nci.data=NCI60$data
 dim(nci.data)  # -> 64 x 6830 (n < p)
 table(nci.labs)
 
 nci.norm = rescale(nci.data, to=c(0,1))
 
+# Euclidean distance is used.
 nci.dist = dist(nci.norm)   # Distance matrix: around 64 x 64
 hc.complt = hclust(nci.dist, method="complete")
 hc.averag = hclust(nci.dist, method="average")
@@ -211,7 +231,9 @@ plot(hc.single, labels=nci.labs, main="Single Linkage",   xlab="",ylab="",sub=""
 
 dev.new()   # x11()
 par(mfrow=c(2,2))
-# Recognising clusters using human vision(?)
+#
+# Recognising clusters by projecting high-dim data to 2D
+#
 pca = prcomp(nci.norm)
 set.seed(2)
 km.out = kmeans(nci.norm, 4, nstart=20)
@@ -223,6 +245,7 @@ hc.s.clusters=cutree(hc.single,4)
 plot(pca$x[,1:2], col=hc.c.clusters, pch=16, cex=1.8, main="AGNES(Complete-link) biplot")
 plot(pca$x[,1:2], col=hc.a.clusters, pch=16, cex=1.8, main="AGNES(Average-link) biplot")
 plot(pca$x[,1:2], col=hc.s.clusters, pch=16, cex=1.8, main="AGNES(Single-link) biplot")
+text(pca$x[,1:2], nci.labs, cex=0.6)
 
 # Compare unsupervised learning results (clusters) to actual label
 table(hc.c.clusters,nci.labs)
@@ -252,6 +275,9 @@ library(gower)
 # gower distance = (3 + 0.3055556 + 0.1318076)/7 = 0.4910519  # 7 columns
 gower_dist(fraud[1,], fraud[2:3,])  # Item 1 vs 3 => 0.4910519
 
+#
+# Only useful for small number of samples n (not much more than 2000).
+#
 library(cluster)
 gower_dst = daisy(fraud, metric="gower")  # Dissimilarity Matrix
                                           # Generalisation of distance matrix

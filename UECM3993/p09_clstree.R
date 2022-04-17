@@ -37,6 +37,7 @@ cat("
 #  Analysis of the `Carseats' Dataset with Classification Tree (tree)
 # -------------------------------------------------------------------
 ")
+#install.packages("tree")
 library(tree)   # Requires R >= 3.6 (no dependencies)
 
 ### Initial Exploration of the Dataset ``Carseats''
@@ -47,9 +48,18 @@ sapply(Orig.Carseats,class)
 ### To turn it to a ``classification problem'', we need to discretise
 ### it: "High" = "Yes" if "Sales" > 8 and "No" if "Sales"<= 8
 Carseats = Orig.Carseats
+#
+# Adding new column to EXISTING TABLE.
+#
 Carseats$High  = factor(ifelse(Carseats$Sales<=8,"No","Yes"))
+#
+# Removing the Y=Sales (regression).
+#
+dim(Carseats)
 Carseats$Sales = NULL  # To delete a column ``Sales'' from Carseats
-sapply(Carseats,class)
+# Turning the regression problem (Y=Sales) to binary classification
+# problem with Y=High(Sales)
+dim(Carseats)
 
 ### Validation Set Approach: split data into training and testing sets
 ### using stratified sampling
@@ -71,8 +81,16 @@ Carseats.test  = rbind(cs_tag0[-tag0_idx,],cs_tag1[-tag1_idx,])
 ### for his book: http://www.stats.ox.ac.uk/~ripley/PRbook/
 ### Ref: https://stat.ethz.ch/pipermail/r-help/2005-May/070922.html
 ### It is generates binary tree and is a kind of CART
+# Alternative: library(rpart)
+# default each leaves has 5 items from the data table
+
+#
+# Train the CART tree predictive model
+#
 tree.carseats = tree(High~.,Carseats.train)
-#print(tree.carseats)
+# Text layout is suitable for programming
+print(tree.carseats)
+# Diagram representation
 plot(tree.carseats)
 text(tree.carseats,cex=0.8)
 ### Alternative choice: rpart
@@ -80,11 +98,8 @@ text(tree.carseats,cex=0.8)
 #rpart.carseats=rpart(High~.,Carseats.train)
 #library(rpart.plot)  # A fancier tree plotting library
 #rpart.plot(rpart.carseats)
-### Alternative choice(?): partykit::ctree
-#ctree.carseats = partykit::ctree(High~.,Carseats.train)
-#plot(ctree.carseats)
 
-### Validate the trained tree model
+### Validate the trained CART tree model
 tree.pred = predict(tree.carseats,Carseats.test,type="class")
 cf.mat = table(tree.pred,Carseats.test$High)
 performance(cf.mat, "\nCarseats with tree::tree")
@@ -95,20 +110,41 @@ performance(cf.mat, "\nCarseats with tree::tree")
 ###            We will use a 10-fold CV to find a tree by considering 
 ###            trees of different sizes which have been pruned from
 ###            our original tree.
-set.seed(3)
+set.seed(5)
+#
+# Decisions trees are usually prone to overfitting
+#
+# Growing the trees with different sizes:
+# 1. The smaller the better!
+# 2. Must make sure the misclassification errors are small as possible
+#
 seat_tree_cv = cv.tree(tree.carseats, FUN=prune.misclass) #K=10 by default
-min_idx = max(which(seat_tree_cv$dev==min(seat_tree_cv$dev)))
-num_terminal_nodes = seat_tree_cv$size[min_idx]
+#
+# Visualise how the misclassication error changes w.r.t. tree size
+#
 par(mfrow = c(1, 2))
 plot(seat_tree_cv)
 plot(seat_tree_cv$size, seat_tree_cv$dev / nrow(Carseats.train), 
-     type="b", xlab=paste("Tree Size (minimum @", num_terminal_nodes, ")"), 
-     ylab="CV Misclassification Rate")
+     type="b", xlab="Tree Size", ylab="CV Misclassification Rate")
+# num_terminal_nodes defined below.
+#
+# 1. Find the minimum: min(seat_tree_cv$dev)
+# 2. Find the position of the minimum: which(seat_tree_cv$dev==min(seat_tree_cv$dev))
+# 3. There may be multiple minimum, get the first one
+#
+min_idx = max(which(seat_tree_cv$dev==min(seat_tree_cv$dev)))
+num_terminal_nodes = seat_tree_cv$size[min_idx]
 #prune.carseats = prune.rpart(tree.carseats,cp=15) cp=best ???
 prune.carseats = prune.misclass(tree.carseats,best=num_terminal_nodes)
+# Replotting
+plot(seat_tree_cv)
+plot(seat_tree_cv$size, seat_tree_cv$dev / nrow(Carseats.train), 
+     type="b", xlab=paste("Tree Size (minimum @", num_terminal_nodes, ")"),
+     ylab="CV Misclassification Rate")
 #
-# Compare the prune tree and the original tree
+# Compare the pruned tree and the original tree
 #
+dev.new()
 par(mfrow = c(1, 2))
 plot(prune.carseats)   # One can see a ``cleaner'' tree
 text(prune.carseats,cex=0.8)
@@ -127,14 +163,22 @@ performance(cf.mat.prune, "\nPrunned tree::tree to `minimal' nodes")
 prune.carseats = prune.misclass(tree.carseats,best=15)
 plot(prune.carseats)
 text(prune.carseats,cex=0.8)
+title("Pruned Tree with 15 leaves")
+plot(tree.carseats)
+text(tree.carseats,cex=0.8)
+title("Original Tree")
 tree.pred=predict(prune.carseats,Carseats.test,type="class")
 cf.mat.prune2 = table(tree.pred,Carseats.test$High)
 performance(cf.mat.prune2, "\nPrunned tree::tree to around 15 nodes")
 
+#
+# Exercise: Try comparing to C5.0 tree
+#
+
 cat("
 # -------------------------------------------------------------------
 #  Analysis of the `Iris' Dataset with Conditional Inference Tree 
-#  Classification Tree (party)
+#  Classification Tree (party) => Unbias (statistics)
 # -------------------------------------------------------------------
 ")
 
@@ -157,8 +201,9 @@ iris.test  = iris[-idx,]
 # If we need perfect ratio, we need `stratified sampling'
 
 # -------------------------------------------------------------------
-# Conditional Inference Tree: party & partykit
+# Conditional Inference Tree (input needs to be numeric): party & partykit
 # -------------------------------------------------------------------
+#install.packages("party")   # if you haven't installed
 suppressMessages(library(party))  # Only supports numerical input
 # Depends on ‘modeltools’, ‘zoo’, ‘sandwich’, ‘strucchange’, 
 # matrixStats, TH.data, multicomp, ‘coin’
@@ -173,13 +218,14 @@ cat("\n*** Confusion Matrix for Training Data\n")
 yhat = predict(iris.ctree, iris.train)
 cf.mat.train = table(yhat, iris.train$Species)
 print(cf.mat.train)
+cat("Accuracy for train=", sum(diag(cf.mat.train))/nrow(iris.train), "\n")
 #
 cat("\n*** Confusion Matrix for Testing Data\n")
 #
 yhat = predict(iris.ctree, iris.test)
 cf.mat.test = table(yhat, iris.test$Species)
-performance(cf.mat.test)   # The values are not right because
-                           # there are more than two output classes
+cat("Accuracy for test=", sum(diag(cf.mat.test))/nrow(iris.test), "\n")
+#performance(cf.mat.test)
 # gmodels::CrossTable(yhat, iris.test$Species)
 
 #
@@ -190,19 +236,28 @@ cat("
 #  Analysis of the `credit_data' with C5.0 (patterned by https://www.rulequest.com/see5-info.html)
 # -------------------------------------------------------------------
 ")
+#install.packages("modeldata")
 library(modeldata)
+# https://github.com/gastonstat/CreditScoring
 data(credit_data)
 #str(credit_data)
 
-set.seed(2411)
+#
+# Linear Sampling
+#
+set.seed(2022)
 in_train   = sample(nrow(credit_data), size = 3000)
 train_data = credit_data[ in_train,]
 test_data  = credit_data[-in_train,]
 
+#install.packages("C50")
 library(C50)
 # Depends on mvtnorm, libcoin, inum, Formula, partykit, Rcpp, plyr,
-# stringi, glue, stringr, reshape2, Cubist.
+# stringi, glue, stringr, reshape2, Cubist
 #names(train_data)
+#
+# Using 2 inputs
+#
 C50tree_model = C5.0(x=train_data[, c("Home", "Seniority")], y=train_data$Status)
 summary(C50tree_model)
 plot(C50tree_model)  # depends on partykit for plotting
@@ -211,12 +266,29 @@ cf.mat.test = table(yhat, test_data$Status)
 performance(cf.mat.test)
 
 #
+# Using all inputs (not really better)
+#
+C50tree_model = C5.0(x=train_data[, -1], y=train_data$Status)
+plot(C50tree_model)  # depends on partykit for plotting
+yhat = predict(C50tree_model, test_data)
+cf.mat.test = table(yhat, test_data$Status)
+performance(cf.mat.test)
+
+#
 # If time permits: Trying out tutorial on Tree Model
 #
-d.f = read.csv("tut_buy.csv",  stringsAsFactors=TRUE)  # Original Data
+#https://liaohaohui.github.io/UECM3993/tut_buy.csv
+#d.f = read.csv("tut_buy.csv",  stringsAsFactors=TRUE)  # Original Data
 d.f = read.csv("tut_buy2.csv", stringsAsFactors=TRUE)  # Transformed Data
+d.f$Obs=NULL
+#
+# By default, C5.0 is similar to CART tree using binary split
+#
 C50model = C5.0(d.f[ , 1:4], d.f[ , 5])
 plot(C50model)
+#
+# With appropriate control, C5.0 creates C4.5/ID3 tree.
+#
 C50model = C5.0(d.f[ , 1:4], d.f[ , 5], control=C5.0Control(subset=FALSE,noGlobalPruning=TRUE,earlyStopping=FALSE,minCases=1,CF=1))
 dev.new()
 plot(C50model)
