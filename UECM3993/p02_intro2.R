@@ -18,7 +18,53 @@
 #install.packages("readr")
 #library(readr)
 
+# Check current working directory
+getwd()
+# Change the working directory
 #setwd("PathToYourFolder")
+
+#
+# Data Frame = Generalisation of Matrix to handle the mix of 
+# numeric and categorical data
+#
+# Reading data frame from string
+#
+d.f = read.csv(text=
+"Day,Outlook,Temp,Humidity,Wind,Decision
+1,Sunny,85,85,Weak,No
+2,Sunny,80,90,Strong,No
+3,Overcast,83,78,Weak,Yes
+4,Rain,70,96,Weak,Yes
+5,Rain,68,80,Weak,Yes
+6,Rain,65,70,Strong,No
+7,Overcast,64,65,Strong,Yes
+8,Sunny,72,95,Weak,No
+9,Sunny,69,70,Weak,Yes
+10,Rain,75,80,Weak,Yes
+11,Sunny,75,70,Strong,Yes
+12,Overcast,72,90,Strong,Yes
+13,Overcast,81,75,Weak,Yes
+14,Rain,71,80,Strong,No")
+
+#
+# We can delete the first column Day using
+#
+d.f$Day = NULL
+#
+# The Temp(erature) is in USA Fahrenheit scale.
+# We want to convert it to Celcius, we can
+#
+d.f$Temp.C = 5/9 * (d.f$Temp-32)
+
+#
+# Saving the processed data in the order 
+# Outlook, Temp.C, Humidity, Wind, Decision
+# => Column 1,6,3,4,5
+#
+write.csv(d.f[,c(1,6,3:5)], "tennis_new.csv")
+#
+# Try openning tennis_new.csv in Excel to confirm that data is saved correctly.
+#
 
 ### Loading ``structured'' table to R Data Frame
 # https://liaohaohui.github.io/UECM3993/Auto.data
@@ -179,4 +225,51 @@ hip[order(hip[1:10,4]),]
 # https://storm.cis.fordham.edu/~gweiss/data-mining/datasets.html
 
 CPU = read.csv("https://storm.cis.fordham.edu/~gweiss/data-mining/weka-data/cpu.arff", skip=17, header=FALSE)
+
+# -------------------------------------------------------------------
+#  Resampling
+# -------------------------------------------------------------------
+
+#
+# Suppose the true model is rnorm(100, the.mean, the.stdv)
+#
+the.mean = 10
+the.stdv =  2   # standard deviation is 2
+set.seed(2022)  # Fix the starting value of random number generator
+the.samples = rnorm(100, the.mean, the.stdv)
+count = length(the.samples)
+#
+# For probability theory, we know the standard deviation of
+# the true model rnorm(100, the.mean, the.stdv) is the.stdv
+#
+# From the samples, the unbiased estimate of the.stdv is
+sd(the.samples)
+
+# Holdout Resampling Method Estimate
+# the 'sample' function depends on the seed
+set.seed(2022)
+idx = sample(count, 0.7*count)   # Linear Sampling of 70% of the Indices
+# We are 'resampling' from the samples!
+sd(the.samples[idx])
+
+# LOOCV
+loocv = 0    # create the variable 'loocv' for storing data
+for(i in 1:count) {
+  loocv[i] = sd(the.samples[-i])
+}
+mean(loocv)
+
+# 10-fold CV
+# 100 data cut into 10-fold, each fold has 10 items
+range = 1:(count/10)
+fold = 0
+for(i in 1:10){
+  fold[i] = sd(the.samples[-(range+(i-1)*10)])
+}
+mean(fold)
+
+# Simple Boostrapping (Sample with Replacement)
+set.seed(2022)
+idx.boostrap = sample(count, 0.7*count, replace=TRUE)
+sd(the.samples[idx.boostrap])
 

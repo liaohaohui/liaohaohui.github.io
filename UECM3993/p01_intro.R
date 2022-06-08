@@ -8,34 +8,79 @@
 # -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
+#  Getting familiar with the Basic R and R Studio
+# -------------------------------------------------------------------
+
+# 1. Basic R (for fast startup and lower memory comsumption)
+#
+#    Download link: https://cran.r-project.org/
+#
+#    It supports Windows, MacOS and Linux, download the software
+#    related to your computer.
+
+# 2. RStudio (for a computer with more than 8 Gig RAM and fast CPU
+#
+#    Donwload link: https://www.rstudio.com/products/rstudio/download/
+#
+#    Get the "RStudio Desktop"
+
+# -------------------------------------------------------------------
 #  Practical: Very Basic Programming Notations
 # -------------------------------------------------------------------
 
 # Line comment starts with the `#' (sharp, e.g. C# / hash, twitter hash tag) symbol
 # In C, C++, JavaScript, the line comment is usually double slash `//'
 
-# Variables: `names' which are used to reference data
-# The `<-' or `=' is used to denote `assignment'.  Most books use
-# the notation `<-' but we will be using `=' in the practicals.
-a <- 1  # a is refering to the floating point number 1
-a = 1L  # a is now refering to the integer 1
-
-# Try not to use `c' for variable name, it is used to create an array.
-
-# Variables can have dot `.' which is usually not allowed in other 
-# programing languages
-
-# Commands to list and remove variables
-ls()
-rm(a,A)
-ls()
-rm(list=ls())  # Not recommended in general
-
 # -------------------------------------------------------------------
-#  Practical: `Basic Data Structures' and Operations in R
+#  Practical: Variables and Assignment in R
 # -------------------------------------------------------------------
 
-### Letters & Strings / Characters
+# Variables: `names' which are used to reference data in memory
+#
+# 1. ls() is used to list the environment variables
+#
+ls()
+#
+#    In RStudio, the variables will be listed on the top right hand
+#    window.
+#
+# 2. Variables are created using assignment operation <- or =
+#    Most books use the notation `<-' but we will be using `=' 
+#    in the practicals since it is easier to type.
+#
+# 3. Variables can be 'a'-'z', 'A'-'Z', '0'-'9' and '.' (dot)
+#    Try to avoid using `c' for variable name, it is used to create 
+#    an array.
+#
+a <- 1                  # the floating point number 1
+a.second.Variable = 1L  # L is used to create an integer
+#
+# 4. Try ls() to see the variables created (or for RStudio users
+#    look at the top right hand window to watch the variables
+#
+ls()
+#
+# 5. We can check the data type/class of a variable using the command 'class'
+#
+class(a)
+class(a.second.Variable)
+#
+# 6. Variables that are no longer needed can be deleted:
+#
+rm(a)
+ls()
+#
+# 7. We can move all variable but this is usually not recommended
+# rm(list=ls())  # Not recommended in general
+#
+
+# -------------------------------------------------------------------
+#  Practical: Basic and Array Data Structures and Operations in R
+# -------------------------------------------------------------------
+
+##
+## (A) Letters & Strings / Characters
+##
 
 "A String in double quotes"
 'A String in single quotes'
@@ -43,7 +88,7 @@ rm(list=ls())  # Not recommended in general
 "A string\n with multiple lines\n using `backslash n'"
 # cat = concatenate to output
 # use ?cat to get help for `cat'
-cat("A string\n with multiple lines\n using `backslash n'")
+cat("A string\n with multiple lines\n", " using `backslash n'")
 
 # If we don't assign the variables to a variable, R will print them out
 
@@ -58,8 +103,9 @@ A = paste("A", "B", "C", "D", sep=",")
 # Find the length of a string
 nchar("Hello World")
 
-
-### (Real) Floating Numbers and Arithmetic Operations
+##
+## (B) (Real) Floating Numbers and Arithmetic Operations
+##
 a = 1 + 2
 b = 2 - 3
 d = 3 * 4
@@ -67,53 +113,147 @@ e = 4 / 5
 f = 5 ** 6    # 5 to the power of 6 (** is also used in Python)
 g = 5 ^ 6     # Also 5 to the power of 6 (^ has different meaning in Python)
 
-### Integers and Arithmetic Operations
+##
+## (C) Integers and Arithmetic Operations
+##
 a = 1L + 2L
 b = 2L - 3L
 d = 3L * 4L
 e = 4L / 5L   # Usual number division, NOT integer division
 f = 5 ** 6    # 5 to the power of 6
 g = 5 ^ 6     # Also 5 to the power of 6
+##
+## Non-basic data structure => Dates (internally integer)
+##
+mydates = as.Date("2022-06-22")
+today = Sys.Date()
 
-### Booleans / Logicals => Basic Maths / Discrete Maths
+##
+## (D) Booleans / Logicals => Basic Maths / Discrete Maths
+##
 TRUE  & TRUE
 TRUE  | FALSE
 !FALSE
 ((a < b) & (d < e)) | (f > g)
 
-### Non-basic data structure => Dates <-> integers
-
-
-# -------------------------------------------------------------------
-#  Practical: Basics of 1D & 2D `Arrays' and Operations in R
-# -------------------------------------------------------------------
-
-# 1D Arrays & Operations
-x <- c(1,3,2,5)   # Assignment operation in R: `<-', `='
-y <- c(1,4,3)     # c() is used to create array
-length(x)
-length(y)
-x+y               # Beware!
-x*y
-# if(length(x) != length(y)) { .... }
-sequence1 = 1:10      # or seq(1,10)
-sequence2 = c(20:1)
-sequence3 = seq(1,30,2)           # arithmetic progression sequence:
-                                  #  a_n = a + (n-1)d
-          # seq(1,30,by=2)  -> increase by 2
-sequence4 = seq(-pi,pi,length=50) # seq(a,b,length=N):
-                                  #  a_n = a + (n-1)*(b-a)/(N-1), n=0,1,...,N-1
-# Elementwise function operation to 1D array
-x^2
-sqrt(x)
-# Statistical functions (will be introduced below again)
-mean(x)
-sum(x)
-var(x)     # sample statistics
-sd(x)      # sample statistics
+##
+## (E) 1-D Numeric Arrays, Operations and Statistics in R
+##
 
 #
-# 1D array of `letters' and strings
+# c() is used to create a general 1D array
+#
+x = c(5,4,5,3,5,5,5,2)
+# We can use length to check the array length
+length(x)
+# For numeric arrays, we can add, subtract, multiply etc.
+y1 = 2*x-1
+y2 = x^2
+# Elementwise function operation to 1D array
+y3 = sqrt(x)
+y4 = 2*sin(x) + 3*cos(x)
+#
+# Statistical functions
+#
+length(x) # n
+sum(x)    # x[1] + ... + x[n]
+mean(x)   # x.bar = (x[1] + ... + x[n])/n
+var(x)    # sample variance: sum((x-x.bar))^2)/(n-1)
+sd(x) == sqrt(sum((x-mean(x))^2)/(length(x)-1))     # sample standard deviation
+
+#
+# Special Statistical Feature in R
+#
+# If we want to add repeating 1D data like
+#    5,4,5,3,5,5,5,2 +
+#    1,2,1,2,1,2,1,2
+# => 6 6 6 5 6 7 6 4
+# In R, we can just perform 
+x + c(1,2)
+#
+# R will perform cyclic repeat for us.
+#
+# Are you able to tell y5 below without using R?
+y5 = c(2,3)*x + c(5,4,-2,3)
+
+#
+# Regular 1D arithmetic sequences in R
+#
+x.sequence1 = 1:10    # or seq(1,10)
+x.sequence2 = 20:1    # or seq(20,1)
+#
+# Arithmetic progression sequence:
+#    a_n = a_0 + (n-1)*d
+#    seq(a_0, num, d),   a_n <= num < a_n + d
+#
+x.sequence3 = seq(1,30,2)
+#
+# Arithmetic progression sequence used in plotting
+#    a_0, a_1, ..., a_(N-1)
+#    a_n = a + (n-1)*(b-a)/(N-1), n=0,1,...,N-1
+#
+x.sequence4 = seq(-pi,pi,length=50)
+y.sequence4 = exp(x.sequence4)
+#
+# Default plot of y vs x (scatter plot)
+#
+plot(x.sequence4, y.sequence4)        # Default: points
+plot(x.sequence4, y.sequence4, 'l')   # Change to line
+#
+# 2D plotting of numeric data with labels and title
+#
+plot(x.sequence4, y.sequence4, xlab="x",ylab="y",main="Scatter Plot of X vs Y")
+# If we no longer need the variables, we should remove them
+# to prevent from misusing them below.
+rm(x.sequence4, y.sequence4)
+#
+# Various 2D plotting options: col (colours), pch (point symbols), 
+#   cex, (point size), lwd (line width).
+#
+plot(
+  1:25,
+  cex=3,
+  lwd=3,
+  pch=1:25,
+  col=rainbow(25),
+  bg=terrain.colors(5)  # only for pch 21:25
+)
+
+#
+# Regular 1-D random sequences in R
+#
+# Seed is used to make random number generation less random, i.e.
+# we can repeat the "random number generation".  The theory of
+# seed number is probably mentioned in SSIF but you don't need to
+# take SSIF just like anyone driving a car does not need to know
+# how to design and construct a car.
+set.seed(2022)
+# r = random numbers, 50 = 50 elements, unif = uniform dist.
+x.unif = runif(50)
+# r = random numbers, 50 = 50 elements, norm = normal dist.
+x.norm = rnorm(50)
+y.norm = x.norm + rnorm(50,mean=50,sd=.1)
+# Correlation between two 1-D arrays
+cor(x.norm,y.norm)
+
+##
+## (F) 1-D String Arrays
+##
+
+#
+# Categorical data are usually represented by an array of characters or strings
+#
+gender = c("M", "F", "F", "M", "M", "F", "F")
+# By checking the class, we can see that they are characters (i.e. strings)
+class(gender)
+# We can use table to summarise the `string' categorical data
+table(gender)
+# We can use summary() to summarise the categorical data by converting
+# it from characters to factors
+summary(factor(gender))
+
+#
+# Special Array of Strings
 #
 letters  # Array/Vector of small letter alphabet characters
 LETTERS  # Array/Vector of capital letter alphabet characters
@@ -126,32 +266,58 @@ a = c("ab", "bc", "cd", "de")  # c() constructs an array of something
 a = paste(a, collapse="+")
 
 #
-# 2D Arrays & Operations
+# Comparing two 1-D arrays
 #
-#?matrix     # Question mark is for getting help
-x = matrix(data=c(1,2,3,4),nrow=2,ncol=2)  # Default: Fill by column
-y = matrix(c(3,2,1,5),2,2)
-z = matrix(c(5,4,3,2),2,2,byrow=TRUE)      # C/C++/Python: Fill by row
-x*y    # elementwise multiplication, NOT matrix multiplication
-y*x
-x%*%y  # matrix multiplication
-y%*%x
-z=matrix(1:20,4,5)
-z[2,3]
-z[c(1,3),c(2,4)]
-z[1:3,2:4]      # Same as z[c(1,2,3), c(2,3,4)]
-z[1:2,]
-z[1,]           # Pick the first row
-z[,1:2]         # Pick the first two columns
-z[-c(1,3),]     # Remove the first & third row
-z[-c(1,3),-c(1,3,4)]
-dim(z)          # vs length(z) gives the numbers of elements in the matrix z
-# Comparing two vectors & Contingency table / Confusion matrix
 c(1,2,3) == c(3,2,1)
+any(c(1,2,3) == c(3,2,1))    # Any single true element?
+all(c(1,2,3) == c(3,2,1))    # Are all elements true?
+# Contingency table / Confusion matrix
 table(c(1,0,1,0,1), c("Y","N","N","Y","Y"))
 
-# 2D data is useful in the understanding of 2D graphics
-# Requires you to recall Linear Algebra
+##
+## (H) 2-D Numeric Arrays & Operations
+##     Note: A 2-D Numeric Array is just a matrix
+##     Getting help/documentation: ?matrix
+
+# A is a 4 by 4 matrix (data is filled in columns by default)
+A = matrix(1:16,nrow=4,ncol=4)
+# To fill in by rows, we need to set option
+B = matrix(1:16,4,4,byrow=TRUE)
+
+#
+# Note that A and B are in 'transpose relation', i.e.
+# A = t(B)
+#
+
+#
+# Matrix operations
+#
+2*A     # scalar multiplication
+A+2     # adding every element with a number
+A+B     # matrix addition
+A*B     # elementwise multiplication, NOT matrix multiplication
+A%*%B   # matrix multiplication
+# A*B == B*A BUT A%*%B != B%*%A
+
+#
+# Indexing
+#
+dim(A)             # Get the shape of the matrix A
+A[2,3]             # Get an element from matrix
+A[1,]              # Get first row
+A[,2]              # Get second column
+A[1:2,]            # Get first two rows
+A[,1:2]            # Get first two columns
+A[1:3,2:4]         # Get intersection between rows and columns
+A[c(1,3),c(2,4)]   # Get intersection between rows and columns
+A[-c(1,3),]        # Remove first and third rows
+A[-c(1,3),-c(3,4)] # Remove some rows and some columns
+
+# -------------------------------------------------------------------
+# Optional: 2-D array rotation in 2-D graphics
+# Prerequisites: Linear Algebra
+# -------------------------------------------------------------------
+
 x1 = c(2,1.5)
 x2 = c(2,1)
 y = c(1,1)
@@ -167,40 +333,4 @@ a = 1
 data1 = data1 + c(rep(0,nrow(tmp)), rep(a,nrow(tmp)))
 plot(data1, col=2+y, pch=15+y, cex=2)
 abline(a, tan(tt))
-
-# Random data & Basic Statistics
-z = runif(50)   # r = random numbers, 50 = 50 elements, unif = uniform dist.
-x = rnorm(50)   # r = random numbers, 50 = 50 elements, norm = normal dist.
-y = x+rnorm(50,mean=50,sd=.1)
-cor(x,y)
-set.seed(1303)  # SSIF, seed is the `initial' value for PRNG
-rnorm(50)
-set.seed(3)
-y=rnorm(100)
-mean(y)
-var(y)          # In R, `sample' statistics => Sum((x_i-xbar)^2)/(n-1)
-sqrt(var(y))
-sd(y)
-
-# -------------------------------------------------------------------
-#  Practical: Visualising the Data
-# -------------------------------------------------------------------
-
-x=rnorm(100)  # A vector/array of random numbers ~ N(0,1)
-y=rnorm(100)  # A vector/array of random numbers ~ N(0,1)
-
-plot(x,y)     # Scatter plot !!!  Default colour is black
-plot(x,y,col="green",xlab="this is the x-axis",ylab="this is the y-axis",main="Plot of X vs Y")
-
-plot(
-  1:25,                 # y.  x is not given, so 1:length(y) will be used.
-  cex=3,                # Change symbol size
-  lwd=3,                # Change line width
-  pch=1:25,             # Change symbols
-  col=rainbow(25),
-  bg=terrain.colors(5)  # only for pch 21:25
-)
-
-# For usual function y = f(x), a <= x <= b
-#plot(x, y, 'l')
 
