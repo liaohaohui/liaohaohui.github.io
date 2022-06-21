@@ -5,11 +5,11 @@
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 3.6 & R 4.x & install.packages("ISLR")
+# Software: R 3.6 & R 4.x & install.packages("ISLR2")
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
-library(ISLR)
+library(ISLR2)
 
 #
 # We are not working with caret in Physical Lab because the dependencies
@@ -34,6 +34,7 @@ library(ISLR)
 # -------------------------------------------------------------------
 # Taken from p03_knn1.R (Only works properly for binary classification)
 # -------------------------------------------------------------------
+
 performance = function(xtab, desc=""){
     cat(desc,"\n")
     ACR = sum(diag(xtab))/sum(xtab)
@@ -51,11 +52,9 @@ performance = function(xtab, desc=""){
     cat("           FPR :", FPR,     "\n           FNR :", FNR, "\n")
 }
 
-cat("
 # -------------------------------------------------------------------
 #  Logistic Regression Analysis of the `Smarket' Dataset
 # -------------------------------------------------------------------
-")
 
 ### Explore the dataset
 #View(Smarket)   # From ISLR
@@ -115,27 +114,19 @@ lr.model = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume, Weekly.train,
 print(summary(lr.model))
 # ... do the prediction & check the performance ...
 
-cat("
 # -------------------------------------------------------------------
-#  Analysis of the original `Fraud' Dataset using Logistic Regression glm
+#  Analysis of the `Fraud' Dataset using Logistic Regression glm
 # -------------------------------------------------------------------
-")
+
+###
+###  Manual stratified sampling using Base R & Standardising Fraud data
+###  as in Practical 3
+###
 
 #https://liaohaohui.github.io/UECM3993/fraud.csv
 fraud = read.csv("fraud.csv")
-### change data type from integer to categorical (mentioned in Practical 3)
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud[col_fac] = lapply(fraud[col_fac], factor)
-
-### Stratified sampling --- Three methods from Practical Lab 2
-set.seed(123)
-#library(caTools)
-# ...
-#library(splitstackshape)
-#fraud.train = stratified(fraud,"tag",size=0.7,keep.rownames=TRUE)
-#fraud.test  = fraud[-as.integer(fraud.train$rn),]
-#fraud.train = as.data.frame(fraud.train[,-c("rn")])
-### https://stackoverflow.com/questions/23479512/stratified-random-sampling-from-data-frame
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
 tag0_idx = sample(nrow(fraud_tag0), size=0.7*nrow(fraud_tag0))
@@ -144,10 +135,19 @@ fraud.train = rbind(fraud_tag0[ tag0_idx,],fraud_tag1[ tag1_idx,])
 fraud.test  = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
 summary(fraud.test)
 
-### logistic regression (use back the data without normalization)
+###
+### logistic regression
+### Data preprossing may not be necessary because the coefficients
+### may auto-adjust.  However, we still need to be careful when 
+### optimisation converges badly.
+###
 logreg_model = glm(tag~.-id_person, data=fraud.train, family=binomial)
-summary(logreg_model)
+print(summary(logreg_model))
 
+#
+# There are two ways to perform classification.  Here, we follow 
+# the lecture slides using the conditional probability (type='response')
+#
 fraud.test.prob = predict(logreg_model,
   newdata=subset(fraud.test,select=c(1:8)), type='response')
 #fraud.test.prob = predict(logreg_model, newdata=fraud.test[ ,1:8], type='response')
@@ -155,11 +155,11 @@ yhat = ifelse(fraud.test.prob < 0.5, "pred_0", "pred_1")
 cfmat = table(yhat, fraud.test$tag)
 performance(cfmat, "Performance of the Logistic Regression Model")
 
-cat("
 # -------------------------------------------------------------------
 #  Analysis of the standardised `Fraud' Dataset using Logistic Regression
+#  We now working with `scaled' data just to compare it to kNN models.
 # -------------------------------------------------------------------
-")
+
 summary(fraud)
 
 normalise.vec <- function(column,ref.col) {
@@ -180,29 +180,14 @@ fraud.tran.std$base_value = scale(fraud.tran.std$base_value, mu_bsv, si_bsv)[,1]
 fraud.test.std$base_value = scale(fraud.test.std$base_value, mu_bsv, si_bsv)[,1]
 
 model.for.scaleddata = glm(tag~., data=fraud.tran.std[,2:9], family=binomial)
-summary(model.for.scaleddata)
+print(summary(model.for.scaleddata))
 
 #
 # Logit can be used instead of probability in prediction
 #
 fraud.test.logit = predict(model.for.scaleddata, fraud.test.std[,2:8])
-yhat = ifelse(fraud.test.logit > 0, "pred_1", "pred_0")
+yhat = ifelse(fraud.test.logit < 0, "pred_0", "pred_1")
 cfmat = table(yhat, fraud.test$tag)
 performance(cfmat, "Performance of the Logistic Regression Model")
-
-cat("
-# -------------------------------------------------------------------
-# Deployment: detecting fraud with new data using `best' LR model
-# There is nothing to compare, so no `performance'
-# -------------------------------------------------------------------
-")
-#https://liaohaohui.github.io/UECM3993/fraud_new.csv
-fraud_new = read.csv("fraud_new.csv")
-col_fac_new <- c("gender", "status", "employment", "account_link", "supplement")
-fraud_new[col_fac_new] <- lapply(fraud_new[col_fac_new], factor)
-fraud_new.prob <- predict(logreg_model,fraud_new,type = "response")
-fraud_new.pred <- ifelse(fraud_new.prob < 0.5, "pred_0", "pred_1")
-fraud_new.result <- data.frame(fraud_new,round(fraud_new.prob,4),fraud_new.pred)
-print(summary(fraud_new.result))
 
 

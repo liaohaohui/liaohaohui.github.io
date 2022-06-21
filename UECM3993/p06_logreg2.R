@@ -30,85 +30,137 @@ performance = function(xtab, desc=""){
 }
 
 # -------------------------------------------------------------------
-# Loading and transforming Fraud data
+#  Analysis of the `Fraud' Dataset using Multinomial LR nnet::multinom
 # -------------------------------------------------------------------
+library(nnet)   # Already in Base R
+
+###
+###  Manual stratified sampling using Base R & Standardising Fraud data
+###  as in Practical 3
+###
 
 #https://liaohaohui.github.io/UECM3993/fraud.csv
 fraud = read.csv("fraud.csv")
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
-### change data type from numeric to categorical
 fraud[col_fac] = lapply(fraud[col_fac], factor)
+rm(col_fac)
 set.seed(123)
-# Option 2 Stratified sampling
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
 tag0_idx = sample(nrow(fraud_tag0), size=round(0.7*nrow(fraud_tag0)))
 tag1_idx = sample(nrow(fraud_tag1), size=round(0.7*nrow(fraud_tag1)))
 fraud.train = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
 fraud.test  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
-# Data standardisation with respect to the TRAINING DATA
-normalise.vec <- function(column,ref.col) {
-    return ((column - mean(ref.col)) / sd(ref.col))
-}
-fraud.train.knn     = fraud.train
-fraud.test.knn      = fraud.test
-fraud.train.knn$age = normalise.vec(fraud.train.knn$age,fraud.train$age)
-fraud.test.knn$age  = normalise.vec(fraud.test.knn$age, fraud.train$age)
-fraud.train.knn$base_value = normalise.vec(
-    fraud.train.knn$base_value,fraud.train$base_value)
-fraud.test.knn$base_value  = normalise.vec(
-    fraud.test.knn$base_value, fraud.train$base_value)
+rm(fraud_tag0)
+rm(fraud_tag1)
+rm(tag0_idx)
+rm(tag1_idx)
 
-#
-# May be in future consider comparing to feature-scaled data
-#
-
-#cat("
-# -------------------------------------------------------------------
-#  Analysis of the `Fraud' Dataset using Multinomial LR nnet::multinom
-# -------------------------------------------------------------------
-#")
-
-library(nnet)   # Already inside Base R
-# Multinomial Logistic Regression can be regarded as ANN with single layer
+###
+### Multinomial Logistic Regression can be regarded as ANN with single layer,
+### i.e. no hidden layer.
+###
 mlr_model = multinom(tag ~ .-id_person, data=fraud.train)
-summary(mlr_model)
-# Z-statistic & p-values are not provided.  From down below
-#z = summary(mlr_model)$coefficients/summary(mlr_model)$standard.errors
-#p = (1 - pnorm(abs(z), 0, 1)) * 2
+###
+### Z-statistic & p-values are not provided.  We can obtain them
+### using concepts from statistics
+###
+model.stats = summary(mlr_model)
+# coef(mlr_model), mlr_model$wts, mlr_model$coefnames
+betas = model.stats$coefficients
+SE    = model.stats$standard.errors
+Z     = betas/SE
+# 2-tailed Z test
+p     = (1 - pnorm(abs(Z), 0, 1)) * 2
+print(p)
 
-yhat = predict(mlr_model, newdata=subset(fraud.test,select=c(1:8)),
-  type='class')
+# Similar to glm with family=binomial (logistic regression)
+yhat = predict(mlr_model, newdata=subset(fraud.test,select=1:8), type='class')
 performance(table(yhat, fraud.test$tag), "Multinomial LR with K=2")
 # K = number of classes in the output
 
 #
+# Comparing the multinom results to GLM model results (from Practical 5)
+#
+lr_model = glm(tag ~ .-id_person, data=fraud.train, family=binomial(link="logit"))
+summary(lr_model)
+probs = predict(lr_model, newdata=fraud.test[,1:8], type='response')
+yhat = ifelse(probs<0.5, 0, 1)
+performance(table(yhat, fraud.test$tag), "LR (GLM with binomial) with K=2")
+
+# -------------------------------------------------------------------
+#  Analysis of the `Iris flower' Dataset using Multinomial LR nnet::multinom
+#  K = 3 (classes)
+# -------------------------------------------------------------------
+
+# Since the ratio is 50:50:50, we can do linear sampling
+set.seed(321)
+idx = sample(nrow(iris), 0.7*nrow(iris))
+iris.train = iris[ idx, ]
+iris.test  = iris[-idx, ]
+# glm won't work!  The algorithm does not converge!!!
+mlr_model2 = multinom(Species ~ ., iris.train)
+summary(mlr_model2)
+#probs = predict(mlr_model2, newdata=iris.test, type='probs')
+yhat2 = predict(mlr_model2, newdata=iris.test, type='class')
+# performance() only works for binary classification
+confusion.matrix = table(yhat2, iris.test$Species)
+print(confusion.matrix)
+cat("Accuracy = ", sum(diag(confusion.matrix))/nrow(iris.test), "\n")
+
+#
+# ANN = Artificial Neural Network
+#
 # Include an example of ANN in future?
 # Problem: ANN takes super long time to calculate for any useful applications
+# Data Preprocessing like standardisation is required to make ANN converge
+# better.
 #
+
+# -------------------------------------------------------------------
+#  Analysis of the `Fraud' Dataset using ElasticNet
+#
+#  ElasticNet = GLM + Constraints on the coefficients b0, b1, ..., bp
+#  Combining `feature selection' & `parameter estimation'
+#  Can be useful for `feature selection' when alpha=1.
+#  Supported by GLMNET package
+#  Standardisation is necessary when using GLMNET to make sure
+#  the constraint part has reasonable scales.
+# -------------------------------------------------------------------
+library(glmnet)   # install.packages("glmnet")
 
 # -------------------------------------------------------------------
 # https://stats.stackexchange.com/questions/72251/an-example-lasso-regression-using-glmnet-for-binary-outcome
 # -------------------------------------------------------------------
-library(glmnet)   # install.packages("glmnet")
+
 #
-# GLMNET -> blending `feature selection' & `parameter estimation'
 # Problem: Categorical inputs are regarded as integers
 #
 # alpha = 1 (default) => lasso penalty, ||beta||_1  (feature selection)
 # alpha = 0           => ridge penalty, ||beta||_2^2 (smoothing ???)
 # lambda -> 0 (close to original GLM)
+# Problem with directly using fraud.train with glmnet => factors are convert to integers
 #glmmod = glmnet(x=as.matrix(fraud.train[,2:8]), y=fraud.train[,9], alpha=0, family="binomial", standardize=FALSE)
+#
+# model.matrix : one-hot encoding
+# Just being lazy: no standardization.  Need to include it in future.
+#
+# remove the first column with `intersection' data
 X = model.matrix(tag ~ .-id_person, data=fraud.train)[,-1]
-glmmod = glmnet(x=X, y=fraud.train[,9], alpha=1, family="binomial", lambda=1e-5)
+glmmod = glmnet(x=X, y=fraud.train[,9], alpha=1, family=binomial, lambda=1e-5)
 print(coef(glmmod))   # Same as glmmod$beta
 # Close but not exactly the same as Logistic Regression due to numerical errors
 
+#
+# When lambda is not set, it is a sequence
+#
 glmmod = glmnet(x=X, y=fraud.train[,9], alpha=1, family="binomial")
-plot(glmmod)
+plot(glmmod, lwd=5)
+
 
 # -------------------------------------------------------------------
 #  Exercise: Analysis of the `Auto' Dataset
+#  Converting from regression problem to classification problem
 # -------------------------------------------------------------------
 
 library("ISLR")
@@ -121,33 +173,4 @@ cor(Auto[, -9])
 pairs(Auto)
 # ... build the logistic models, multinomial LR, ...
 
-
-### https://stats.idre.ucla.edu/stata/dae/multinomiallogistic-regression/
-### No longer available: https://stats.idre.ucla.edu/r/dae/multinomial-logistic-regression/
-cat("
-# -------------------------------------------------------------------
-#  Analysis of the `hsbdemo' Dataset using Multinomial LR nnet::multinom
-# -------------------------------------------------------------------
-")
-# d.f = read.csv("https://stats.idre.ucla.edu/stat/data/hsbdemo.csv", stringsAsFactors=T)
-#https://liaohaohui.github.io/UECM3993/hsbdemo.csv
-d.f = read.csv("hsbdemo.csv", stringsAsFactors=TRUE)
-# Dummy variables `general', `vocation(al)' against `academic'
-#d.f$prog2 <- relevel(d.f$prog, ref="academic")
-#model1 <- multinom(prog2 ~ ses + write, data=d.f)
-#
-# Target `prog' has 3 levels, so glm(..., family=binomial) is not working
-# correctly.  The prediction of glm is giving us only 0 (academic) &
-# 1 (general).
-#
-# prog = program type
-# ses = social economic status
-# write = writing score
-#
-model1 = multinom(prog ~ ses + write, data=d.f)
-summary(model1)
-z <- summary(model1)$coefficients/summary(model1)$standard.errors
-# 2-tailed z test
-p <- (1 - pnorm(abs(z), 0, 1)) * 2
-print(p)
 

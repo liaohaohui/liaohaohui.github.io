@@ -5,12 +5,12 @@
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 3.6 & R 4.x & install.packages("ISLR")
+# Software: R 3.6 & R 4.x
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
-#install.packages("ISLR")
-library(ISLR)   # provides the Smarket (US Stock Market 2001-2005 data)
+#install.packages("ISLR2")
+library(ISLR2)   # provides the Smarket (US Stock Market 2001-2005 data)
 
 # -------------------------------------------------------------------
 # Split data into train set and validation set
@@ -60,23 +60,12 @@ fraud[col_fac] = lapply(fraud[col_fac], factor)
 # "After type conversion .....
 sapply(fraud,class)
 
-cat("
 # -------------------------------------------------------------------
-#  Stratified sampling & Standardisation
+#  Stratified sampling for Binary Classification Problem
 # -------------------------------------------------------------------
-")
-#cat("Option 1: Using splitstackshape ...\n")
-#library(splitstackshape)  # depends on data.table
-#set.seed(123)
-#fraud.train = stratified(fraud,"tag",size=0.7,keep.rownames=TRUE)
-#fraud.test  = fraud[-as.integer(fraud.train$rn),]
-#summary(fraud.test)
-#fraud.train = as.data.frame(fraud.train[,-c("rn")])
-## If I don't convert fraud.train to data.frame, I will get error
-## with kNN because splitstackshape convert data.frame to data.table
 
 set.seed(123)
-cat("Option 2: Using R only ...\n")
+cat("Option 1: Manual stratified sampling using Base R ...\n")
 ### https://stackoverflow.com/questions/23479512/stratified-random-sampling-from-data-frame
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
@@ -86,7 +75,17 @@ fraud.train = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
 fraud.test  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
 summary(fraud.test)
 
-# Option 3: caTools (use to be called by dplyr)
+#cat("Option 2: Using splitstackshape ...\n")
+#library(splitstackshape)  # depends on data.table
+#set.seed(123)
+#fraud.train = stratified(fraud,"tag",size=0.7,keep.rownames=TRUE)
+#fraud.test  = fraud[-as.integer(fraud.train$rn),]
+#summary(fraud.test)
+#fraud.train = as.data.frame(fraud.train[,-c("rn")])
+## If I don't convert fraud.train to data.frame, I will get error
+## with kNN because splitstackshape convert data.frame to data.table
+
+#cat("Option 3: caTools (use to be called by dplyr) ...\n")
 #library(caTools)
 #split = sample.split(fraud$tag, SplitRatio=0.7)
 #fraud.train = fraud[ split,]
@@ -94,9 +93,9 @@ summary(fraud.test)
 
 # -------------------------------------------------------------------
 #  Feature Scaling with Standardisation
+#  => Data standardisation with respect to the TRAINING DATA
 # -------------------------------------------------------------------
 
-# Data standardisation with respect to the TRAINING DATA
 cat("\nData Preparation/Preprocessing: Data standardisation ...\n")
 normalise.vec <- function(column,ref.col) {
     return ((column - mean(ref.col)) / sd(ref.col))
@@ -111,7 +110,7 @@ fraud.test.knn$base_value  = normalise.vec(
     fraud.test.knn$base_value, fraud.train$base_value)
 
 # -------------------------------------------------------------------
-# Modelling & Evaluation
+#  Modelling with kNN & Evaluation for Binary Classification
 # -------------------------------------------------------------------
 cat("\nTraining and validation with kNN ...\n\n")
 yhat = knn(fraud.train.knn[,2:8], fraud.test.knn[,2:8], fraud.train.knn[,9], k=3)
@@ -119,7 +118,7 @@ cftable.std = table(yhat, fraud.test.knn$tag)
 
 # You can replace the following with caret::confusionMatrix
 performance = function(xtab, description=""){
-    cat(description,"\n")
+    cat("\n\n",description,"\n",sep="")
     ACR = sum(diag(xtab))/sum(xtab)
     TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
     PPV = xtab[1,1]/sum(xtab[1,]); NPV = xtab[2,2]/sum(xtab[2,])
@@ -137,12 +136,15 @@ performance = function(xtab, description=""){
 
 performance(cftable.std, "Confusion matrix and performance with kNN")
 
-#
-# Refer to "More Performance Evaluation" in Lecture Slide
-#
+# -------------------------------------------------------------------
+#  On the "More Performance Evaluation" in Lecture Slide
+#  => validation set approach / holdout method is sensitive
+#     to the stratified sampling / linear sampling
+# -------------------------------------------------------------------
+
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
-# Take only the odd numbers
+# (1) Take only the odd numbers
 tag0_idx = seq(1,nrow(fraud_tag0),2)
 tag1_idx = seq(1,nrow(fraud_tag1),2)
 fraud.train     = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
@@ -159,7 +161,7 @@ yhat = knn(fraud.train.knn[,2:8], fraud.test.knn[,2:8], fraud.train.knn[,9], k=3
 cftable.std = table(yhat, fraud.test.knn$tag)
 performance(cftable.std, "Odd index for training, even index for testing")
 
-# Now, take only the even numbers
+# (2) Now, take only the even numbers
 tag0_idx = seq(2,nrow(fraud_tag0),2)
 tag1_idx = seq(2,nrow(fraud_tag1),2)
 fraud.train     = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
@@ -174,5 +176,5 @@ fraud.test.knn$base_value  = normalise.vec(
     fraud.test.knn$base_value, fraud.train$base_value)
 yhat = knn(fraud.train.knn[,2:8], fraud.test.knn[,2:8], fraud.train.knn[,9], k=3)
 cftable.std = table(yhat, fraud.test.knn$tag)
-performance(cftable.std, "Odd index for training, even index for testing")
+performance(cftable.std, "Even index for training, odd index for testing")
 

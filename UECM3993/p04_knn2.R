@@ -11,9 +11,10 @@
 
 # -------------------------------------------------------------------
 # Taken from p03_knn1.R (Only works properly for binary classification)
+# A simple implementation of caret::confusionMatrix
 # -------------------------------------------------------------------
-performance = function(xtab, desc=""){
-    cat(desc,"\n")
+performance = function(xtab, description=""){
+    cat("\n\n",description,"\n",sep="")
     ACR = sum(diag(xtab))/sum(xtab)
     TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
     PPV = xtab[1,1]/sum(xtab[1,]); NPV = xtab[2,2]/sum(xtab[2,])
@@ -30,7 +31,8 @@ performance = function(xtab, desc=""){
 }
 
 # -------------------------------------------------------------------
-# Loading and transforming Fraud data
+#  Manual stratified sampling using Base R & Standardising Fraud data
+#  as in Practical 3
 # -------------------------------------------------------------------
 
 #https://liaohaohui.github.io/UECM3993/fraud.csv
@@ -39,7 +41,7 @@ col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag
 ### change data type from numeric to categorical
 fraud[col_fac] = lapply(fraud[col_fac], factor)
 set.seed(123)
-# Option 2 Stratified sampling
+# Option 1 stratified sampling
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
 tag0_idx = sample(nrow(fraud_tag0), size=round(0.7*nrow(fraud_tag0)))
@@ -61,18 +63,33 @@ fraud.test.knn$base_value  = normalise.vec(
 
 
 # -------------------------------------------------------------------
-# Weighted kNN
+#  Weighted kNN
 # -------------------------------------------------------------------
 
 library(kknn) # tons of dependencies: igraph, Matrix, graphics
 cat("\nTraining and validation with wkNN ...\n\n")
-fraud.kknn = kknn(tag~.-id_person, fraud.train.knn, fraud.test.knn, k=3)  # kernel='optimal', not the same as (standard unweighted) kNN
-# To use (standard unweighted) kNN: kernel='rectangular'
+#
+# kernel='optimal', not the same as (standard unweighted) kNN
+#
+fraud.kknn = kknn(tag~.-id_person, fraud.train.knn, fraud.test.knn, k=3)
 #summary(fraud.kknn)
 yhat.kknn = fitted(fraud.kknn)
-performance(table(yhat.kknn, fraud.test.knn$tag), "Confusion matrix and performance with wkNN")
+performance(table(yhat.kknn, fraud.test.knn$tag), "Confusion matrix and performance with wkNN(k=3,kernel=optimal)")
 
-# Trying to compare with starndard kNN:
+#
+# Trying out other kernels
+#
+fraud.kknn = kknn(tag~.-id_person, fraud.train.knn, fraud.test.knn, k=3, kernel='inv')
+yhat.kknn = fitted(fraud.kknn)
+performance(table(yhat.kknn, fraud.test.knn$tag), "Confusion matrix and performance with wkNN(k=3,kernel=inv)")
+
+fraud.kknn = kknn(tag~.-id_person, fraud.train.knn, fraud.test.knn, k=3, kernel='triangular')
+yhat.kknn = fitted(fraud.kknn)
+performance(table(yhat.kknn, fraud.test.knn$tag), "Confusion matrix and performance with wkNN(k=3,kernel=triangular)")
+
+#
+# Trying to compare with starndard kNN (kernel="rectangular"):
+#
 fraud.kknn.rect = kknn(tag~.-id_person, fraud.train.knn, fraud.test.knn, k=3, kernel='rectangular')
 yhat.rect = fitted(fraud.kknn.rect)
 performance(table(yhat.rect, fraud.test.knn$tag), "wkNN.Rectangular")
@@ -91,11 +108,11 @@ performance(table(yhat.rect, fraud.test.knn$tag), "wkNN.Rectangular")
 # Leason 3: Stratified sampling + Model Training + Performance Evaluation
 #
 
-cat("
 # -------------------------------------------------------------------
-#  Analysis of the `Boston' Dataset with kNN Regressor
+#  Applying kNN Regressor to Regression Problem
+#  Case Study: `Boston' Dataset
 # -------------------------------------------------------------------
-")
+
 ### https://daviddalpiaz.github.io/r4sl/knn-reg.html
 library(FNN)   # Fast Nearest Neighbor Search Algorithms and Applications
 library(MASS)  # Boston data
@@ -136,11 +153,12 @@ pm.250 = knn.reg(X, test=lstat_grid, y=y, k=250)
 plot(cbind(X,y))
 lines(lstat_grid[,1],pm.250$pred)
 
-#
-# Performance Measurement for Regression Problems: RSS or RMSE
-# RSS = SSE = Sum of Square Error
-# RMSE = Root Mean Sum of Square Error
-#
+# -------------------------------------------------------------------
+# (1) Performance Measurement for Regression Problems using
+#     RMSE (Root Mean Sum of Square Error)
+# (2) Hyperparameter analysis of kNN's k using the Holdout Method
+# -------------------------------------------------------------------
+
 rmse = function(actual, predicted) {
   sqrt(mean((actual - predicted)^2))
 }
@@ -151,6 +169,7 @@ make_knn_pred = function(k, training, predicting) {
   act  = predicting$medv
   rmse(predicted = pred, actual = act)
 }
+
 k_list = c(1, 5, 10, 25, 50, 250)
 #k_list = seq(1,200,20)
 # get requested train RMSEs
