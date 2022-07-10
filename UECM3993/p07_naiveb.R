@@ -6,7 +6,7 @@
 #  2. http://www.learnbymarketing.com/tutorials/naive-bayes-in-r/
 # Data   : fraud.csv, fraud_new.csv
 # License: BSD-3
-# Software: R 3.6 & R 4.0
+# Software: R 4.x & R 3.6
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
@@ -42,6 +42,7 @@ fraud = read.csv("fraud.csv")  # categorical data are encoded as integers
 # change data type from integer to categorical (mentioned in Practical 3)
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud[col_fac] = lapply(fraud[col_fac], factor)
+fraud$id_person = NULL
 
 ### Stratified sampling (mentioned in Practical 2)
 set.seed(123)
@@ -50,35 +51,33 @@ set.seed(123)
 # Use the following if the company only has R and no other
 # libraries available.
 #
-#fraud_tag0 = fraud[fraud$tag=="0", ]
-#fraud_tag1 = fraud[fraud$tag=="1", ]
-#tag0_idx = sample(1:nrow(fraud_tag0), size=0.7*nrow(fraud_tag0))
-#tag1_idx = sample(1:nrow(fraud_tag1), size=0.7*nrow(fraud_tag1))
-#fraud.train = rbind(fraud_tag0[tag0_idx,],fraud_tag1[tag1_idx,])
-#fraud.test = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
+fraud_tag0 = fraud[fraud$tag=="0", ]
+fraud_tag1 = fraud[fraud$tag=="1", ]
+tag0_idx = sample(1:nrow(fraud_tag0), size=0.7*nrow(fraud_tag0))
+tag1_idx = sample(1:nrow(fraud_tag1), size=0.7*nrow(fraud_tag1))
+fraud.train = rbind(fraud_tag0[tag0_idx,],fraud_tag1[tag1_idx,])
+fraud.test = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
 
 #
 # If you can install extra libraries from CRAN (Internet), then
 # you should use `caTools' or splitstackshape + dplyr
 #
-library(caTools)
-train.row.index = sample.split(fraud, SplitRatio=0.7)
-fraud.train = fraud[train.row.index, ]
-fraud.test = fraud[-train.row.index, ]
+#library(caTools)
+#train.row.index = sample.split(fraud, SplitRatio=0.7)
+#fraud.train = fraud[train.row.index, ]
+#fraud.test = fraud[-train.row.index, ]
 
 #library(splitstackshape)
 #fraud.train <- stratified(fraud,"tag",size=0.7)
 #library(dplyr)  # It has a lot of dependencies
 #fraud.test <- anti_join(fraud, fraud.train, by="id_person")
 
-fraud.train$id_person = NULL
-fraud.test$id_person = NULL
-
 #
 # Choices for Naive Bayes:
 # (1) naivebayes library (used by the main reference book)
 # (2) e1071 library
-# (3) klaR library?
+# (3) klaR library
+# (4) ...
 #
 library(naivebayes)
 cat("

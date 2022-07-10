@@ -8,7 +8,7 @@
 #  4. https://cran.r-project.org/web/packages/C50/vignettes/C5.0.html
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 3.6 & R 4.0
+# Software: R 4.x & R 3.6
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
@@ -230,10 +230,11 @@ cat("Accuracy for test=", sum(diag(cf.mat.test))/nrow(iris.test), "\n")
 
 #
 # C5.0 is the extension of C4.5 which extends ID3 (Quilan)
+# C5.0 is patterned by https://www.rulequest.com/see5-info.html
 #
 cat("
 # -------------------------------------------------------------------
-#  Analysis of the `credit_data' with C5.0 (patterned by https://www.rulequest.com/see5-info.html)
+#  Analysis of the `credit_data' with C5.0
 # -------------------------------------------------------------------
 ")
 #install.packages("modeldata")

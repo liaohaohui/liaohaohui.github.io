@@ -6,7 +6,7 @@
 #  2. http://euler.stat.yale.edu/~tba3/stat665/lectures/lec11/script11.html
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 3.6 & R 4.x & install.packages(c("ISLR", "FNN"))
+# Software: R 4.x & R 3.6 & install.packages(c("ISLR2", "FNN"))
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ performance = function(xtab, desc=""){
 # -------------------------------------------------------------------
 #  Analysis of the `Smarket' Dataset with LDA & QDA Classifier
 # -------------------------------------------------------------------
-library(ISLR)
+library(ISLR2)
 
 # Split data into train set and validation set
 # train set = data from Year 2001-2004
@@ -55,6 +55,7 @@ Direction.2005 = Smarket$Direction[!train]
 #
 # EDA (histogram) tells us that the numeric data seems normal
 # LDA (& QDA) may not be a bad choice.
+# Note that LDA works with non-normal distributed data as well!
 #
 par(mfrow=c(2,4))
 hist(Smarket$Lag1)
@@ -137,7 +138,7 @@ cfmat = table(qda.pred$class, Direction.0910)
 performance(cfmat, "Weekly data analysis using QDA")
 
 #
-# Q2(c): We can compare to kNN, LR or decision tree.
+# Q2(c): We can compare LDA to various models such as kNN, LR, etc.
 #
 library(class)
 # Lag2 = column 3; Direction = column 9
@@ -163,10 +164,8 @@ plot(kidx, accu, type="b", xlab="kNN's k", ylab="Accuracy",
 # the data cancelling the "noise" in the data.
 
 # -------------------------------------------------------------------
-#  Analysis of the `Auto' Dataset with LDA Classifier
+#  Analysis of the `Auto' Dataset from ISLR2 with LDA Classifier
 # -------------------------------------------------------------------
-# Q3(a)
-#library(ISLR)
 # New Target for classification: Petrol efficiency
 Auto$mpg01 = factor(ifelse(Auto$mpg > median(Auto$mpg), 1, 0))
 
