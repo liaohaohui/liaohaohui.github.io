@@ -1,18 +1,23 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Naive Bayes Predictive Models in R
 # Author : Liew How Hui (2022)
-# References: 
-#  1. http://www.dbenson.co.uk/Rparts/subpages/spamR/
-#  2. http://www.learnbymarketing.com/tutorials/naive-bayes-in-r/
-# Data   : fraud.csv, fraud_new.csv
+# Reference & Data: 
+#  1. https://www.statlearning.com/resources-second-edition
+#  2. http://www.dbenson.co.uk/Rparts/subpages/spamR/
+#  3. http://www.learnbymarketing.com/tutorials/naive-bayes-in-r/
 # License: BSD-3
 # Software: R 4.x & R 3.6
 # Duration: 1 hour
+# Remark: Make sure you do the programming instead of running 
+#         the R script only.  Programming questions do come out in
+#         the final exam.
 # -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
-# Taken from p03_knn1.R (Only works properly for binary classification)
+# Performance Measurements for Binary Classification Problem
+# You can replace the following with caret::confusionMatrix
 # -------------------------------------------------------------------
+
 performance = function(xtab, desc=""){
     cat(desc,"\n")
     ACR = sum(diag(xtab))/sum(xtab)
@@ -31,26 +36,22 @@ performance = function(xtab, desc=""){
 }
 
 # -------------------------------------------------------------------
-#    Dataset 1: Building Naive Bayes Model for Fraud Data
+#  Analysis of the `Fraud' Dataset with Naive Bayes Model
 # -------------------------------------------------------------------
 
-# If there is a column with categorical data, using stringsAsFactors=TRUE
-# is more convenient.
-#https://liaohaohui.github.io/UECM3993/fraud.csv
+#https://liaohaohui.github.io/MEME19903/fraud.csv
 fraud = read.csv("fraud.csv")  # categorical data are encoded as integers
-
 # change data type from integer to categorical (mentioned in Practical 3)
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud[col_fac] = lapply(fraud[col_fac], factor)
-fraud$id_person = NULL
+fraud$id_person = NULL   # Removing the id_person column
 
-### Stratified sampling (mentioned in Practical 2)
+# -------------------------------------------------------------------
+#  Stratified Sampling Holdout Method
+# -------------------------------------------------------------------
+
+### Option 1: Manual Stratified Sampling
 set.seed(123)
-
-#
-# Use the following if the company only has R and no other
-# libraries available.
-#
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
 tag0_idx = sample(1:nrow(fraud_tag0), size=0.7*nrow(fraud_tag0))
@@ -59,30 +60,17 @@ fraud.train = rbind(fraud_tag0[tag0_idx,],fraud_tag1[tag1_idx,])
 fraud.test = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
 
 #
-# If you can install extra libraries from CRAN (Internet), then
-# you should use `caTools' or splitstackshape + dplyr
-#
-#library(caTools)
-#train.row.index = sample.split(fraud, SplitRatio=0.7)
-#fraud.train = fraud[train.row.index, ]
-#fraud.test = fraud[-train.row.index, ]
-
-#library(splitstackshape)
-#fraud.train <- stratified(fraud,"tag",size=0.7)
-#library(dplyr)  # It has a lot of dependencies
-#fraud.test <- anti_join(fraud, fraud.train, by="id_person")
-
-#
 # Choices for Naive Bayes:
 # (1) naivebayes library (used by the main reference book)
 # (2) e1071 library
-# (3) klaR library
-# (4) ...
+# (3) klaR library?
+# (4) etc.
 #
+
 library(naivebayes)
-cat("
-Calculations without Laplace Smoothing
-")
+#
+# Naive Bayes without Laplace Smoothing
+#
 model.nb = naive_bayes(tag~., data = fraud.train)
 #library(e1071)  # naiveBayes
 #model.e1071 = naiveBayes(tag~., data=fraud.train, laplace=0)
@@ -91,27 +79,14 @@ pred.nb = predict(model.nb, newdata = fraud.test[,1:p])  # columns 1:p for input
 cfmat = table(pred.nb, actual.fraud=fraud.test$tag)
 performance(cfmat, "Performance of Naive Bayes without Laplace Smoothing")
 
-cat("
-Calculations with Laplace Smoothing
-")
+#
+# Naive Bayes WITH Laplace Smoothing
+#
 model.nb.lp = naive_bayes(tag~., data=fraud.train, laplace=1)
 pred.nb.lp = predict(model.nb.lp, fraud.test[,1:p])
 cfmat = table(pred.nb.lp, actual.fraud=fraud.test$tag)
 performance(cfmat, "Performance of Naive Bayes with Laplace Smoothing")
 
-#
-# CRISP-DM's Deployment:
-# Score new fraud data using naive bayes model
-#
-#https://liaohaohui.github.io/UECM3993/fraud_new.csv
-fraud_new = read.csv("fraud_new.csv")
-col_fac2 = c("gender", "status", "employment", "account_link", "supplement")
-# there is no `tag' column in fraud_new
-fraud_new[col_fac2] <- lapply(fraud_new[col_fac2], factor)
-fraud_new$pred <- predict(model.nb,fraud_new)
-print(head(fraud_new))
-# We can't calculate the confusion matrix because the fraud_new.csv
-# does not contain actual response `tag'
 
 # -------------------------------------------------------------------
 #    Dataset 2: Spam Filtering with Naive Bayes Model
@@ -221,6 +196,7 @@ yhat = predict(classifier, test)
 
 cfmat = table(yhat, Y.test)
 performance(cfmat, "e1071 Naive Bayes with Laplace Smoothing")
+
 
 
 # -------------------------------------------------------------------
