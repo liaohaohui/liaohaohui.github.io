@@ -41,7 +41,7 @@ cat("
 library(tree)   # Requires R >= 3.6 (no dependencies)
 
 ### Initial Exploration of the Dataset ``Carseats''
-Orig.Carseats = ISLR::Carseats
+Orig.Carseats = ISLR2::Carseats
 sapply(Orig.Carseats,class)
  
 ### Sales is the ``response'' variable with respect to the rest
@@ -205,8 +205,8 @@ iris.test  = iris[-idx,]
 # -------------------------------------------------------------------
 #install.packages("party")   # if you haven't installed
 suppressMessages(library(party))  # Only supports numerical input
-# Depends on â€˜modeltoolsâ€™, â€˜zooâ€™, â€˜sandwichâ€™, â€˜strucchangeâ€™, 
-# matrixStats, TH.data, multicomp, â€˜coinâ€™
+# Depends on a€?modeltoolsa€?, a€?zooa€?, a€?sandwicha€?, a€?strucchangea€?, 
+# matrixStats, TH.data, multicomp, a€?coina€?
 iris.ctree = ctree(Species ~ ., iris.train)   # Conditional Inference Tree
 plot(iris.ctree)
 #library(partykit)   # converts categorical data to numeric data
@@ -237,10 +237,11 @@ cat("
 #  Analysis of the `credit_data' with C5.0
 # -------------------------------------------------------------------
 ")
-#install.packages("modeldata")
-library(modeldata)
+##install.packages("modeldata")
+#library(modeldata)   # modeldata requires dplyr, no go
 # https://github.com/gastonstat/CreditScoring
-data(credit_data)
+#data(credit_data)
+credit_data = read.csv("credit_data.csv", stringsAsFactors=T)
 #str(credit_data)
 
 #
