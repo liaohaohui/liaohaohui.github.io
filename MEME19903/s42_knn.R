@@ -79,7 +79,7 @@ accuracy = mean(knn.pred==test.y)
 # -------------------------------------------------------------------
 #  Analysis of the `Fraud' Dataset with kNN Classifier
 # -------------------------------------------------------------------
-#https://liaohaohui.github.io/UECM3993/fraud.csv
+#https://liaohaohui.github.io/MEME19903/fraud.csv
 fraud = read.csv("fraud.csv")
 sapply(fraud,class)
 #colnames(fraud)
