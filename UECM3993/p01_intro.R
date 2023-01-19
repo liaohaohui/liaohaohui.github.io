@@ -1,9 +1,9 @@
 # -------------------------------------------------------------------
 # Purpose: Practical: Basic R Commands for Data Processing (Part 1)
-# Author : Liew How Hui (2022)
+# Author : Liew How Hui (2023)
 # Reference: http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%202%20Lab.txt
 # License: BSD-3
-# Software: R 3.6 & R 4.x
+# Software: R 4.x or R 3.6
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
@@ -125,7 +125,7 @@ g = 5 ^ 6     # Also 5 to the power of 6
 ##
 ## Non-basic data structure => Dates (internally integer)
 ##
-mydates = as.Date("2022-06-22")
+mydates = as.Date("2023-01-31")
 today = Sys.Date()
 
 ##
@@ -153,13 +153,20 @@ y2 = x^2
 y3 = sqrt(x)
 y4 = 2*sin(x) + 3*cos(x)
 #
-# Statistical functions
+# Statistical functions for Descriptive Statistics (simple EDA)
 #
 length(x) # n
+min(x)
+max(x)
+range(x)  # finds min and max
+diff(range(x))   # max(x) - min(x)
+quantile(x)      # 4 quantiles
+median(x)
 sum(x)    # x[1] + ... + x[n]
 mean(x)   # x.bar = (x[1] + ... + x[n])/n
 var(x)    # sample variance: sum((x-x.bar))^2)/(n-1)
 sd(x) == sqrt(sum((x-mean(x))^2)/(length(x)-1))     # sample standard deviation
+summary(x)
 
 #
 # Special Statistical Feature in R
@@ -227,7 +234,7 @@ plot(
 # seed number is probably mentioned in SSIF but you don't need to
 # take SSIF just like anyone driving a car does not need to know
 # how to design and construct a car.
-set.seed(2022)
+set.seed(2023)
 # r = random numbers, 50 = 50 elements, unif = uniform dist.
 x.unif = runif(50)
 # r = random numbers, 50 = 50 elements, norm = normal dist.
@@ -314,23 +321,61 @@ A[-c(1,3),]        # Remove first and third rows
 A[-c(1,3),-c(3,4)] # Remove some rows and some columns
 
 # -------------------------------------------------------------------
-# Optional: 2-D array rotation in 2-D graphics
-# Prerequisites: Linear Algebra
+# More Statistical Functions
+#
+# Random Variable        samples   probability  quantile  density   
+# ---------------        -------   -----------  --------  -------   
+# Beta                   rbeta     pbeta        qbeta     dbeta     
+# Binomial               rbinom    pbinom       qbinom    dbinom    
+# Cauchy                 rcauchy   pcauchy      qcauchy   dcauchy   
+# Chi-Square             rchisq    pchisq       qchisq    dchisq    
+# Exponential            rexp      pexp         qexp      dexp      
+# F                      rf        pf           qf        df        
+# Gamma                  rgamma    pgamma       qgamma    dgamma    
+# Geometric              rgeom     pgeom        qgeom     dgeom     
+# Hypergeometric         rhyper    phyper       qhyper    dhyper    
+# Logistic               rlogis    plogis       qlogis    dlogis    
+# Log Normal             rlnorm    plnorm       qlnorm    dlnorm    
+# -ve Binomial           rnbinom   pnbinom      qnbinom   dnbinom   
+# Normal                 rnorm     pnorm        qnorm     dnorm     
+# Poisson                rpois     ppois        qpois     dpois     
+# Student t              rt        pt           qt        dt        
+# Studentized Range      rtukey    ptukey       qtukey    dtukey    
+# Uniform                runif     punif        qunif     dunif     
+# Weibull                rweibull  pweibull     qweibull  dweibull  
+# Wilcoxon Rank Sum      rwilcox   pwilcox      qwilcox   dwilcox   
+# Wilcoxon Signed Rank   rsignrank psignrank    qsignrank dsignrank 
+#
+# Ref: https://www.stat.umn.edu/geyer/old/5101/rlook.html
 # -------------------------------------------------------------------
 
-x1 = c(2,1.5)
-x2 = c(2,1)
-y = c(1,1)
-x1 = c(x1,-x1,x1,-x1)
-x2 = c(x2,x2,-x2,-x2)
-y = c(y,y,-y,-y)
-plot(x1,x2,col=2+y, pch=15+y, cex=1.5)
-tmp = matrix(c(x1,x2),ncol=2)
-tt = pi/4   # 180 / 4 = 45 degree
-rot.matrix = matrix(c(cos(tt),-sin(tt),sin(tt),cos(tt)),2,2)
-data1 = tmp %*% rot.matrix
-a = 1
-data1 = data1 + c(rep(0,nrow(tmp)), rep(a,nrow(tmp)))
-plot(data1, col=2+y, pch=15+y, cex=2)
-abline(a, tan(tt))
+set.seed(2023)
+x1 = rnorm(200, mean=60, sd=15)   # X ~ Normal(60,15^2)
+x2 = rbinom(200, size=100, prob=0.5)   # X ~ Binom(100, 0.5) ≈ Normal?
+x3 = rpois(200, lambda=2.5)       # X ~ Poisson(2.5) ≈ Exponential?
+# Gamma distribution is applied in cancer rates, insurance claims & rainfall. 
+x4 = rgamma(200, shape=2, scale=2.5)
+par(mfrow=c(2,2))
+
+hist(x1, freq=FALSE, main="Normal(60,15^2)")
+x = seq(min(x1),max(x1),length.out=500)
+lines(x,dnorm(x, mean=60, sd=15))
+
+hist(x2, freq=FALSE, main="Binomial(100,0.5)")
+x = seq(min(x2),max(x2),length.out=500)
+lines(x,dnorm(x, mean=mean(x2), sd=sd(x2)))
+# Is it possible to work with dbinom???
+# Probably Not.  Because dnorm is not a density plot
+
+hist(x3, freq=FALSE, main="Poisson(2.5)")
+x = seq(min(x3),max(x3),length.out=500)
+lines(x,dexp(x, rate=1/mean(x3)))
+# Is it possible to work with dbinom???
+# Probably Not.  Because dpois is not a density plot
+
+# https://en.wikipedia.org/wiki/Gamma_distribution
+# https://stat.ethz.ch/R-manual/R-devel/library/stats/html/GammaDist.html
+hist(x4, freq=FALSE, main="Gamma(shape=2, scale=2.5)")
+x = seq(min(x4),max(x4),length.out=500)
+lines(x,dgamma(x, shape=mean(x4)^2/var(x4), scale=var(x4)/mean(x4)))
 

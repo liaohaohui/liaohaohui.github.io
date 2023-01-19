@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for LDA & QDA Models in R
-# Author : Liew How Hui (2022)
+# Author : Liew How Hui (2023)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 #  2. http://euler.stat.yale.edu/~tba3/stat665/lectures/lec11/script11.html
@@ -14,6 +14,7 @@
 # Taken from p03_knn1.R (Only works properly for binary classification)
 # -------------------------------------------------------------------
 performance = function(xtab, desc=""){
+    if(nrow(xtab)!=2){stop("This function only calculates performance for binary classification.  k>2 classification should consider using caret library\n")}
     cat(desc,"\n")
     ACR = sum(diag(xtab))/sum(xtab)
     TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
@@ -248,7 +249,7 @@ X = 1 - (X + 1)*0.5
 plot(0,0)
 rasterImage(X,-1,-1,1,1)
 
-set.seed(2022)
+set.seed(2023)
 iset <- sample(nrow(train),5*7)   # Take 35 samples from training data
 par(mar=c(0,0,0,0))
 par(mfrow=c(5,7))

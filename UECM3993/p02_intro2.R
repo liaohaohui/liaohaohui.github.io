@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Basic Commands for Data Processing in R (Part 2)
-# Author : Liew How Hui (2022)
+# Author : Liew How Hui (2023)
 # Reference: http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%202%20Lab.txt
 # Data   : https://www.statlearning.com/resources-second-edition
 #          (Old: http://faculty.marshall.usc.edu/gareth-james/ISL/data.html)
@@ -72,10 +72,6 @@ Auto=read.table("Auto.data")
 head(Auto)
 Auto=read.table("Auto.data",header=T,na.strings="?",stringsAsFactors=TRUE)
 head(Auto)
-
-# https://liaohaohui.github.io/UECM3993/College.csv
-College=read.csv("College.csv",na.strings="?",stringsAsFactors=TRUE)
-head(College)
 
 #
 # Commands to understand basic statistics of a data frame
@@ -235,7 +231,7 @@ CPU = read.csv("https://storm.cis.fordham.edu/~gweiss/data-mining/weka-data/cpu.
 #
 the.mean = 10
 the.stdv =  2   # standard deviation is 2
-set.seed(2022)  # Fix the starting value of random number generator
+set.seed(2023)  # Fix the starting value of random number generator
 the.samples = rnorm(100, the.mean, the.stdv)
 count = length(the.samples)
 #
@@ -247,7 +243,7 @@ sd(the.samples)
 
 # Holdout Resampling Method Estimate
 # the 'sample' function depends on the seed
-set.seed(2022)
+set.seed(2023)
 idx = sample(count, 0.7*count)   # Linear Sampling of 70% of the Indices
 # We are 'resampling' from the samples!
 sd(the.samples[idx])
@@ -269,7 +265,7 @@ for(i in 1:10){
 mean(fold)
 
 # Simple Boostrapping (Sample with Replacement)
-set.seed(2022)
+set.seed(2023)
 idx.boostrap = sample(count, 0.7*count, replace=TRUE)
 sd(the.samples[idx.boostrap])
 

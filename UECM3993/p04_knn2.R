@@ -1,11 +1,11 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for kNN (k-Nearest Neighbour) Models in R (Part 2)
-# Author : Liew How Hui (2022)
+# Author : Liew How Hui (2023)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 3.6 & R 4.x & install.packages(c("kknn", "FNN"))
+# Software: R 4.x & R 3.6 & install.packages(c("kknn", "FNN"))
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
@@ -14,6 +14,7 @@
 # A simple implementation of caret::confusionMatrix
 # -------------------------------------------------------------------
 performance = function(xtab, description=""){
+    if(nrow(xtab)!=2){stop("This function only calculates performance for binary classification.  k>2 classification should consider using caret library\n")}
     cat("\n\n",description,"\n",sep="")
     ACR = sum(diag(xtab))/sum(xtab)
     TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])

@@ -1,10 +1,10 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Naive Bayes Predictive Models in R
-# Author : Liew How Hui (2022)
+# Author : Liew How Hui (2023)
 # References: 
 #  1. http://www.dbenson.co.uk/Rparts/subpages/spamR/
 #  2. http://www.learnbymarketing.com/tutorials/naive-bayes-in-r/
-# Data   : fraud.csv, fraud_new.csv
+# Data   : fraud.csv
 # License: BSD-3
 # Software: R 4.x & R 3.6
 # Duration: 1 hour
@@ -14,6 +14,7 @@
 # Taken from p03_knn1.R (Only works properly for binary classification)
 # -------------------------------------------------------------------
 performance = function(xtab, desc=""){
+    if(nrow(xtab)!=2){stop("This function only calculates performance for binary classification.  k>2 classification should consider using caret library\n")}
     cat(desc,"\n")
     ACR = sum(diag(xtab))/sum(xtab)
     TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
@@ -99,19 +100,6 @@ pred.nb.lp = predict(model.nb.lp, fraud.test[,1:p])
 cfmat = table(pred.nb.lp, actual.fraud=fraud.test$tag)
 performance(cfmat, "Performance of Naive Bayes with Laplace Smoothing")
 
-#
-# CRISP-DM's Deployment:
-# Score new fraud data using naive bayes model
-#
-#https://liaohaohui.github.io/UECM3993/fraud_new.csv
-fraud_new = read.csv("fraud_new.csv")
-col_fac2 = c("gender", "status", "employment", "account_link", "supplement")
-# there is no `tag' column in fraud_new
-fraud_new[col_fac2] <- lapply(fraud_new[col_fac2], factor)
-fraud_new$pred <- predict(model.nb,fraud_new)
-print(head(fraud_new))
-# We can't calculate the confusion matrix because the fraud_new.csv
-# does not contain actual response `tag'
 
 # -------------------------------------------------------------------
 #    Dataset 2: Spam Filtering with Naive Bayes Model

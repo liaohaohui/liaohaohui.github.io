@@ -1,11 +1,11 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Clustering in R
-# Author : Liew How Hui (2022)
+# Author : Liew How Hui (2023)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%2010%20Labs.txt
 #  2. https://altaf-ali.github.io/ISLR/chapter10/lab.html
 # License: BSD-3
-# Software: R 3.6 & R 4.0
+# Software: R 4.x & R 3.6
 # Duration: 1 hour
 # -------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Classification Tree Based Predictive Models in R
-# Author : Liew How Hui (2022)
+# Author : Liew How Hui (2023)
 # References: 
 #  1. https://daviddalpiaz.github.io/r4sl/trees.html
 #  2. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%208%20Lab.txt
@@ -16,6 +16,7 @@
 # Taken from p03_knn1.R (Only works properly for binary classification)
 # -------------------------------------------------------------------
 performance = function(xtab, desc=""){
+    if(nrow(xtab)!=2){stop("This function only calculates performance for binary classification.  k>2 classification should consider using caret library\n")}
     cat(desc,"\n")
     ACR = sum(diag(xtab))/sum(xtab)
     TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
@@ -247,7 +248,7 @@ credit_data = read.csv("credit_data.csv", stringsAsFactors=T)
 #
 # Linear Sampling
 #
-set.seed(2022)
+set.seed(2023)
 in_train   = sample(nrow(credit_data), size = 3000)
 train_data = credit_data[ in_train,]
 test_data  = credit_data[-in_train,]
