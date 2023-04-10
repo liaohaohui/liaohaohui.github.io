@@ -95,6 +95,7 @@ biplot(pca, scale=0)
 #  Eigenface (https://en.wikipedia.org/wiki/Eigenface)
 #  Ref: https://rstudio-pubs-static.s3.amazonaws.com/543854_eac98275af7d461792a3523fae88be22.html
 #  Ref: https://github.com/k41m4n/eigenfaces
+#  Ref: https://laid.delanover.com/explanation-face-recognition-using-eigenfaces/
 #-------------------------------------------------------------------------
 
 # Load data of face images taken between April 1992 and April 1994 
