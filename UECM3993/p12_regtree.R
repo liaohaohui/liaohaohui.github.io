@@ -13,18 +13,23 @@
 # -------------------------------------------------------------------
 
 #
-# Practical 1 & 2 => Basic R Data Processing (Data Frame ~ Excel Table)
-# Real-world: Dplyr technology (using pipeline)
-# Practical 3 - 11: All about classification problems (classifiers)
+# Revision:
+# Practical 1 & 2
+#   => Basic R Data Processing (Data Frame ~ Excel Table)
+#   => Alternative: Dplyr technology (using pipeline)
+# Practical 3 - 11
+#   => All about classification problems (classifiers)
+# Practical 12:
+#   => Try to explore a little about regression problems
 # For classification problems, key performance measures:
 # 1. Contingency table / Confusion matrix
 # 2. accuracy
-# For binary classification:
+# For binary classification (output is binary):
 # 3. sensitivity, specificity, PPV, NPV
 # 4. ROC / AUC
 # 5. Kappa (used in imbalanced data)
 
-# Performance measures for regression problem:
+# Performance measures for regression problem (output is continuous):
 # 1. MSE (Mean Square Error)
 # 2. R2
 # 3. MAE = Mean Absolute Error (Not working well with differentiation)
@@ -158,8 +163,18 @@ Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
 yhat = predict(reg.model, data.test)
 Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
 
-print(data.frame(tree.model=Model.list,
-  train.MSE = Train.list, test.MSE = Test.list
+# Multivariate Linear Regression Models
+lr = lm(Sales ~ ., data.train)   # categorical => one-hot encoded
+Model.list = c(Model.list, "linear regression")
+yhat = predict(lr, data.train)
+Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
+yhat = predict(lr, data.test)
+Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
+
+print(data.frame(
+  tree.model = Model.list,
+  train.MSE  = Train.list,
+  test.MSE   = Test.list
 ))
 
 #
