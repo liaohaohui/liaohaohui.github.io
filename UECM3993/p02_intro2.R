@@ -1,31 +1,58 @@
 # -------------------------------------------------------------------
 # Purpose: Basic Commands for Data Processing in R (Part 2)
 # Author : Liew How Hui (2023)
-# Reference: http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%202%20Lab.txt
-# Data   : https://www.statlearning.com/resources-second-edition
-#          (Old: http://faculty.marshall.usc.edu/gareth-james/ISL/data.html)
 # License: BSD-3
 # Software: R 3.6 & R 4.x
 # Duration: 1 hour
 # -------------------------------------------------------------------
-
-# -------------------------------------------------------------------
-#  Practical: Data Frame (2D Structured Data)
-# -------------------------------------------------------------------
-
-## readr: Read Rectangular Text Data
-## The goal of 'readr' is to provide a fast and friendly way to read rectangular data (like 'csv', 'tsv', and 'fwf'). It is designed to flexibly parse many types of data found in the wild, while still cleanly failing when data unexpectedly changes.
-#install.packages("readr")
-#library(readr)
 
 # Check current working directory
 getwd()
 # Change the working directory
 #setwd("PathToYourFolder")
 
+# -------------------------------------------------------------------
+#  Practical: Data Frame (2D Structured Data to handle the mix of 
+#  numeric and categorical data just like Excel table) & Sorting
+#  Many of the matrix operations are applicable to Data Frame.
+# -------------------------------------------------------------------
+
 #
-# Data Frame = Generalisation of Matrix to handle the mix of 
-# numeric and categorical data
+# Define Data Frame using data.frame() and vectors from Practical 1
+#
+X = data.frame(
+  Progromme = c("MCCG11503-Kampar","MCCG11503-Kampar",
+                "MECG11503-SL", "MECG11503-SL", "MEME19803", "MEME19803"),
+  Name = c("Stud1", "Student2", "Student3", "Student4", "Student5", "Stud6"),
+  Quiz1Q1 = c(3.9, 4, 4.7, 5.9, 5.3, 3.4),
+  Quiz1Q2 = c(0.9, 0.5, 2, 1.8, 1.5, 0),
+  Quiz1Q3 = c(0.5, 1, 0.5, 2, 0, 0.5),
+  Assign1 = c(16.9, 16, 14.2, 15.4, 11.1, 11.1))
+
+#
+# The $ sign is used to access the `Column' of the `Table': Table$Column
+#
+X$Quiz1 = apply(X[,3:5],1,sum)
+X$Tot1  = X$Quiz1 + X$Assign1
+
+# A vector can be sorted using the Shellsort or Quicksort algorithms:
+# sort() returns sorted vector
+# rank() returns the order of values in a numeric vector;
+# order() returns a vector of indices that will sort a vector
+
+sort(X$Tot1)    # Sort results
+
+rank(X$Tot1)    # Ranking
+
+order(X$Tot1)   # Get the order
+X[order(X$Tot1), c("Name", "Tot1")]
+cbind(X[order(X$Tot1), c("Name", "Tot1")], Rank=rank(X$Tot1))
+
+
+# -------------------------------------------------------------------
+#  Practical: IO on tabular data
+# -------------------------------------------------------------------
+
 #
 # Reading data frame from string
 #
@@ -66,164 +93,130 @@ write.csv(d.f[,c(1,6,3:5)], "tennis_new.csv")
 # Try openning tennis_new.csv in Excel to confirm that data is saved correctly.
 #
 
-### Loading ``structured'' table to R Data Frame
+#
+#  Reading data frame from Arff (Attribute-Relation File Format), which is
+#  similar to CSV with some declarations.
+#  Miscellaneous Arff data:
+#    https://storm.cis.fordham.edu/~gweiss/data-mining/datasets.html
+#
+
+# https://storm.cis.fordham.edu/~gweiss/data-mining/weka-data/cpu.arff
+# https://liaohaohui.github.io/UECM3993/cpu.arff
+CPU = read.csv("cpu.arff", skip=17, header=FALSE)
+
+#
+#  Reading data frame from tabular data with `spacing'.
+#
+
 # https://liaohaohui.github.io/UECM3993/Auto.data
-Auto=read.table("Auto.data")
+Auto=read.table("Auto.data")          # Default to no header
 head(Auto)
+names(Auto)    # column names.  Alternative: colnames(Auto)
+dim(Auto)      # nrow(Auto)  ncol(Auto)
+Auto=read.table("Auto.data",header=T) # Use first row as header
+head(Auto)
+names(Auto)
+dim(Auto)      # nrow(Auto)  ncol(Auto)
+summary(Auto)    # We cannot see the missing values which is `?'
+sapply(Auto, class)   # horsepower is "character", something wrong
+table(Auto$horsepower)    # We can find something interesting: `?'
+apply(Auto=="?",1,sum)    # the `?' is missing value
+
+#
+# If we want to set column strings to `categorical data' format,
+# we need to set stringsAsFactors=TRUE
+#
 Auto=read.table("Auto.data",header=T,na.strings="?",stringsAsFactors=TRUE)
-head(Auto)
+summary(Auto)    # Now the summary is nice
 
 #
 # Commands to understand basic statistics of a data frame
 # and commands to remove `missing values'
 #
-dim(Auto)      # nrow(Auto)  ncol(Auto)
-names(Auto)    # column names.  Alternative: colnames(Auto)
-Auto[1:4,]     # Assess particular rows / columns
 # Inside R, NA = Not Available = Missing Value
 Auto=na.omit(Auto)   # na.omit removes all rows with missing values
 dim(Auto)      # check the dimension again to see if some rows are removed
 
-### Additional Graphical Summaries
-# On the $ sign: Table$Column = the `Column' from `Table'
-plot(Auto$cylinders, Auto$mpg)   # scatter plot = numeric vs numeric
+#
+# Exploratory Data Analysis (EDA) with Data Visualisation
+#
+#  (a) Histogram => univariate numeric data
+par(mfrow=c(1,2))
+hist(Auto$mpg)
+hist(Auto$mpg,col=2)  # 2 = "red" (k, rgb, cmy, gray)
+
+#  (b) scatter plot => numeric input vs numeric output
+plot(Auto$cylinders, Auto$mpg)
+#  (c) boxplot => categorical input vs numeric output
 cylinders=as.factor(Auto$cylinders)   # In R, factor = categorical data
 mpg = Auto$mpg
-plot(cylinders, mpg)   # boxplot = categorical vs numeric
-
+plot(cylinders, mpg)
+#  Decorations: Making prettier plots
 par(mfrow=c(2,2))   # create a 2x2 subplots
 plot(cylinders, mpg, col="red")
 plot(cylinders, mpg, col="red", varwidth=T)
 plot(cylinders, mpg, col="red", varwidth=T, horizontal=T)
 plot(cylinders, mpg, col="red", varwidth=T, xlab="cylinders", ylab="MPG")
 
-# Histogram => univariate numeric data
-par(mfrow=c(1,2))
-hist(mpg)
-hist(mpg,col=2)  # 2 = "red" (k, rgb, cmy, gray)
-
+#  (d) matrix of scatter plots => pair plot
 par(mfrow=c(1,1))
 pairs(Auto)         # Pair plots = Scatter plots for all numeric columns
 pairs(~ mpg + displacement + horsepower + weight + acceleration, Auto)
 plot(Auto$horsepower,mpg)
 
-### Numerical Summaries (less nice for numeric data?)
-# EDA = Exploratory Data Analysis
-summary(Auto)
-summary(mpg)
-
 #
-# pairs is for numeric vs numeric
-# boxplot is for numeric vs categorical
-# barplot is for categorical vs categorical
-# Ref: https://ademos.people.uic.edu/Chapter11.html#5_bar_graphs
+#  (e) barplot is for categorical vs categorical (difficult to interpret)
 #
+plot(as.factor(Auto$cylinders), as.factor(Auto$origin))
+#
+#  table is better for categorical data vs categorical data
+#
+table(Auto$cylinders, Auto$origin)
 
 
 # -------------------------------------------------------------------
-#  Practical: IO, if-else, for, and defining functions
+#  Practical:  More advanced programming techniques with Penguins Data,
+#  which were collected and made available by Dr. Kristen Gorman and 
+#  the Palmer Station, Antarctica LTER, a member of the Long Term 
+#  Ecological Research Network.
+#  install.packages("palmerpenguins")
+#  Ref: https://allisonhorst.github.io/palmerpenguins/
 # -------------------------------------------------------------------
+library(palmerpenguins)   # for `penguins' data
+summary(penguins)
+cor(penguins[,3:6])       # The missing values will give useless values
 
-# IO = Input (read.csv, read.table) & Output (cat, print)
-x = c(1,2,1,2,3,2)
-y = c(1,2,1,2,1,2)
-cat("similarity(",x,",",y,")=", sum(x==y)/length(x), "\n", sep="")
+# Show rows with missing values (NA = Not Available)
+penguins[apply(is.na(penguins),1,sum)>0,]
 
-# if-else (similar to C, C++, Java) & defining function
-thegrade = function(val) {
-    if (val<0 || val>100) {
-		return("????")
-    } else if (val >= 90) {
-		return("A+")
-    } else if (val >= 80) {
-		return("A")
-    } else if (val >= 75) {
-		return("A-")
-    } else if (val >= 70) {
-		return("B+")
-    } else if (val >= 65) {
-		return("B")
-    } else if (val >= 60) {
-		return("B-")
-    } else if (val >= 55) {
-		return("C+")
-    } else if (val >= 50) {
-		return("C")
-    } else                {
-		return("F")
-    }
+cor(na.omit(penguins[,3:6]))
+#
+# Let us investgate column 3 w.r.t. the output using histograms
+# and for loops
+#
+Y = penguins$species
+sps = levels(penguins$species)
+par(mfrow=c(1,length(sps)))
+for(i in 1:length(sps)){
+	hist(penguins[Y==sps[i], 3], xlab=sps[i], main="")
 }
-
-f = function(x) {   if(x<0)  {return(-1)}   else  {return(1)}   }
-sapply(c(1,2,3,-1),f)
-
-# for loop (is a bit rarely used in R)
-x = c(-1,0,1,-3,-4,1,3,3,-1)
-for ( i in 1:length(x) ) {
-    if (x[i] < 0) {
-        cat(x[i], "is negative\n")
-	} else {
-        cat(x[i], "is nonnegative\n")
-	}
+#
+# The histograms are not good for comparison.  We want to put them
+# together according to 
+# https://stackoverflow.com/questions/3541713/how-to-plot-two-histograms-together-in-r
+#
+p = list()
+for(i in 1:length(sps)){
+	p[[i]] = hist(penguins[Y==sps[i], 3], xlab=sps[i], main="")
 }
-# Working on ``array'' is simpler than working with for loop
-y1 = sin(x)
-num_to_class = function(x) {
-	if (x < 0) { "Negative" } else { "Nonneg" }
-}
-#num_to_class = function(x) {
-#	if (x < 0) { return("Negative") } else { return("Nonneg") }
-#}
-v_num_to_class = Vectorize(num_to_class)
-y2 = v_num_to_class(x)   # Simpler: y2 = ifelse(x<0,"Negative", "Nonneg")
+par(mfrow=c(1,1))
+plot(p[[1]], col=rgb(1,0,0,1/4), xlim=range(na.omit(penguins[,3])), ylim=c(0,40))
+plot(p[[2]], col=rgb(0,1,0,1/4), add=TRUE)
+plot(p[[3]], col=rgb(0,0,1,1/4), add=TRUE)
 
 
 # -------------------------------------------------------------------
-#  https://astrostatistics.psu.edu/datasets/2006tutorial/2006desc.html
-# -------------------------------------------------------------------
-
-# https://astrostatistics.psu.edu/datasets/HIP_star.dat
-hip = read.table("https://liaohaohui.github.io/UECM3993/HIP_star.dat", header=T,fill=T)
-
-# learning about the `astrophysics data' hip
-dim(hip)
-names(hip)
-# Go through each column
-for(i in 1:ncol(hip)) {
-    print(c(max(hip[,i]), min(hip[,i]), median(hip[,i]), mad(hip[,i])))
-}
-# Apply is `shorter' than using for loop
-# 1 = Row
-# 2 = Column
-apply(hip, 2, max)
-apply(hip, 2, min)
-apply(hip, 2, median)
-apply(hip, 2, mad)  # Median Absolute Deviation
-# summary(hip) gives max, min, median, mean
-
-# Find out how many missing values (NA = Not Available) and `where' missing values are
-sum(is.na(hip[,9]))
-which(is.na(hip[,9]))
-# To skip missing values, some statistics functions in R allow
-# us to skip `missing values' using na.rm=T
-for(i in 1:ncol(hip)) {
-    print(c(max(hip[,i],na.rm=T), min(hip[,i],na.rm=T), median(hip[,i],na.rm=T), mad(hip[,i],na.rm=T)))
-}
-
-# A vector can be sorted using the Shellsort or Quicksort algorithms; rank returns the order of values in a numeric vector; and order returns a vector of indices that will sort a vector. The last of these functions, order, is often the most useful of the three, because it allows one to reorder all of the rows of a matrix according to one of the columns:
-
-# Sort column number 4:
-sort(hip[1:10,4])
-hip[order(hip[1:10,4]),]
-
-###  Arff (Attribute-Relation File Format), similar to CSV with some declarations
-# Example: https://storm.cis.fordham.edu/~gweiss/data-mining/weka-data/cpu.arff
-# https://storm.cis.fordham.edu/~gweiss/data-mining/datasets.html
-
-CPU = read.csv("https://storm.cis.fordham.edu/~gweiss/data-mining/weka-data/cpu.arff", skip=17, header=FALSE)
-
-# -------------------------------------------------------------------
-#  Resampling
+#  Practical: Resampling
 # -------------------------------------------------------------------
 
 #
@@ -268,4 +261,17 @@ mean(fold)
 set.seed(2023)
 idx.boostrap = sample(count, 0.7*count, replace=TRUE)
 sd(the.samples[idx.boostrap])
+
+
+# -------------------------------------------------------------------
+#  Alternative Technology --- https://dplyr.tidyverse.org/
+#  * Intro:
+#      https://cran.r-project.org/web/packages/dplyr/vignettes/dplyr.html
+#  * Handling CSV, TSV, etc.:
+#      https://readr.tidyverse.org/reference/read_delim.html
+#  * Handling Excel:
+#      https://readxl.tidyverse.org/
+# -------------------------------------------------------------------
+
+
 

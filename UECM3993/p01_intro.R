@@ -11,14 +11,14 @@
 #  Getting familiar with the Basic R and R Studio
 # -------------------------------------------------------------------
 
-# 1. Basic R (for fast startup and lower memory comsumption)
+# 1. Basic R (Good for fast startup and a computer with lower memory)
 #
 #    Download link: https://cran.r-project.org/
 #
 #    It supports Windows, MacOS and Linux, download the software
 #    related to your computer.
 
-# 2. RStudio (for a computer with more than 8 Gig RAM and fast CPU
+# 2. RStudio (Good for a computer with more than 8 Gig RAM and fast CPU)
 #
 #    Donwload link: https://www.rstudio.com/products/rstudio/download/
 #
@@ -75,7 +75,7 @@ ls()
 #
 
 # -------------------------------------------------------------------
-#  Practical: Basic and Array Data Structures and Operations in R
+#  Practical: Basic and 1-D Array Data Structures and Operations in R
 # -------------------------------------------------------------------
 
 ##
@@ -281,10 +281,12 @@ all(c(1,2,3) == c(3,2,1))    # Are all elements true?
 # Contingency table / Confusion matrix
 table(c(1,0,1,0,1), c("Y","N","N","Y","Y"))
 
-##
-## (H) 2-D Numeric Arrays & Operations
-##     Note: A 2-D Numeric Array is just a matrix
-##     Getting help/documentation: ?matrix
+
+# -------------------------------------------------------------------
+#  Practical: 2-D Numeric Arrays & Operations
+#  Note: A 2-D Numeric Array is just a matrix
+#  Getting help/documentation: ?matrix
+# -------------------------------------------------------------------
 
 # A is a 4 by 4 matrix (data is filled in columns by default)
 A = matrix(1:16,nrow=4,ncol=4)
@@ -292,12 +294,18 @@ A = matrix(1:16,nrow=4,ncol=4)
 B = matrix(1:16,4,4,byrow=TRUE)
 
 #
+# Matrix formation operations
+#
+cbind(A,B)    # stack horizontally
+rbind(A,B)    # stack vertically
+
+#
 # Note that A and B are in 'transpose relation', i.e.
 # A = t(B)
 #
 
 #
-# Matrix operations
+# Matrix arithmetic operations
 #
 2*A     # scalar multiplication
 A+2     # adding every element with a number
@@ -321,7 +329,7 @@ A[-c(1,3),]        # Remove first and third rows
 A[-c(1,3),-c(3,4)] # Remove some rows and some columns
 
 # -------------------------------------------------------------------
-# More Statistical Functions
+#  Practical: More Statistical Functions
 #
 # Random Variable        samples   probability  quantile  density   
 # ---------------        -------   -----------  --------  -------   
@@ -378,4 +386,5 @@ lines(x,dexp(x, rate=1/mean(x3)))
 hist(x4, freq=FALSE, main="Gamma(shape=2, scale=2.5)")
 x = seq(min(x4),max(x4),length.out=500)
 lines(x,dgamma(x, shape=mean(x4)^2/var(x4), scale=var(x4)/mean(x4)))
+
 
