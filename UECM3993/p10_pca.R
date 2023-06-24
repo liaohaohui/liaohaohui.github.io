@@ -1,5 +1,6 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for PCA in R
+# Purpose: Practical for PCA in R for simple dimensional reduction
+#          and using it a preprocessing stage for supervised models
 # Author : Liew How Hui (2023)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%2010%20Labs.txt
@@ -101,19 +102,17 @@ biplot(pca, scale=0)
 # Load data of face images taken between April 1992 and April 1994 
 # at AT&T Laboratories Cambridge in USA
 ### Large file (35M): https://raw.githubusercontent.com/k41m4n/eigenfaces/master/olivetti_X.csv
-#imageX = read.csv("~/Downloads/olivetti_X.csv", header=FALSE)
-### https://liaohaohui.github.io/UECM3993/olivetti_X.csv.gz
-imageX = read.csv(gzfile("olivetti_X.csv.gz"), header=FALSE)
-# I really don't understand why people like some of the ridiculous
-# dplyr syntax
+#Compressed: https://liaohaohui.github.io/UECM3993/olivetti_X.csv.gz
+faceX = read.csv(gzfile("olivetti_X.csv.gz"), header=FALSE)
+# faceX is a data.frame, convert it to matrix
+faceX = matrix(unlist(faceX),nrow=nrow(faceX),ncol=ncol(faceX))
 par(mfrow=c(4, 10))
 par(mar=c(0.05, 0.05, 0.05, 0.05))
 for (i in 1:40) {
   # Original image is bottom to top
-  img = matrix(unlist(imageX[i, ]), nrow=64)
+  img = matrix(faceX[i, ], nrow=64)
   # Reverse the image in y-direction
-  img = img[,64:1]
-  image(img, col=grey(seq(0, 1, length=256)), xaxt="n", yaxt="n")
+  image(img[,64:1], col=grey(seq(0, 1, length=256)), xaxt="n", yaxt="n")
 }
 
 # Create a sequence of label numbers from 1 to 40 corresponding to 40 persons
@@ -125,17 +124,30 @@ K = 10
 M = 7
 idx.train = rep(sample(K,M), Nfigs) + rep(K*(0:(Nfigs-1)), each=M)
 
-pca = prcomp(imageX[idx.train,])
+face.train = faceX[ idx.train,]
+face.test  = faceX[-idx.train,]
+Y.train = dataY$label[ idx.train]
+Y.test  = dataY$label[-idx.train]
+rm(faceX)
+pca = prcomp(face.train)
 
+#
 # Average Face
+#
 par(mfrow=c(1,1))
-image_avg = matrix(pca$center, nrow=64)[,64:1]
-image(image_avg, col=grey(seq(0, 1, length=256)), xaxt="n", yaxt="n")
+face_avg = matrix(pca$center, nrow=64)
+image(face_avg[,64:1], col=grey(seq(0, 1, length=256)), xaxt="n", yaxt="n")
 
 plot(pca$x[,1], pca$x[,2], cex=0.05, main="Biplot of the faces")
-text(pca$x[,1], pca$x[,2], dataY$label[idx.train], col=dataY$label[idx.train])
+text(pca$x[,1], pca$x[,2], dataY$label[idx.train], cex=2, col=dataY$label[idx.train])
 
-screeplot(pca, npcs=20, type="lines")
+# PCs for test data
+PCs = predict(pca, face.test)
+points(PCs[,1], PCs[,2], pch=16, cex=2, col=dataY$label[-idx.train], main="Biplot of the faces")
+
+#screeplot(pca, npcs=20, type="lines")
+CPVEs = cumsum(pca$sdev**2) / sum(pca$sdev**2)
+thres = min(which(CPVEs > 0.95))   # 95% of eigenfaces are used
 
 par(mfrow=c(4,4))
 par(mar=c(0.05,0.05,0.05,0.05))
@@ -148,13 +160,32 @@ for (i in 1:16) {
 }
 
 #
-# Lookup can be complex:
+# This part tries to `recognise' the face using the mathematical 
+# formulation for PCA prediction:
 #
-img_test = t(t(imageX[-idx.train,]) - c(image_avg))
-img_test = img_test %*% pca$rotation
-dim(img_test)
-lookup = apply(t(t(pca$x) - img_test[1,]), 2, function(r){sum(r^2)})
-ifelse(any(lookup < 1e-1), which.min(lookup), "Not in database")
+#   PCs = t(t(face.test) - c(face_avg))
+#   PCs = PCs %*% pca$rotation
+#
+# which is built into predict().
+#
+
+img_test = PCs    # 120 test images with 280 PCs
+# We just take the PCs which contribute to 95% using 1:thres
+yhat = c()
+dmin = c()
+dmax = c()
+for(i in 1:nrow(img_test)){
+  lookup = apply(t(pca$x[,1:thres]) - img_test[i,1:thres], 2, function(r){sum(r^2)})
+  dmin[i] = min(lookup)
+  dmax[i] = max(lookup)
+  yhat[i] = Y.train[which.min(lookup)]
+}
+print(data.frame(yhat, dmin, dmax))
+print(table(yhat, Y.test))
+cat("Accuracy=", sum(yhat == Y.test)/nrow(img_test), "\n")
+# A bit lower than the one predicted by https://github.com/k41m4n/eigenfaces
+# Is 100 a good threshold for the face in database?
+#ifelse(any(lookup < 100), which.min(lookup), "Not in database")
 
 # Reset plotting parameters
 dev.off()
@@ -245,12 +276,14 @@ train$V1 = factor(train$V1)
 colours = rainbow(length(unique(train$V1)))
 names(colours) = unique(train$V1)
 
+#
+# Comparing PCA to t-SNE
+#
 par(mfrow=c(1,2))
 pca = prcomp(train[,-1])
-#
 # Manual biplot is better
-#
 plot(pca$x[,1], pca$x[,2], pch=16, col=colours[train$V1], main="PCA")
+
 library(Rtsne)
 tsne = Rtsne(train[,-1], dims=2, perplexity=30, verbose=TRUE, max_iter=500)
 plot(tsne$Y, t='n', main="tSNE")

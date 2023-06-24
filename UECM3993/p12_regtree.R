@@ -8,7 +8,7 @@
 #  4. https://uc-r.github.io/regression_trees
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 4.x & R 3.6
+# Software: R 4.x & install.packages(c("ISLR2", "tree", "partykit", "rpart", "C50, "randomForest", "gbm", "FNN"))
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
@@ -61,8 +61,7 @@ performance.regression.R2  = function(yhat, y){
 # A simulated data set containing *sales* of child car seats at 
 # 400 different stores
 #-------------------------------------------------------------------------
-library(ISLR)
-#library(ISLR2)
+library(ISLR2)
 set.seed(2023)
 idx = sample(nrow(Carseats), 0.7*nrow(Carseats))
 data.train = Carseats[ idx, ]

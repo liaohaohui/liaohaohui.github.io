@@ -11,25 +11,65 @@
 # -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
-# Taken from p03_knn1.R (Only works properly for binary classification)
+# performance() is taken from p03_knn1.R.  It is a simple 
+# implementation of caret::confusionMatrix()
 # -------------------------------------------------------------------
+
 performance = function(xtab, desc=""){
-    if(nrow(xtab)!=2){stop("This function only calculates performance for binary classification.  k>2 classification should consider using caret library\n")}
-    cat(desc,"\n")
-    ACR = sum(diag(xtab))/sum(xtab)
-    TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
-    PPV = xtab[1,1]/sum(xtab[1,]); NPV = xtab[2,2]/sum(xtab[2,])
-    FPR = 1 - TNR                ; FNR = 1 - TPR
-    # https://standardwisdom.com/softwarejournal/2011/12/confusion-matrix-another-single-value-metric-kappa-statistic/
-    RandomAccuracy = (sum(xtab[,2])*sum(xtab[2,]) + 
-      sum(xtab[,1])*sum(xtab[1,]))/(sum(xtab)^2)
-    Kappa = (ACR - RandomAccuracy)/(1 - RandomAccuracy)
+    cat("\n", desc,"\n", sep="")
     print(xtab)
-    cat("\n      Accuracy :", ACR, "\n\n         Kappa :", Kappa, "\n")
-    cat("\n   Sensitivity :", TPR,   "\n   Specificity :", TNR, "\n")
-    cat("Pos Pred Value :", PPV,     "\nNeg Pred Value :", NPV, "\n")
-    cat("           FPR :", FPR,     "\n           FNR :", FNR, "\n")
+
+    ACR = sum(diag(xtab))/sum(xtab)
+    CI  = binom.test(sum(diag(xtab)), sum(xtab))$conf.int
+    cat("\n        Accuracy :", ACR)
+    cat("\n          95% CI : (", CI[1], ",", CI[2], ")\n")
+
+    if(nrow(xtab)>2){
+        # e1071's classAgreement() in matchClasses.R
+        # Ref: https://stats.stackexchange.com/questions/586342/measures-to-compare-classification-partitions
+        n  = sum(xtab)
+        ni = apply(xtab, 1, sum)
+        nj = apply(xtab, 2, sum)
+        p0 = sum(diag(xtab))/n
+        pc = sum(ni * nj)/n^2
+        Kappa = (p0 - pc)/(1 - pc)
+        cat("\n           Kappa :", Kappa, "\n")
+        cat("\nStatistics by Class:\n")
+        # Levels of the actual data
+        lvls = dimnames(xtab)[[2]]
+        sensitivity = c()
+        specificity = c()
+        ppv         = c()
+        npv         = c()
+        for(i in 1:length(lvls)) {
+            sensitivity[i] = xtab[i,i]/sum(xtab[,i])
+            specificity[i] = sum(xtab[-i,-i])/sum(xtab[,-i])
+            ppv[i]         = xtab[i,i]/sum(xtab[i,])
+            npv[i]         = sum(xtab[-i,-i])/sum(xtab[-i,])
+        }
+        b = data.frame(rbind(sensitivity,specificity,ppv,npv))
+        names(b) = lvls
+        print(b)
+    } else {
+         #names(dimnames(xtab)) = c("Prediction", "Actual")
+         TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
+         PPV = xtab[1,1]/sum(xtab[1,]); NPV = xtab[2,2]/sum(xtab[2,])
+         FPR = 1 - TNR                ; FNR = 1 - TPR
+         # https://standardwisdom.com/softwarejournal/2011/12/confusion-matrix-another-single-value-metric-kappa-statistic/
+         RandomAccuracy = (sum(xtab[,2])*sum(xtab[2,]) + 
+           sum(xtab[,1])*sum(xtab[1,]))/(sum(xtab)^2)
+         Kappa = (ACR - RandomAccuracy)/(1 - RandomAccuracy)
+         cat("\n           Kappa :", Kappa, "\n")
+         cat("\n     Sensitivity :", TPR)
+         cat("\n     Specificity :", TNR)
+         cat("\n  Pos Pred Value :", PPV)
+         cat("\n  Neg Pred Value :", NPV)
+         cat("\n             FPR :", FPR)
+         cat("\n             FNR :", FNR, "\n")
+         cat("\n'Positive' Class :", dimnames(xtab)[[1]][1], "\n")
+    }
 }
+
 
 # -------------------------------------------------------------------
 #    Dataset 1: Building Naive Bayes Model for Fraud Data
@@ -63,14 +103,14 @@ fraud.test = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
 # If you can install extra libraries from CRAN (Internet), then
 # you should use `caTools' or splitstackshape + dplyr
 #
-#library(caTools)
+#library(caTools)   # for sample.split()
 #train.row.index = sample.split(fraud, SplitRatio=0.7)
 #fraud.train = fraud[train.row.index, ]
 #fraud.test = fraud[-train.row.index, ]
 
-#library(splitstackshape)
+#library(splitstackshape)    # for stratified()
 #fraud.train <- stratified(fraud,"tag",size=0.7)
-#library(dplyr)  # It has a lot of dependencies
+#library(dplyr)  # It has a lot of dependencies.
 #fraud.test <- anti_join(fraud, fraud.train, by="id_person")
 
 #
@@ -80,12 +120,12 @@ fraud.test = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
 # (3) klaR library
 # (4) ...
 #
-library(naivebayes)
+library(naivebayes)   # for naive_bayes()
 cat("
 Calculations without Laplace Smoothing
 ")
 model.nb = naive_bayes(tag~., data = fraud.train)
-#library(e1071)  # naiveBayes
+#library(e1071)  # for naiveBayes()
 #model.e1071 = naiveBayes(tag~., data=fraud.train, laplace=0)
 p = ncol(fraud.train)-1
 pred.nb = predict(model.nb, newdata = fraud.test[,1:p])  # columns 1:p for inputs
@@ -118,7 +158,7 @@ spam,5,"Subscribe to ASTRO  ... with only RM250 per month"
 ham,5,"Why can\'t I get the right result?"
 ',header=F,col.names=c("Y","id", "content"))
 
-library(tm)  # Text Mining package
+library(tm)  # Text Mining package.  For DocumentTermMatrix, VCorpus, ...
 corpus = VCorpus(VectorSource(d.f$content))
 # The DocumentTermMatrix can be slow for large data
 # and the stemming is too primitive and brutal!
@@ -130,18 +170,17 @@ dtm = DocumentTermMatrix(corpus, control = list(
 ))   # Statistical model
 ### The features are encoded in
 # dtm$dimnames$...
+inspect(dtm)
 
 #
 # For `text' classification with Naive Bayes, we may want to
 # turn on the Laplace smoothing!
 #
 
-library(naivebayes)
-
-### naivebayes::multinomial_naive_bayes
+library(naivebayes)    # for multinomial_naive_bayes()
 
 idx.train = 1:6
-train = as.matrix(dtm[idx.train,])
+train = as.matrix(dtm[idx.train,])    # not suitable for large matrix
 Y.train = d.f$Y[idx.train]
 idx.test = 7:10
 test  = as.matrix(dtm[idx.test,])
@@ -157,7 +196,6 @@ coef(classifier)
 # number of times the word 'you' occured in training data of class 'ham' = 2
 # number of words in training data of class 'ham' = 28
 # P(word='you'|Y='spam') = (0+1)/(9+45)
-# number of times the word 'you' occured in training data of class 'ham' = 2
 # number of times the word 'you' occured in training data of class 'spam' = 0
 # number of words in training data of class 'spam' = 9
 #
@@ -166,7 +204,7 @@ cfmat = table(yhat, Y.test)
 print(cfmat)
 
 ### https://www.kaggle.com/code/abeperez/building-a-spam-filter-using-fastnaivebayes/notebook
-library(fastNaiveBayes)
+library(fastNaiveBayes)   # for fnb.multinomial()
 mnnb = fnb.multinomial(x=train, y=Y.train, laplace=1)
 # The fastNaiveBayes provides a nice summary of word counts with
 # the list item 'present':
@@ -177,7 +215,7 @@ print(cfmat)
 
 ### naivebayes::bernoulli_naive_bayes
 convert2bin = function(x){ifelse(x>0,1,0)}
-library(Matrix)
+library(Matrix)   # for Matrix() to handle sparse matrix
 train = Matrix(apply(dtm[idx.train,],2,convert2bin),sparse=T)
 Y.train = d.f$Y[idx.train]
 test = Matrix(apply(dtm[idx.test,],2,convert2bin),sparse=T)
@@ -202,7 +240,7 @@ test = as.data.frame(apply(dtm[idx.test,],2,convert))
 test = as.data.frame(lapply(test, function(c){factor(c,levels=c("No","Yes"))}))
 Y.test  = factor(d.f$Y[idx.test],levels=c("ham","spam"))
 
-library(e1071)
+library(e1071)    # for naiveBayes()
 classifier = naiveBayes(train, Y.train, laplace=1)
 #classifier$tables$call   # Probability table of seeing the world `call'
 yhat = predict(classifier, test)
@@ -247,14 +285,14 @@ test  = naive_data[(nrow(naive_data)*.7+1):nrow(naive_data),]
 # Without Laplace Smoothing
 #nb_default = naiveBayes(response~., data=train[,-4], laplace=0)
 nb_default = naive_bayes(response~., data=train[,-4])  # laplace defaults to 0
-default_pred = predict(nb_default, test, type="class")
+default_pred = predict(nb_default, test[,-c(4,6)], type="class")
 # To extract information from Naive Bayes Network Model
 #default_raw_pred <- predict(nb_default, test, type="raw")
-table(default_pred, test$response,dnn=c("Prediction","Actual"))
+table(default_pred, test$response, dnn=c("Prediction","Actual"))
 
 # With Laplace Smoothing
 #nb_laplace1 = naiveBayes(response~., data=train, laplace=1)
 nb_laplace1 = naive_bayes(response~., data=train, laplace=1)
-laplace1_pred = predict(nb_laplace1, test, type="class")
-table(laplace1_pred, test$response,dnn=c("Prediction","Actual"))
+laplace1_pred = predict(nb_laplace1, test[,-6], type="class")
+table(laplace1_pred, test$response, dnn=c("Prediction","Actual"))
 

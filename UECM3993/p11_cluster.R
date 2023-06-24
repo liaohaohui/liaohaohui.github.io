@@ -5,15 +5,14 @@
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%2010%20Labs.txt
 #  2. https://altaf-ali.github.io/ISLR/chapter10/lab.html
 # License: BSD-3
-# Software: R 4.x & R 3.6
+# Software: R 4.x & install.packages(c("ISLR2", "gower"))
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
 #
 # Min-Max scaling functions
 #
-#library(scales)
-rescale = function(x, to = c(0, 1), from = range(x, na.rm = TRUE, finite = TRUE), ...) {
+rescale = function(x, to=c(0, 1), from=range(x, na.rm=TRUE, finite=TRUE)) {
   (x - from[1]) / diff(from) * diff(to) + to[1]
 }
 
@@ -118,7 +117,7 @@ plot(X, col=km$cluster, pch=16, cex=2, main="kmeans (k=4)")
 points(km$centers, pch=15, cex=2, col="brown")
 
 #
-# Centroids (k-means) vs Medoids (PAM)
+# Centres/Centroids (k-means) vs Medoids (PAM)
 #
 par(mfrow=c(1,2))
 km = kmeans(X, 2, nstart=20)

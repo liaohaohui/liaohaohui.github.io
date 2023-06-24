@@ -5,57 +5,75 @@
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 4.x & R 3.6 & install.packages("ISLR2")
+# Software: R 4.x & install.packages("ISLR2")
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
-library(ISLR2)
-
-#
-# We are not working with caret in Physical Lab because the dependencies
-# in caret library is more than 20 and a lot of packages need to be
-# downloaded manual which is a pain which can't be endured.
-#
-### caret provides `dummyVars' which is very difficult to achieve
-### using plain R --- in such cases, it is reasonable to use `caret'
-### But for the situation where simple R will do, don't install
-### too many packages.
-# One-hot encode --> retain only the features and not sale price
-#full_rank = caret::dummyVars(Sale_Price~., data=???, fullRank=TRUE)
-
-## Topic 3 page 21
-#oneh = caret::dummyVars(~ student, data=Default, fullRank=TRUE)
-#data_1hot = data.frame(predict(oneh, newdata=Default[,c("student"),drop=FALSE]))
-## compare to Default$student
-#print(names(data_1hot))
-##data_1hot_scaled = as.data.frame(scale(data_1hot))
-##dim(data_1hot_scaled)
-
 # -------------------------------------------------------------------
-# Taken from p03_knn1.R (Only works properly for binary classification)
+# performance() is taken from p03_knn1.R.  It is a simple 
+# implementation of caret::confusionMatrix()
 # -------------------------------------------------------------------
 
 performance = function(xtab, desc=""){
-    if(nrow(xtab)!=2){stop("This function only calculates performance for binary classification.  k>2 classification should consider using caret library\n")}
-    cat(desc,"\n")
-    ACR = sum(diag(xtab))/sum(xtab)
-    TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
-    PPV = xtab[1,1]/sum(xtab[1,]); NPV = xtab[2,2]/sum(xtab[2,])
-    FPR = 1 - TNR                ; FNR = 1 - TPR
-    # https://standardwisdom.com/softwarejournal/2011/12/confusion-matrix-another-single-value-metric-kappa-statistic/
-    RandomAccuracy = (sum(xtab[,2])*sum(xtab[2,]) + 
-      sum(xtab[,1])*sum(xtab[1,]))/(sum(xtab)^2)
-    Kappa = (ACR - RandomAccuracy)/(1 - RandomAccuracy)
+    cat("\n", desc,"\n", sep="")
     print(xtab)
-    cat("\n      Accuracy :", ACR, "\n\n         Kappa :", Kappa, "\n")
-    cat("\n   Sensitivity :", TPR,   "\n   Specificity :", TNR, "\n")
-    cat("Pos Pred Value :", PPV,     "\nNeg Pred Value :", NPV, "\n")
-    cat("           FPR :", FPR,     "\n           FNR :", FNR, "\n")
+
+    ACR = sum(diag(xtab))/sum(xtab)
+    CI  = binom.test(sum(diag(xtab)), sum(xtab))$conf.int
+    cat("\n        Accuracy :", ACR)
+    cat("\n          95% CI : (", CI[1], ",", CI[2], ")\n")
+
+    if(nrow(xtab)>2){
+        # e1071's classAgreement() in matchClasses.R
+        # Ref: https://stats.stackexchange.com/questions/586342/measures-to-compare-classification-partitions
+        n  = sum(xtab)
+        ni = apply(xtab, 1, sum)
+        nj = apply(xtab, 2, sum)
+        p0 = sum(diag(xtab))/n
+        pc = sum(ni * nj)/n^2
+        Kappa = (p0 - pc)/(1 - pc)
+        cat("\n           Kappa :", Kappa, "\n")
+        cat("\nStatistics by Class:\n")
+        # Levels of the actual data
+        lvls = dimnames(xtab)[[2]]
+        sensitivity = c()
+        specificity = c()
+        ppv         = c()
+        npv         = c()
+        for(i in 1:length(lvls)) {
+            sensitivity[i] = xtab[i,i]/sum(xtab[,i])
+            specificity[i] = sum(xtab[-i,-i])/sum(xtab[,-i])
+            ppv[i]         = xtab[i,i]/sum(xtab[i,])
+            npv[i]         = sum(xtab[-i,-i])/sum(xtab[-i,])
+        }
+        b = data.frame(rbind(sensitivity,specificity,ppv,npv))
+        names(b) = lvls
+        print(b)
+    } else {
+         #names(dimnames(xtab)) = c("Prediction", "Actual")
+         TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
+         PPV = xtab[1,1]/sum(xtab[1,]); NPV = xtab[2,2]/sum(xtab[2,])
+         FPR = 1 - TNR                ; FNR = 1 - TPR
+         # https://standardwisdom.com/softwarejournal/2011/12/confusion-matrix-another-single-value-metric-kappa-statistic/
+         RandomAccuracy = (sum(xtab[,2])*sum(xtab[2,]) + 
+           sum(xtab[,1])*sum(xtab[1,]))/(sum(xtab)^2)
+         Kappa = (ACR - RandomAccuracy)/(1 - RandomAccuracy)
+         cat("\n           Kappa :", Kappa, "\n")
+         cat("\n     Sensitivity :", TPR)
+         cat("\n     Specificity :", TNR)
+         cat("\n  Pos Pred Value :", PPV)
+         cat("\n  Neg Pred Value :", NPV)
+         cat("\n             FPR :", FPR)
+         cat("\n             FNR :", FNR, "\n")
+         cat("\n'Positive' Class :", dimnames(xtab)[[1]][1], "\n")
+    }
 }
 
 # -------------------------------------------------------------------
 #  Logistic Regression Analysis of the `Smarket' Dataset
 # -------------------------------------------------------------------
+
+library(ISLR2)   # For Smarket data
 
 ### Explore the dataset
 #View(Smarket)   # From ISLR
@@ -114,6 +132,7 @@ lr.model = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume, Weekly.train,
 	family=binomial)
 print(summary(lr.model))
 # ... do the prediction & check the performance ...
+
 
 # -------------------------------------------------------------------
 #  Analysis of the `Fraud' Dataset using Logistic Regression glm

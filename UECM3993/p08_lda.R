@@ -6,39 +6,74 @@
 #  2. http://euler.stat.yale.edu/~tba3/stat665/lectures/lec11/script11.html
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 4.x & R 3.6 & install.packages(c("ISLR2", "FNN"))
+# Software: R 4.x & install.packages("ISLR2")
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
-# Taken from p03_knn1.R (Only works properly for binary classification)
+# performance() is taken from p03_knn1.R.  It is a simple 
+# implementation of caret::confusionMatrix()
 # -------------------------------------------------------------------
+
 performance = function(xtab, desc=""){
-    if(nrow(xtab)!=2){stop("This function only calculates performance for binary classification.  k>2 classification should consider using caret library\n")}
-    cat(desc,"\n")
-    ACR = sum(diag(xtab))/sum(xtab)
-    TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
-    PPV = xtab[1,1]/sum(xtab[1,]); NPV = xtab[2,2]/sum(xtab[2,])
-    FPR = 1 - TNR                ; FNR = 1 - TPR
-    # https://standardwisdom.com/softwarejournal/2011/12/confusion-matrix-another-single-value-metric-kappa-statistic/
-    RandomAccuracy = (sum(xtab[,2])*sum(xtab[2,]) + 
-      sum(xtab[,1])*sum(xtab[1,]))/(sum(xtab)^2)
-    Kappa = (ACR - RandomAccuracy)/(1 - RandomAccuracy)
+    cat("\n", desc,"\n", sep="")
     print(xtab)
-    cat("\n      Accuracy :", ACR)
-    if(nrow(xtab)==2){
-    cat("\n\n         Kappa :", Kappa, "\n")
-    cat("\n   Sensitivity :", TPR,   "\n   Specificity :", TNR, "\n")
-    cat("Pos Pred Value :", PPV,     "\nNeg Pred Value :", NPV, "\n")
-    cat("           FPR :", FPR,     "\n           FNR :", FNR, "\n")
-    }else{
-    cat("\n\nTable is ", dim(xtab), " other performance metrics are unavailable\n")
+
+    ACR = sum(diag(xtab))/sum(xtab)
+    CI  = binom.test(sum(diag(xtab)), sum(xtab))$conf.int
+    cat("\n        Accuracy :", ACR)
+    cat("\n          95% CI : (", CI[1], ",", CI[2], ")\n")
+
+    if(nrow(xtab)>2){
+        # e1071's classAgreement() in matchClasses.R
+        # Ref: https://stats.stackexchange.com/questions/586342/measures-to-compare-classification-partitions
+        n  = sum(xtab)
+        ni = apply(xtab, 1, sum)
+        nj = apply(xtab, 2, sum)
+        p0 = sum(diag(xtab))/n
+        pc = sum(ni * nj)/n^2
+        Kappa = (p0 - pc)/(1 - pc)
+        cat("\n           Kappa :", Kappa, "\n")
+        cat("\nStatistics by Class:\n")
+        # Levels of the actual data
+        lvls = dimnames(xtab)[[2]]
+        sensitivity = c()
+        specificity = c()
+        ppv         = c()
+        npv         = c()
+        for(i in 1:length(lvls)) {
+            sensitivity[i] = xtab[i,i]/sum(xtab[,i])
+            specificity[i] = sum(xtab[-i,-i])/sum(xtab[,-i])
+            ppv[i]         = xtab[i,i]/sum(xtab[i,])
+            npv[i]         = sum(xtab[-i,-i])/sum(xtab[-i,])
+        }
+        b = data.frame(rbind(sensitivity,specificity,ppv,npv))
+        names(b) = lvls
+        print(b)
+    } else {
+         #names(dimnames(xtab)) = c("Prediction", "Actual")
+         TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
+         PPV = xtab[1,1]/sum(xtab[1,]); NPV = xtab[2,2]/sum(xtab[2,])
+         FPR = 1 - TNR                ; FNR = 1 - TPR
+         # https://standardwisdom.com/softwarejournal/2011/12/confusion-matrix-another-single-value-metric-kappa-statistic/
+         RandomAccuracy = (sum(xtab[,2])*sum(xtab[2,]) + 
+           sum(xtab[,1])*sum(xtab[1,]))/(sum(xtab)^2)
+         Kappa = (ACR - RandomAccuracy)/(1 - RandomAccuracy)
+         cat("\n           Kappa :", Kappa, "\n")
+         cat("\n     Sensitivity :", TPR)
+         cat("\n     Specificity :", TNR)
+         cat("\n  Pos Pred Value :", PPV)
+         cat("\n  Neg Pred Value :", NPV)
+         cat("\n             FPR :", FPR)
+         cat("\n             FNR :", FNR, "\n")
+         cat("\n'Positive' Class :", dimnames(xtab)[[1]][1], "\n")
     }
 }
 
+
 #
 # LDA & QDA assumes the input data (X1,X2,...,Xp) needs to be NUMERIC 
-# and has some sort of (multivariate) NORMAL distribution
+# and the data is separable or is related multivariate NORMAL distribution
 #
 
 # -------------------------------------------------------------------
