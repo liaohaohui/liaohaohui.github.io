@@ -1,49 +1,108 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for Classification Tree Based Predictive Models in R
-# Author : Liew How Hui (2022)
-# References: 
+# Purpose: Practical for Working with Classification Problems
+#          with (a) Tree Based Predictive Models in R
+#               (b) kNN (k-Nearest Neighbour) Models in R
+# Author : Liew How Hui (2023)
+# Reference & Data: 
 #  1. https://hastie.su.domains/ISLR2/Labs/R_Labs/Ch8-baggboost-lab.R
 #  2. https://daviddalpiaz.github.io/r4sl/trees.html
 #  3. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%208%20Lab.txt
 #  4. http://www.di.fc.ul.pt/~jpn/r/tree/tree.html
 #  5. https://cran.r-project.org/web/packages/C50/vignettes/C5.0.html
-# Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 3.6 & R 4.x
-# Duration: 1 hour
+# Software: R 4.x
+# Duration: 1.5 hours
 # -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
-# Only works properly for binary classification.
+# Performance Measurements for Classification Problem
+# A more sophisticated implementation is caret::confusionMatrix
 # -------------------------------------------------------------------
+
 performance = function(xtab, desc=""){
     cat(desc,"\n")
-    ACR = sum(diag(xtab))/sum(xtab)
-    TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
-    PPV = xtab[1,1]/sum(xtab[1,]); NPV = xtab[2,2]/sum(xtab[2,])
-    FPR = 1 - TNR                ; FNR = 1 - TPR
-    # https://standardwisdom.com/softwarejournal/2011/12/confusion-matrix-another-single-value-metric-kappa-statistic/
-    RandomAccuracy = (sum(xtab[,2])*sum(xtab[2,]) + 
-      sum(xtab[,1])*sum(xtab[1,]))/(sum(xtab)^2)
-    Kappa = (ACR - RandomAccuracy)/(1 - RandomAccuracy)
     print(xtab)
-    cat("\n      Accuracy :", ACR, "\n\n         Kappa :", Kappa, "\n")
-    cat("\n   Sensitivity :", TPR,   "\n   Specificity :", TNR, "\n")
-    cat("Pos Pred Value :", PPV,     "\nNeg Pred Value :", NPV, "\n")
-    cat("           FPR :", FPR,     "\n           FNR :", FNR, "\n")
+
+    ACR = sum(diag(xtab))/sum(xtab)
+    CI  = binom.test(sum(diag(xtab)), sum(xtab))$conf.int
+    cat("\n        Accuracy :", ACR)
+    cat("\n          95% CI : (", CI[1], ",", CI[2], ")\n")
+
+    if(nrow(xtab)>2){
+        # e1071's classAgreement() in matchClasses.R
+        # Ref: https://stats.stackexchange.com/questions/586342/measures-to-compare-classification-partitions
+        n  = sum(xtab)
+        ni = apply(xtab, 1, sum)
+        nj = apply(xtab, 2, sum)
+        p0 = sum(diag(xtab))/n
+        pc = sum(ni * nj)/n^2
+        Kappa = (p0 - pc)/(1 - pc)
+        cat("\n           Kappa :", Kappa, "\n")
+        cat("\nStatistics by Class:\n")
+        # Levels of the actual data
+        lvls = dimnames(xtab)[[2]]
+        sensitivity = c()
+        specificity = c()
+        ppv         = c()
+        npv         = c()
+        for(i in 1:length(lvls)) {
+            sensitivity[i] = xtab[i,i]/sum(xtab[,i])
+            specificity[i] = sum(xtab[-i,-i])/sum(xtab[,-i])
+            ppv[i]         = xtab[i,i]/sum(xtab[i,])
+            npv[i]         = sum(xtab[-i,-i])/sum(xtab[-i,])
+        }
+        b = data.frame(rbind(sensitivity,specificity,ppv,npv))
+        names(b) = lvls
+        print(b)
+    } else {
+         #names(dimnames(xtab)) = c("Prediction", "Actual")
+         TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
+         PPV = xtab[1,1]/sum(xtab[1,]); NPV = xtab[2,2]/sum(xtab[2,])
+         FPR = 1 - TNR                ; FNR = 1 - TPR
+         # https://standardwisdom.com/softwarejournal/2011/12/confusion-matrix-another-single-value-metric-kappa-statistic/
+         RandomAccuracy = (sum(xtab[,2])*sum(xtab[2,]) + 
+           sum(xtab[,1])*sum(xtab[1,]))/(sum(xtab)^2)
+         Kappa = (ACR - RandomAccuracy)/(1 - RandomAccuracy)
+         cat("\n           Kappa :", Kappa, "\n")
+         cat("\n     Sensitivity :", TPR)
+         cat("\n     Specificity :", TNR)
+         cat("\n  Pos Pred Value :", PPV)
+         cat("\n  Neg Pred Value :", NPV)
+         cat("\n             FPR :", FPR)
+         cat("\n             FNR :", FNR, "\n")
+         cat("\n'Positive' Class :", dimnames(xtab)[[1]][1], "\n")
+    }
 }
 
 # -------------------------------------------------------------------
-#  Analysis of the `Tennis' Dataset with C5.0 again
+#  Working on Example 1 from Lecture Slide s43_tree.pdf with C5.0
 #  Ref: https://www.rulequest.com/see5-info.html
+# -------------------------------------------------------------------
+
+d.f = read.table(text='
+X1 X2  Y
+ T  T  T
+ T  T  F
+ T  T  T
+ T  F  F
+ F  T  T
+ F  F  T', header=T, colClasses=rep("factor",3))
+
+library(C50)
+tree.model = C5.0(d.f[,1:2], d.f[,3], control=C5.0Control(subset=FALSE,noGlobalPruning=TRUE,earlyStopping=FALSE,minCases=1,CF=1) )
+plot(tree.model)   # smaller compare to lecture slide's tree
+
+
+# -------------------------------------------------------------------
+#  Example 2: Analysis of the `Tennis' Dataset with C5.0
 # -------------------------------------------------------------------
 
 #https://liaohaohui.github.io/MEME19903/playtennis.csv
 d.f = read.csv("playtennis.csv",stringsAsFactors=TRUE,row.names=1)
 
-library(C50)
 #
-# C5.0 seems to vary between multi-way split and binary split
+# C5.0 supports both multi-way split and binary split
+# It depends on stringr which has much more dependencies since version 1.5.
 #
 tree.model = C5.0(d.f[ , 1:4], d.f[ , 5])
 plot(tree.model)
@@ -358,24 +417,91 @@ yhat.boost <- predict(boost.boston,
     newdata = Boston[-train, ], n.trees = 5000)
 mean((yhat.boost - boston.test)^2)
 
-##------------------------------------------------------------------
-## Bayesian Additive Regression Trees with MASS Boston Data
-##------------------------------------------------------------------
 
-###
-library(BART)
-x <- Boston[, 1:12]
-y <- Boston[, "medv"]
-xtrain <- x[train, ]
-ytrain <- y[train]
-xtest <- x[-train, ]
-ytest <- y[-train]
-set.seed(1)
-bartfit <- gbart(xtrain, ytrain, x.test = xtest)
-###
-yhat.bart <- bartfit$yhat.test.mean
-cat("MSE=", mean((ytest - yhat.bart)^2), "\n")
-###
-ord <- order(bartfit$varcount.mean, decreasing = T)
-bartfit$varcount.mean[ord]
+
+# -------------------------------------------------------------------
+#  Feature Scaling with Standardisation for kNN
+# -------------------------------------------------------------------
+
+#https://liaohaohui.github.io/MEME19903/fraud.csv
+fraud = read.csv("fraud.csv")
+### change data type from integer to categorical
+col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
+fraud[col_fac] = lapply(fraud[col_fac], factor)
+
+#
+# Manual stratified sampling (from Practical for Classification 1)
+# Ref: https://stackoverflow.com/questions/23479512/stratified-random-sampling-from-data-frame
+#
+set.seed(123)
+fraud_tag0 = fraud[fraud$tag=="0", ]
+fraud_tag1 = fraud[fraud$tag=="1", ]
+tag0_idx = sample(nrow(fraud_tag0), size=0.7*nrow(fraud_tag0))
+tag1_idx = sample(nrow(fraud_tag1), size=0.7*nrow(fraud_tag1))
+fraud.train = rbind(fraud_tag0[ tag0_idx,],fraud_tag1[ tag1_idx,])
+fraud.test  = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
+summary(fraud.test)
+
+# Data standardisation with respect to the TRAINING DATA
+cat("\nData Preparation/Preprocessing: Data standardisation ...\n")
+normalise.vec <- function(column,ref.col) {
+    return ((column - mean(ref.col)) / sd(ref.col))
+}
+fraud.train.knn     = fraud.train
+fraud.test.knn      = fraud.test
+fraud.train.knn$age = normalise.vec(fraud.train.knn$age,fraud.train$age)
+fraud.test.knn$age  = normalise.vec(fraud.test.knn$age, fraud.train$age)
+fraud.train.knn$base_value = normalise.vec(
+    fraud.train.knn$base_value,fraud.train$base_value)
+fraud.test.knn$base_value  = normalise.vec(
+    fraud.test.knn$base_value, fraud.train$base_value)
+
+# -------------------------------------------------------------------
+#  Predicting with kNN & Evaluation with Holdout Method
+# -------------------------------------------------------------------
+cat("\nTraining and validation with kNN ...\n\n")
+library(class)
+yhat = knn(fraud.train.knn[,2:8], fraud.test.knn[,2:8], fraud.train.knn[,9], k=3)
+cftable.std = table(yhat, fraud.test.knn$tag)
+performance(cftable.std, "Confusion matrix and performance with kNN")
+
+
+# -------------------------------------------------------------------
+#  kNN Analysis of the ISLR2's `Smarket' Dataset
+# -------------------------------------------------------------------
+
+# -------------------------------------------------------------------
+# Split data into train set and validation set
+# train set = data from Year 2001-2004
+# validation set = data from Year 2005
+# -------------------------------------------------------------------
+### Explore the dataset
+#View(Smarket)
+names(Smarket)
+dim(Smarket)
+train = (Smarket$Year < 2005)
+Smarket.2005 = Smarket[!train,]   # MATLAB: Masking / Python: Boolean indexing
+# , for picking rows in 2D data
+
+# -------------------------------------------------------------------
+#  Analysis of the reduced `Smarket' Dataset with kNN Classifier
+# -------------------------------------------------------------------
+library(class)   # for kNN
+#library(FNN)    # also provides the kNN we can use here.
+attach(Smarket)
+train.X= cbind(Lag1,Lag2)[ train,]  # cbind = Column Binding
+train.y = Direction[train]
+test.X = cbind(Lag1,Lag2)[!train,]
+test.y = Direction[!train]  # Direction.2005, associated with Smarket.2005
+detach(Smarket)
+#set.seed(1)
+knn.pred = knn(train.X,test.X,train.y)  # Computer Default: k=1
+table(knn.pred,test.y)  # k=1: (83+43)/252
+knn.pred = knn(train.X,test.X,train.y,k=3)
+table(knn.pred,test.y)
+accuracy = mean(knn.pred==test.y)
+
+# Summary: Financial Stochastic Data is ``not'' predictable
+# More advanced maths like SDE (Financial Econ II) to model the risk
+# to develop asset (stock, futures, etc.) derivatives
 
