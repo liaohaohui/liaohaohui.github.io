@@ -233,11 +233,11 @@ Y.2005 = Smarket.2005$Direction
 #
 # Why no 'Today'?  Because Up / Down is BASED on Today & they are correlated
 #
-lr.fit = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,
-             data=Smarket, subset=train, family=binomial)
+#lr.fit = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,
+#             data=Smarket, subset=train, family=binomial)
 ### Equivalent expression
-#logreg.fits = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,
-#                  data=Smarket[train,], family=binomial)
+lr.fit = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,
+                  data=Smarket[train,], family=binomial)
 summary(lr.fit)    # Need to understand for final exam
 
 ### Apply model into validation set and predict the probability to be Class 1
