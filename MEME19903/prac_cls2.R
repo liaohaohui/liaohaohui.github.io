@@ -87,11 +87,12 @@ B,Yes,0,Negative
 B,Yes,0,Negative
 A, No,1,Positive
 C, No,1,Negative
-B,Yes,1,Positive")
+B,Yes,1,Positive", stringsAsFactors=TRUE)
 d.f$X3 = factor(d.f$X3)
 print(d.f)
+#install.packages("naivebayes")
 library(naivebayes)
-m = naive_bayes(Y ~ X1+X2+X3, d.f, stringsAsFactors=TRUE)
+m = naive_bayes(Y ~ X1+X2+X3, d.f)
 print(m)
 
 
@@ -111,7 +112,7 @@ rainy,broken ,stay-home
 sunny,working,stay-home
 sunny,broken ,stay-home
 rainy,broken ,stay-home",stringsAsFactors=TRUE)
-m = naive_bayes(Y ~ ., d.f, stringsAsFactors=TRUE)
+m = naive_bayes(Y ~ ., d.f)
 print(m)   # Compare them to the lecture slides
 
 
@@ -222,6 +223,7 @@ spam,5,"Subscribe to ASTRO  ... with only RM250 per month"
 ham,5,"Why can\'t I get the right result?"
 ',header=F,col.names=c("Y","id", "content"))
 
+#install.package("tm")
 library(tm)  # Text Mining package.  For DocumentTermMatrix, VCorpus, ...
 corpus = VCorpus(VectorSource(d.f$content))
 # The DocumentTermMatrix can be slow for large data
@@ -268,6 +270,7 @@ cfmat = table(yhat, Y.test)
 print(cfmat)
 
 ### https://www.kaggle.com/code/abeperez/building-a-spam-filter-using-fastnaivebayes/notebook
+#install.packages("fastNaiveBayes")
 library(fastNaiveBayes)   # for fnb.multinomial()
 mnnb = fnb.multinomial(x=train, y=Y.train, laplace=1)
 # The fastNaiveBayes provides a nice summary of word counts with
