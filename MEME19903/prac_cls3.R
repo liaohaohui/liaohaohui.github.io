@@ -139,7 +139,7 @@ print(summary(rule.model))
 
 
 # -------------------------------------------------------------------
-#  Analysis of the `Tennis' Dataset with CART Tree
+#  Analysis of the `Tennis' Dataset with CART Tree (BINARY)
 # -------------------------------------------------------------------
 
 #install.packages("tree")
@@ -152,17 +152,17 @@ library(tree)   # Requires R >= 3.6 (no dependencies)
 tree.model = tree(playtennis ~ ., d.f)
 print(tree.model)
 print(summary(tree.model))  # calc. deviance & misclassification
-par(mfrow=c(1,2))
-plot(tree.model,main="Default \"Pruned\" CART Tree")
-text(tree.model)
 
 #
 # Default tree.control: mincut = 5, minsize = 10, mindev = 0.01
 #
 tree.model2 = tree(playtennis ~ ., d.f, control=
   tree.control(nrow(d.f), minsize=1))
+par(mfrow=c(1,2))
 plot(tree.model2,main="Full(?) CART Tree")
 text(tree.model2)
+plot(tree.model,main="Default \"Not fullly grown\" CART Tree")
+text(tree.model)
 
 
 # -------------------------------------------------------------------
@@ -178,7 +178,7 @@ library(ISLR2)
 ### To turn it to a ``classification problem'', we introduce
 ### a cut-off 8 to have a categorical output:
 ### "High" = "Yes" if "Sales" > 8 and "No" if "Sales"<= 8
-Carseats$High  = factor(ifelse(Carseats$Sales<=8,"No","Yes"))
+Carseats$High  = factor(ifelse(Carseats$Sales>8,"Yes","No"))
 #
 # Removing the Y=Sales (regression)
 #
@@ -274,6 +274,7 @@ performance(cf.mat.prune, "\nPrunned tree::tree to `minimal' nodes")
 # Prune on our own decision on how many leaves to keep
 #
 prune.carseats = prune.misclass(tree.carseats,best=15)
+par(mfrow = c(1, 2))
 plot(prune.carseats)
 text(prune.carseats,cex=0.8)
 title("Pruned Tree with 15 leaves")
@@ -356,10 +357,10 @@ plot(prune.boston)
 text(prune.boston, pretty = 0)
 ###
 yhat <- predict(tree.boston, newdata = Boston[-train, ])
-boston.test <- Boston[-train, "medv"]
-plot(yhat, boston.test)
+boston.test.Y <- Boston[-train, "medv"]
+plot(yhat, boston.test.Y)
 abline(0, 1)
-mean((yhat - boston.test)^2)
+mean((yhat - boston.test.Y)^2)
 
 ##------------------------------------------------------------------
 ## Bagging and Random Forests with MASS' Boston Data
@@ -372,20 +373,20 @@ bag.boston <- randomForest(medv ~ ., data = Boston,
 bag.boston
 ###
 yhat.bag <- predict(bag.boston, newdata = Boston[-train, ])
-plot(yhat.bag, boston.test)
+plot(yhat.bag, boston.test.Y)
 abline(0, 1)
-mean((yhat.bag - boston.test)^2)
+mean((yhat.bag - boston.test.Y)^2)
 ###
 bag.boston <- randomForest(medv ~ ., data = Boston,
     subset = train, mtry = 12, ntree = 25)
 yhat.bag <- predict(bag.boston, newdata = Boston[-train, ])
-mean((yhat.bag - boston.test)^2)
+mean((yhat.bag - boston.test.Y)^2)
 ###
 set.seed(1)
 rf.boston <- randomForest(medv ~ ., data = Boston,
     subset = train, mtry = 6, importance = TRUE)
 yhat.rf <- predict(rf.boston, newdata = Boston[-train, ])
-mean((yhat.rf - boston.test)^2)
+mean((yhat.rf - boston.test.Y)^2)
 ###
 importance(rf.boston)
 ###
@@ -426,7 +427,9 @@ mean((yhat.boost - boston.test)^2)
 #https://liaohaohui.github.io/MEME19903/fraud.csv
 fraud = read.csv("fraud.csv")
 ### change data type from integer to categorical
-col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
+#col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
+# All categorical inputs will be converted from factor to integer for kNN
+col_fac = c("tag")
 fraud[col_fac] = lapply(fraud[col_fac], factor)
 
 #
