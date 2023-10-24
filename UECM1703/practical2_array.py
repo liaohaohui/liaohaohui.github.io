@@ -1,7 +1,7 @@
 # ===================================================================
 # Purpose:
 #   Practical 2: Programming with Arrays
-# Author : Liew How Hui (2022)
+# Author : Liew How Hui (2023)
 # License: BSD-3
 # Software: Python 3.6+
 # Duration: 3 hours (Week 2)
@@ -333,6 +333,35 @@ A.std(axis=0)   # column
 A.std(axis=1)   # row
 
 
+## -------------------------------------------------------------------
+##  Working with Coloured Image: Reading and Processing An Image
+##  (Skip this if there is not enough time)
+## -------------------------------------------------------------------
+
+#
+# An image array can be 2-D or 3-D depending on whether it is
+# ``grey-scale'' or ``coloured''.  In the case of a coloured image, red,
+# green, blue (and alpha) are required an this means that
+# an (m x n x 3)-array (or an (m x n x 4)-array) is required.  
+# Python supports the loading of images using functions
+# from imageio or matplotlib.  By using plt.imread (requires pillow)
+# typical image types such as Jpeg, Png and Bmp can be read and
+# imshow and imsave can be used to view and save the image.
+#
+# The module scipy.ndimage provides many image array processing
+# functions for measuring, filtering, interpolating
+# and morphing a given image.  To test and add more functions,
+# newer Scipy package includes two images ascent (gray) and
+# face (colour).
+#
+
+Try loading your favourite image using the code from Topic 2 and
+(i)   do histogram analysis on the red, green and blue components
+(ii)  create an elliptic frame
+(iii) convert the coloured image to gray image
+(iv)  flip the gray image using the usual indexing and the negative indexing.
+
+
 
 # -------------------------------------------------------------------
 #   Linear Algebra Operations
@@ -402,7 +431,7 @@ y = H @ x
 
 
 # -------------------------------------------------------------------
-#   Matrix Equation Solvers
+#   Linear Algebra Solvers
 # -------------------------------------------------------------------
 
 #
@@ -478,6 +507,7 @@ np.linalg.det(A)
 # a_0, a_1, a_2, a_3, a_4.
 #
 
+
 ## -------------------------------------------------------------------
 ## Matrix Sine Fn vs Elementwise Sine Fn
 ## -------------------------------------------------------------------
@@ -514,286 +544,3 @@ linalg.sinm(A3)
 #
 #  What did you observe?
 #
-
-
-# -------------------------------------------------------------------
-#   Loading, Saving Array and Data Processing
-# -------------------------------------------------------------------
-
-import numpy as np
-
-#
-# 1. Write a script to read data and calculate the mean, standard
-#    deviation, ... of the data
-#
-#    Steps involve:
-#    (a) Input a string of numbers
-#    (b) Convert strings to an array of numbers
-#    (c) Calculate the mean, standard deviation, etc. using Numpy?
-#    (d) Print out the results nicely using Numpy?
-#
-
-
-## -------------------------------------------------------------------
-##  Working with Image Arrays: Reading and Processing An Image
-##  (Skip this if there is not enough time)
-## -------------------------------------------------------------------
-
-#
-# An image array can be 2-D or 3-D depending on whether it is
-# ``grey-scale'' or ``coloured''.  In the case of a coloured image, red,
-# green, blue (and alpha) are required an this means that
-# an (m x n x 3)-array (or an (m x n x 4)-array) is required.  
-# Python supports the loading of images using functions
-# from imageio or matplotlib.  By using plt.imread (requires pillow)
-# typical image types such as Jpeg, Png and Bmp can be read and
-# imshow and imsave can be used to view and save the image.
-#
-# The module scipy.ndimage provides many image array processing
-# functions for measuring, filtering, interpolating
-# and morphing a given image.  To test and add more functions,
-# newer Scipy package includes two images ascent (gray) and
-# face (colour).
-#
-
-from scipy import misc
-ascent = misc.ascent()
-face = misc.face()
-import matplotlib.pyplot as plt
-plt.imshow(ascent, cmap=plt.cm.gray_r) # _r: reversed colour map
-#plt.show()
-
-#
-# 1. Check the type of the image ascent and its dimension
-#
-
-#
-# 2. How ``large'' is the image ascent (by pixels?)
-#
-
-#
-# 3. Write down the commands to find minimum, maximum and average
-#    values of the image ascent.
-
-#
-# 4. Explain what does the `negative indexing' below for?
-#
-face2 = face[:-200,200:-50] #image cropping
-plt.imshow(face2)
-#plt.show()   # face[y_axis, x_axis, z_axis]
-
-#
-#  Working with Emojis ???
-#
-
-#
-#  Using the array indexing, we can crop an image and can change colours in 
-#  an image.
-#
-#  (a) note that in 8-bit colour system, the colour ranges from 0
-#      (black) to 255 (R/G/B).
-#  (b) We colour the top 50 pixels and bottom 50 pixels of face
-#      to black
-#
-face3 = face.copy()
-face3[:50,:,:] = 0
-face3[:-50:-1,:,:] = 0
-plt.imshow(face3)
-#plt.show()
-
-#
-# Colouring the left 50 pixels to red and right 50 pixels to green.
-#
-face3 = face.copy()
-face3[:,:50,:] = 0
-face3[:,:50,0] = 255
-face3[:,:-50:-1,:] = 0
-face3[:,:-50:-1,1] = 255
-plt.imshow(face3)
-#plt.show()
-
-#
-# For fancier colours, we need to search the corresponding RGB from the Internet.
-#
-
-#
-# We can even change the colours in the horizontal middle to blue
-#  and verticle middle to yellow (=red+green) by careful calculations.
-#
-face3 = face.copy() # face3.shape => (768, 1024, 3)
-face3[768//2-25:768//2+25] = 0
-face3[768//2-25:768//2+25,:,2] = 255
-face3[:, 1024//2-25:1024//2+25] = 0
-face3[:, 1024//2-25:1024//2+25,[0,1]] = 255
-plt.imshow(face3)
-#plt.show()
-
-
-#
-# Changing the colours of the diagonals is possible but linear algebra
-# is involved!!!
-#
-# The four corners of the face image is (0,0) and (1023,0)
-# (0,767) and (1023,767).  The equations of the lines are
-#
-#    y1 = (767-0)/(1023-0)x
-#    y2 = (767-0)/(0-1023)x+767
-#
-
-face3 = face.copy() # face3.shape => (768, 1024, 3)
-x  = np.arange(face3.shape[1])
-y1 = (767/1023*x).astype('int')
-y2 = (767-767/1023*x).astype('int')
-for i in range(-25,26):
-    upb = face3.shape[0]-1
-    shifted_y1 = y1+i
-    shifted_y1[shifted_y1<0] = 0
-    shifted_y1[shifted_y1>upb] = upb
-    shifted_y2 = y2+i
-    shifted_y2[shifted_y2<0] = 0
-    shifted_y2[shifted_y2>upb] = upb
-    face3[shifted_y1,x] = 0
-    face3[shifted_y2,x] = 0
-plt.imshow(face3)
-#plt.show()
-
-#
-# Drawing any `curve' onto the image is possible as long as we can
-# know the appropriate mathematical formula.  Let us consider the
-# quadratic curve which we use a lot in SPM:
-#
-#  y = k(x-1023/2)^2
-#
-# We need to choose the value $k$ so that the quadratic curve passes
-# through the points (0,767) and (1023,767).
-#
-#  767 = k(0-1023/2)^2 = k(1023-1023/2)^2.
-#
-# This implies
-#
-#  k = 767*4/(1023^2)
-#
-
-face3 = face.copy() # face3.shape => (768, 1024, 3)
-x = np.arange(face3.shape[1])
-k = 767*4/1023**2
-y = (k*(x-1023/2)**2).astype('int')
-for i in range(-25,26):
-    upb = face3.shape[0]-1
-    shifted_y = y+i
-    shifted_y[shifted_y<0] = 0
-    shifted_y[shifted_y>upb] = upb
-    face3[shifted_y,x] = 0
-    face3[shifted_y,x,0] = 255
-plt.imshow(face3)
-#plt.show()
-
-#
-#  Using Boolean Indexing in Image Processing
-#
-#  The mask M of an array A is an array of Booleans which is
-#  like a new layer above the array A, which is used to select
-#  the portion of A in the mask M which is true.
-#
-#  
-#  For a 2D-array A, the mask of A is a 2D array of Booleans
-#  over the indices:
-#
-#   (  0,0) & (  0,1)  ...  (  0,m-1)
-#   (  1,0) & (  1,1)  ...  (  1,m-1)
-#   ....
-#   (n-1,0) & (n-1,1)  ...  (n-1,m-1)
-#
-#  For face3, the shape is (768,1024) => n=768 and m=1024.
-# 
-#  Let see how we can use Boolean indexing to
-#
-#  1. colour the top 50 pixels and bottom 50 pixels of face to black.
-#  2. colour the left 50 pixels to red and right 50 pixels to green.
-#  3. colour the horizontal middle to blue and verticle middle to yellow(=red+green)
-#  4. colour the diagonals to blue
-#  5. draw a quadratic curve
-#
-#       y = (767*4)/(1023^2) * (x-1023/2)^2
-#
-#     in red.
-#
-#  For all the above, we need to `paint' True on an array of False and
-#  use it to make changes the `face' image.
-#
-
-print(face.shape)
-# Face is a colour image, so it is a 3-D array
-n, m, _ = face.shape
-y = np.r_[:n].reshape((-1,1))
-x = np.r_[:m].reshape((1,-1)) #Or: y, x = np.ogrid[:n,:m]
-
-#
-# Case 1
-#
-face3 = face.copy()
-top_50 = y<50; bot_50 = y>n-50
-M1 = np.repeat(top_50|bot_50, m, axis=1)
-face3[M1] = 0
-plt.imshow(face3)
-#plt.show()
-
-#
-# Case 2
-#
-face3 = face.copy()
-left_50  = np.repeat(x<50, n, axis=0)
-right_50 = np.repeat(x>m-50, n, axis=0)
-face3[left_50] = [255,0,0]
-face3[right_50] = [0,255,0]
-plt.imshow(face3)
-#plt.show()
-
-#
-# Case 3
-#
-face3 = face.copy()
-mid_h = np.repeat( (n/2-25<y) & (y<n/2+25), m, axis=1)
-mid_v = np.repeat( (m/2-25<x) & (x<m/2+25), n, axis=0)
-face3[mid_h] = [0,0,255]; face3[mid_v] = [255,255,0]
-plt.imshow(face3)
-#plt.show()
-
-#
-# Case 4: The y - n/m * x and y + n/m * (m-x)
-#         will generate 2D arrays
-#
-face3 = face.copy()
-diag = ( np.abs(y - n/m * x) < 25 ) | \
-       ( np.abs(y + n/m * x - n) < 25 )
-face3[diag] = [0,0,255]
-plt.imshow(face3)
-#plt.show()
-
-#
-# Case 5:
-#
-face3 = face.copy()
-M = np.abs(y - 767*4/1023**2*(x-1023/2)**2) < 25
-face3[M] = [255,0,0]
-plt.imshow(face3)
-#plt.show()
-
-#
-# Write down the Python commands to generate an image with
-# a diamond / ellipse frame for the image
-#
-
-im = face
-y, x = np.ogrid[0:im.shape[0],0:im.shape[1]]
-centrey = im.shape[0]/2; centrex = im.shape[1]/2
-#
-# Create an ellipse frame
-#
-mask = (x-centrex)**2/centrex**2+(y-centrey)**2/centrey**2>1.0
-photo = im.copy()
-photo[mask] = 0     # Black colour (what about white?)
-plt.imshow(photo)
-#plt.show()  # plt.axis('off') can be used to turn of the axis
-
-
