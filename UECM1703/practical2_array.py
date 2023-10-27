@@ -163,6 +163,8 @@ S4 = a*r**np.r_[:n]
 #         0   0   0   0  -2   4  -2
 #         0   0   0   0   0  -2   3
 #
+# which works for any size matrix.  This is 7x7.  You method
+# also need to work for 1001x1001.                  (1 mark)
 # Method 1: Use three np.diag() and add together
 # Method 2: use one np.diag(), array indexing and assignment
 # Method 3: use one np.diag(), array indexing and for loop
@@ -289,27 +291,7 @@ def mycosrec(x,n=10):
 #    9.0 -0.1491107    0.76202 -0.1491107    0.76202
 #   10.0  6.6645643     7.5036  6.6645643     7.5036
 #
-
-#
-# A sample answer is shown below:
-#
-
-#import numpy as np
-mycosrec = np.vectorize(mycosrec)
-mycosfor = np.vectorize(mycosfor)
-a, b, h = -1.0, 10.0, 1.0
-N = round((b-a)/h)
-x = np.linspace(a,b,N+1)
-y  = np.cos(x)
-y2 = mycosrec(x)
-d2 = abs(y2-y)
-y1 = mycosfor(x)
-d1 = abs(y1-y)
-print("{:>4s} {:>10s} {:>10s} {:>10s} {:>10s}".format("x",
-        "mycosfor", "abs.err", "mycosrec", "abs.err"))
-for i in range(len(x)):
-    print("{:4.1f} {:10.7f} {:10.5g}".format(x[i], y1[i], d1[i]) +
-          " {:10.7f} {:10.5g}".format(y2[i], d2[i]))
+#                                                       (1 mark)
 
 
 # -------------------------------------------------------------------
