@@ -1,15 +1,15 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for kNN (k-Nearest Neighbour) Models in R (Part 1)
-# Author : Liew How Hui (2023)
+# Author : Liew How Hui (2024)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 4.x
+# Software: R 4.1+
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
-#install.packages("ISLR2")
+#install.packages("ISLR2")   # if you on your own laptop / PC
 library(ISLR2)   # provides the Smarket (US Stock Market 2001-2005 data)
 
 # -------------------------------------------------------------------

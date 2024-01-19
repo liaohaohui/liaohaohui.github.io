@@ -1,12 +1,12 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Naive Bayes Predictive Models in R
-# Author : Liew How Hui (2023)
+# Author : Liew How Hui (2024)
 # References: 
 #  1. http://www.dbenson.co.uk/Rparts/subpages/spamR/
 #  2. http://www.learnbymarketing.com/tutorials/naive-bayes-in-r/
 # Data   : fraud.csv
 # License: BSD-3
-# Software: R 4.x & R 3.6
+# Software: R 4.1+
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
@@ -149,7 +149,7 @@ d.f = read.csv(text='
 ham,1,"Hi sir, just want to ask you if the formula xxx is OK?"
 spam,1,"Maxis great deal is here"
 ham,2,"If I solve the problem the following way ... is it OK?"
-ham,3,"You solution is correct.  Great job"
+ham,3,"Your solution is correct.  Great job"
 spam,2,"Discount 20% from Maxis when dinning at ..."
 ham,4,"The maximum value for ... is the coefficient for the model ..."
 spam,3,"Win a phone when subscribing to Maxis new plan ..."

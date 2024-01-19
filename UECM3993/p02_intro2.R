@@ -1,8 +1,8 @@
 # -------------------------------------------------------------------
 # Purpose: Basic Commands for Data Processing in R (Part 2)
-# Author : Liew How Hui (2023)
+# Author : Liew How Hui (2024)
 # License: BSD-3
-# Software: R 3.6 & R 4.x
+# Software: R 4.1+
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
@@ -32,7 +32,34 @@ X = data.frame(
 #
 # The $ sign is used to access the `Column' of the `Table': Table$Column
 #
-X$Quiz1 = apply(X[,3:5],1,sum)
+
+X$Quiz1 = X$Quiz1Q1 + X$Quiz1Q2 + X$Quiz1Q3
+
+# apply(Data, 1 or 2, operation):  1 = ack along row, 2 = ack along column
+X$Quiz1 = apply(X[,3:5],1,sum)     # Classical R syntax
+# f(x,y) can be written as x |> f(y)
+# h(g(f(x))) === x |> f |> g |> h
+X$Quiz1 = X[,3:5] |> apply(1,sum)  # Functional R syntax (only for R 4.1 and above):
+
+# -------------------------------------------------------------------
+#  Alternative Technology --- https://dplyr.tidyverse.org/
+#  * Intro:
+#      https://cran.r-project.org/web/packages/dplyr/vignettes/dplyr.html
+#      - Use select() to choose variables from a data frame.
+#      - Use filter() to choose data based on values.
+#      - Use mutate() to create new variables.
+#      - Use group_by() and summarize() to work with subsets of data.
+#  * Handling CSV, TSV, etc.:
+#      https://readr.tidyverse.org/reference/read_delim.html
+#  * Handling Excel:
+#      https://readxl.tidyverse.org/
+#  Not used due to the number of package dependencies
+# -------------------------------------------------------------------
+
+#library(dplyr) --- marks will be deducted if you use this library for
+#                   unknow reasons in your assignment
+#X = X %>% mutate(Quiz1 = Quiz1Q1 + Quiz1Q2 + Quiz1Q3)
+
 X$Tot1  = X$Quiz1 + X$Assign1
 
 # A vector can be sorted using the Shellsort or Quicksort algorithms:
@@ -111,11 +138,10 @@ CPU = read.csv("cpu.arff", skip=17, header=FALSE)
 # https://liaohaohui.github.io/UECM3993/Auto.data
 Auto=read.table("Auto.data")          # Default to no header
 head(Auto)
-names(Auto)    # column names.  Alternative: colnames(Auto)
 dim(Auto)      # nrow(Auto)  ncol(Auto)
 Auto=read.table("Auto.data",header=T) # Use first row as header
 head(Auto)
-names(Auto)
+names(Auto)    # column names.  Alternative: colnames(Auto)
 dim(Auto)      # nrow(Auto)  ncol(Auto)
 summary(Auto)    # We cannot see the missing values which is `?'
 sapply(Auto, class)   # horsepower is "character", something wrong
@@ -198,7 +224,7 @@ Y = penguins$species
 sps = levels(penguins$species)
 par(mfrow=c(1,length(sps)))
 for(i in 1:length(sps)){
-	hist(penguins[Y==sps[i], 3], xlab=sps[i], main="")
+	hist(penguins[Y==sps[i], ]$bill_length_mm, xlab=sps[i], main="")
 }
 #
 # The histograms are not good for comparison.  We want to put them
@@ -207,7 +233,7 @@ for(i in 1:length(sps)){
 #
 p = list()
 for(i in 1:length(sps)){
-	p[[i]] = hist(penguins[Y==sps[i], 3], xlab=sps[i], main="")
+	p[[i]] = hist(penguins[Y==sps[i], ]$bill_length_mm, xlab=sps[i], main="")
 }
 par(mfrow=c(1,1))
 plot(p[[1]], col=rgb(1,0,0,1/4), xlim=range(na.omit(penguins[,3])), ylim=c(0,40))
@@ -224,7 +250,7 @@ plot(p[[3]], col=rgb(0,0,1,1/4), add=TRUE)
 #
 the.mean = 10
 the.stdv =  2   # standard deviation is 2
-set.seed(2023)  # Fix the starting value of random number generator
+set.seed(2024)  # Fix the starting value of random number generator
 the.samples = rnorm(100, the.mean, the.stdv)
 count = length(the.samples)
 #
@@ -236,7 +262,7 @@ sd(the.samples)
 
 # Holdout Resampling Method Estimate
 # the 'sample' function depends on the seed
-set.seed(2023)
+set.seed(2024)
 idx = sample(count, 0.7*count)   # Linear Sampling of 70% of the Indices
 # We are 'resampling' from the samples!
 sd(the.samples[idx])
@@ -258,20 +284,10 @@ for(i in 1:10){
 mean(fold)
 
 # Simple Boostrapping (Sample with Replacement)
-set.seed(2023)
+set.seed(2024)
 idx.boostrap = sample(count, 0.7*count, replace=TRUE)
 sd(the.samples[idx.boostrap])
 
-
-# -------------------------------------------------------------------
-#  Alternative Technology --- https://dplyr.tidyverse.org/
-#  * Intro:
-#      https://cran.r-project.org/web/packages/dplyr/vignettes/dplyr.html
-#  * Handling CSV, TSV, etc.:
-#      https://readr.tidyverse.org/reference/read_delim.html
-#  * Handling Excel:
-#      https://readxl.tidyverse.org/
-# -------------------------------------------------------------------
 
 
 

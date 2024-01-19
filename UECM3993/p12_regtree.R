@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Regression Trees & Regressive Predictive Models in R
-# Author : Liew How Hui (2023)
+# Author : Liew How Hui (2024)
 # References: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%208%20Lab.txt
 #  2. https://rstudio-pubs-static.s3.amazonaws.com/446972_323b4475ff0749228fe4057c4d7685f5.html
@@ -8,7 +8,7 @@
 #  4. https://uc-r.github.io/regression_trees
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 4.x & install.packages(c("ISLR2", "tree", "partykit", "rpart", "C50, "randomForest", "gbm", "FNN"))
+# Software: R 4.1+
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
@@ -62,7 +62,7 @@ performance.regression.R2  = function(yhat, y){
 # 400 different stores
 #-------------------------------------------------------------------------
 library(ISLR2)
-set.seed(2023)
+set.seed(2024)
 idx = sample(nrow(Carseats), 0.7*nrow(Carseats))
 data.train = Carseats[ idx, ]
 data.test  = Carseats[-idx, ]
@@ -262,7 +262,7 @@ Xend = pi
 # Deterministic input
 #X = seq(Xbeg,Xend,length.out=NS)
 # Random input
-set.seed(2023)
+set.seed(2024)
 X = Xbeg + runif(NS,min=0,max=Xend)
 # Output without noise
 y = sin(X)

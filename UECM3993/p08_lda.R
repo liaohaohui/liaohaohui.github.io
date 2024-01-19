@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for LDA & QDA Models in R
-# Author : Liew How Hui (2023)
+# Author : Liew How Hui (2024)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 #  2. http://euler.stat.yale.edu/~tba3/stat665/lectures/lec11/script11.html
@@ -101,6 +101,20 @@ hist(Smarket$Lag4)
 hist(Smarket$Lag5)
 hist(Smarket$Volume)
 hist(Smarket$Today)
+
+#
+# Simlpe Bivariate Analysis
+#
+par(mfrow=c(2,1))
+attach(Smarket)
+h1 = hist(Lag1[Direction=="Up"], plot=F)
+h2 = hist(Lag1[Direction=="Down"], plot=F)
+plot(h1,col="green",ylim=c(0,250))
+plot(h2,col=rgb(1,0,0,0.5),add=TRUE)
+
+plot(Lag1~Direction, Smarket)
+detach(Smarket)
+
 #
 # EDA's correlation analysis is IMPORTANT
 #
@@ -143,12 +157,66 @@ qda.class=predict(qda.fit,Smarket.2005)$class
 cfmat = table(qda.class,Direction.2005)
 performance(cfmat, "Smarket data analysis with QDA")
 
+
 # -------------------------------------------------------------------
 #  Analysis of the `Fraud' Dataset with LDA Classifier ???
 # -------------------------------------------------------------------
+#https://liaohaohui.github.io/UECM3993/fraud.csv
+fraud = read.csv("fraud.csv")
+col_fac = c("tag")
+fraud[col_fac] = lapply(fraud[col_fac], factor)
+fraud$id_person = NULL
+sapply(fraud,class)
 
-# Impossible due to the data is not normally distributed ->
-# many are factors & integers
+# EDA
+par(mfrow=c(2,4))
+header = names(fraud)
+for(i in 1:7){
+   hist(fraud[,i], main=header[i])
+}
+
+set.seed(123)
+### https://stackoverflow.com/questions/23479512/stratified-random-sampling-from-data-frame
+fraud_tag0 = fraud[fraud$tag=="0", ]
+fraud_tag1 = fraud[fraud$tag=="1", ]
+tag0_idx = sample(nrow(fraud_tag0), size=round(0.7*nrow(fraud_tag0)))
+tag1_idx = sample(nrow(fraud_tag1), size=round(0.7*nrow(fraud_tag1)))
+fraud.train = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
+fraud.test  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
+normalise.vec <- function(column,ref.col) {
+    return ((column - mean(ref.col)) / sd(ref.col))
+}
+fraud.train.knn     = fraud.train
+fraud.test.knn      = fraud.test
+fraud.train.knn$age = normalise.vec(fraud.train.knn$age,fraud.train$age)
+fraud.test.knn$age  = normalise.vec(fraud.test.knn$age, fraud.train$age)
+fraud.train.knn$base_value = normalise.vec(
+    fraud.train.knn$base_value,fraud.train$base_value)
+fraud.test.knn$base_value  = normalise.vec(
+    fraud.test.knn$base_value, fraud.train$base_value)
+
+lda.fit = lda(tag ~ ., fraud.train.knn)
+
+yhat = predict(lda.fit, fraud.test.knn)$class
+cfmat = table(yhat, fraud.test.knn$tag)
+performance(cfmat, "LDA")
+
+qda.fit = qda(tag ~ ., fraud.train.knn)
+
+yhat = predict(qda.fit, fraud.test.knn)$class
+cfmat = table(yhat, fraud.test.knn$tag)
+performance(cfmat, "QDA")
+
+
+lr.fit = glm(tag ~ ., fraud.train.knn, family=binomial)
+
+prob = predict(lr.fit, fraud.test.knn, type="response")
+yhat = ifelse(prob>=0.5, 1, 0)
+cfmat = table(yhat, fraud.test.knn$tag)
+performance(cfmat, "LR (with numeric input)")
+
+# Exercise: Compare to Practical 5
+
 
 # -------------------------------------------------------------------
 #  Analysis of the `Weekly' Dataset with LDA Classifier
@@ -199,6 +267,7 @@ plot(kidx, accu, type="b", xlab="kNN's k", ylab="Accuracy",
 # kNN with larger k seems to perform better than LDA maybe due to 
 # the data cancelling the "noise" in the data.
 
+
 # -------------------------------------------------------------------
 #  Analysis of the `Auto' Dataset from ISLR2 with LDA Classifier
 # -------------------------------------------------------------------
@@ -236,6 +305,13 @@ lda.fit  = lda(mpg01~., data=X_y.train)
 lda.pred = predict(lda.fit, X_y.test)
 cf.mat = table(lda.pred$class, X_y.test$mpg01)
 performance(cf.mat, "\nAuto Data with LDA")
+
+qda.fit  = qda(mpg01~., data=X_y.train)
+qda.pred = predict(qda.fit, X_y.test)
+cf.mat = table(qda.pred$class, X_y.test$mpg01)
+performance(cf.mat, "\nAuto Data with QDA")
+
+
 
 #
 # Try standardisation to see if the trained model would be better
@@ -279,12 +355,13 @@ dim(train)  # ncol(train) = 1 + 16x16
 #
 # Each row is an image with a label at Column 1
 # To look at ONE ROW.  Note: First column is the `label'.
+par(mfrow=c(1,1))
 X = matrix(as.matrix(train[3400,-1]),16,16,byrow=TRUE)
 X = 1 - (X + 1)*0.5
 plot(0,0)
 rasterImage(X,-1,-1,1,1)
 
-set.seed(2023)
+set.seed(2024)
 iset <- sample(nrow(train),5*7)   # Take 35 samples from training data
 par(mar=c(0,0,0,0))
 par(mfrow=c(5,7))
@@ -312,6 +389,7 @@ cfmat = table(Prediction=yhat$class, Actual=ytest)
 #performance(cfmat, "MNIST performance with LDA")
 cfmat
 cat("Accuracy =", sum(diag(cfmat))/length(ytest), "\n")
+performance(cfmat)
 
 # qda? --- not working --- requires filtering of features
 # E.g. Perform PCA to the data???
@@ -332,10 +410,7 @@ cfmat = table(Prediction=predKnn, Actual=ytest)
 # The performance function is only for binary classification
 # not appropriate here.
 #
-#performance(table(predKnn, ytest), "\nkNN with k=3")
-cfmat
-cat("Accuracy =", sum(diag(cfmat))/length(ytest), "\n")
-
+performance(cfmat, "\nkNN with k=3")
 #
 # glmnet is an extension of Multivariate logit
 #
@@ -356,11 +431,21 @@ cat("Accuracy =", sum(diag(cfmat))/length(ytest), "\n")
 #performance(table(predRf, ytest), "\nMNIST with Random Forest")
 
 #---------------------------------------------------------------
-# Do not run the following three lines if your computer is slow
-# The `SVM' predictive model is very very very slow.
+# The various SVM predictive models
 #---------------------------------------------------------------
 
-#outSvm  = e1071::svm(Xtrain,  factor(ytrain), kernel="radial", cost=1)
+library(e1071)
+outSvm  = svm(Xtrain,  factor(ytrain), kernel="linear", cost=1)
+cat("dim(Input Training Data) = ", dim(Xtrain), "\n")
+cat("dim(alpha*y) = ", dim(outSvm$coefs), "\n")
+cat("dim(support vector) = ", dim(outSvm$SV), "\n")
+predSvm = predict(outSvm, Xtest)
+performance(table(predSvm, ytest), "\nMNIST with linear-SVM")
+
+### Do not run the following three lines if your computer is slow
+### The radial-`SVM' predictive model is very very very slow.
+### Use radial when the data are seperated as "two rings"
+#outSvm  = svm(Xtrain,  factor(ytrain), kernel="radial", cost=1)
 #predSvm = predict(outSvm, Xtest)
-#performance(table(predSvm, ytest), "\nMNIST with SVM")
+#performance(table(predSvm, ytest), "\nMNIST with radial-SVM")
 

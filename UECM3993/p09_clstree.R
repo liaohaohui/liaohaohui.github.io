@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Classification Tree Based Predictive Models in R
-# Author : Liew How Hui (2023)
+# Author : Liew How Hui (2024)
 # References: 
 #  1. https://daviddalpiaz.github.io/r4sl/trees.html
 #  2. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%208%20Lab.txt
@@ -8,7 +8,7 @@
 #  4. https://cran.r-project.org/web/packages/C50/vignettes/C5.0.html
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 4.x & install.packages(c("ISLR2", "tree", "partykit", "C50"))
+# Software: R 4.1+
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
@@ -346,7 +346,7 @@ credit_data = read.csv("credit_data.csv", stringsAsFactors=T)
 #
 # Linear Sampling
 #
-set.seed(2023)
+set.seed(2024)
 in_train   = sample(nrow(credit_data), size = 3000)
 train_data = credit_data[ in_train,]
 test_data  = credit_data[-in_train,]

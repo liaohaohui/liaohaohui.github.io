@@ -1,11 +1,11 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for kNN (k-Nearest Neighbour) Models in R (Part 2)
-# Author : Liew How Hui (2023)
+# Author : Liew How Hui (2024)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 4.x & install.packages(c("kknn", "FNN"))
+# Software: R 4.1+
 # Duration: 1 hour
 # -------------------------------------------------------------------
 

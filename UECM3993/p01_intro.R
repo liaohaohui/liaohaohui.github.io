@@ -1,9 +1,9 @@
 # -------------------------------------------------------------------
 # Purpose: Practical: Basic R Commands for Data Processing (Part 1)
-# Author : Liew How Hui (2023)
+# Author : Liew How Hui (2024)
 # Reference: http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%202%20Lab.txt
 # License: BSD-3
-# Software: R 4.x or R 3.6
+# Software: R 4.1+
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
@@ -125,7 +125,7 @@ g = 5 ^ 6     # Also 5 to the power of 6
 ##
 ## Non-basic data structure => Dates (internally integer)
 ##
-mydates = as.Date("2023-01-31")
+mydates = as.Date("2024-01-31")
 today = Sys.Date()
 
 ##
@@ -234,7 +234,7 @@ plot(
 # seed number is probably mentioned in SSIF but you don't need to
 # take SSIF just like anyone driving a car does not need to know
 # how to design and construct a car.
-set.seed(2023)
+set.seed(2024)
 # r = random numbers, 50 = 50 elements, unif = uniform dist.
 x.unif = runif(50)
 # r = random numbers, 50 = 50 elements, norm = normal dist.
@@ -328,6 +328,13 @@ A[c(1,3),c(2,4)]   # Get intersection between rows and columns
 A[-c(1,3),]        # Remove first and third rows
 A[-c(1,3),-c(3,4)] # Remove some rows and some columns
 
+#
+# Reduction
+#
+apply(A, 1, sum)    # sum along the rows
+apply(A, 2, sum)    # sum along the columns
+
+
 # -------------------------------------------------------------------
 #  Practical: More Statistical Functions
 #
@@ -357,7 +364,7 @@ A[-c(1,3),-c(3,4)] # Remove some rows and some columns
 # Ref: https://www.stat.umn.edu/geyer/old/5101/rlook.html
 # -------------------------------------------------------------------
 
-set.seed(2023)
+set.seed(2024)
 x1 = rnorm(200, mean=60, sd=15)   # X ~ Normal(60,15^2)
 x2 = rbinom(200, size=100, prob=0.5)   # X ~ Binom(100, 0.5) ≈ Normal?
 x3 = rpois(200, lambda=2.5)       # X ~ Poisson(2.5) ≈ Exponential?
