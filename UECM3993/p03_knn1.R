@@ -21,15 +21,12 @@ library(ISLR2)   # provides the Smarket (US Stock Market 2001-2005 data)
 #View(Smarket)
 names(Smarket)
 dim(Smarket)
-train = (Smarket$Year < 2005)
-Smarket.2005 = Smarket[!train,]   # MATLAB: Masking / Python: Boolean indexing
-# , for picking rows in 2D data
 
 # -------------------------------------------------------------------
 #  Analysis of the reduced `Smarket' Dataset with kNN Classifier
 # -------------------------------------------------------------------
-library(class)   # for knn() --- converts categorical data to integer
-#library(FNN)    # alternative for knn() --- no automatic conversion
+# For Holdout Method / Train-Test Split / Validation Set approach / ...
+train = (Smarket$Year < 2005)
 attach(Smarket)
 train.X= cbind(Lag1,Lag2)[ train,]  # cbind = Column Binding
 train.y = Direction[train]
@@ -37,11 +34,13 @@ test.X = cbind(Lag1,Lag2)[!train,]
 test.y = Direction[!train]  # Direction.2005, associated with Smarket.2005
 detach(Smarket)
 #set.seed(1)
+library(class)   # for knn() --- converts categorical data to integer
+#library(FNN)    # alternative for knn() --- no automatic conversion
 knn.pred = knn(train.X,test.X,train.y)  # Computer Default: k=1
 table(knn.pred,test.y)  # k=1: (83+43)/252
 knn.pred = knn(train.X,test.X,train.y,k=3)
 table(knn.pred,test.y)
-accuracy = mean(knn.pred==test.y)
+accuracy = mean(knn.pred==test.y)   # Evaluation for Classification: Accuracy
 
 # Summary: Financial Stochastic Data is ``not'' predictable
 # More advanced maths like SDE (Financial Econ II) to model the risk
@@ -56,17 +55,24 @@ sapply(fraud,class)
 #colnames(fraud)
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud_fac = fraud    # create a copy
-### change data type from numeric to categorical
+### change data type from integer to categorical
 fraud_fac[col_fac] = lapply(fraud[col_fac], factor)
 # "After type conversion .....
 sapply(fraud,class)
 sapply(fraud_fac,class)
 
+# Linear sampling:  Just sample a portion (e.g. 70%) from the data
+# Stratified sampling:  Split the data based on the output class C1, C2
+#                       Sample 70% from C1, 70% from C2, then combine.
+
 # -------------------------------------------------------------------
 #  Stratified sampling for Binary Classification Problem
 # -------------------------------------------------------------------
 
-set.seed(123)
+# Target for fraud: tag (0=fraud, 1=no fraud)
+# 2003 x 9 (p = 8, n = 2003)
+
+set.seed(123)   # Reduce randomness by allowing repetition
 cat("Option 1: Manual stratified sampling using Base R ...\n")
 ### https://stackoverflow.com/questions/23479512/stratified-random-sampling-from-data-frame
 fraud_tag0 = fraud[fraud$tag=="0", ]
@@ -204,17 +210,17 @@ performance = function(xtab, desc=""){
         cat("\nStatistics by Class:\n")
         # Levels of the actual data
         lvls = dimnames(xtab)[[2]]
-        sensitivity = c()
-        specificity = c()
+        recalls     = c()
+        mcspecificity = c()
         ppv         = c()
         npv         = c()
         for(i in 1:length(lvls)) {
-            sensitivity[i] = xtab[i,i]/sum(xtab[,i])
-            specificity[i] = sum(xtab[-i,-i])/sum(xtab[,-i])
+            recalls[i] = xtab[i,i]/sum(xtab[,i])
+            mcspecificity[i] = sum(xtab[-i,-i])/sum(xtab[,-i])
             ppv[i]         = xtab[i,i]/sum(xtab[i,])
             npv[i]         = sum(xtab[-i,-i])/sum(xtab[-i,])
         }
-        b = data.frame(rbind(sensitivity,specificity,ppv,npv))
+        b = data.frame(rbind(recalls,mcspecificity,ppv,npv))
         names(b) = lvls
         print(b)
     } else {
@@ -288,6 +294,8 @@ performance(cftable.std, "Even index for training, odd index for testing")
 
 # -------------------------------------------------------------------
 #  Analysis of the IRIS Flower Dataset (3-class output) with kNN Classifier
+#  Input:  iris[ , c("Sepal.Length", ..., "Petal.Width")]
+#  Target: iris$Species
 # -------------------------------------------------------------------
 
 # Linear Sampling 70% for training, 30% for testing
