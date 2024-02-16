@@ -274,6 +274,14 @@ for(i in 1:count) {
 }
 mean(loocv)
 
+d.f = data.frame(x=1:20, y = (1:20)^2)
+loocv = 0
+for(i in 1:nrow(d.f)) {
+  m = lm(y ~ poly(x,2), d.f[-i,])
+  yhat = predict(m, d.f[i, ])
+  loocv[i] = (yhat-d.f[i,]$y)**2
+}
+
 # 10-fold CV
 # 100 data cut into 10-fold, each fold has 10 items
 range = 1:(count/10)
