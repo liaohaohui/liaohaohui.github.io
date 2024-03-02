@@ -113,6 +113,9 @@ contrasts(Smarket$Direction)    # To show the value (1/0) for level (Up/Down)
 ### Make prediction based on the probability computed (>=0.5 is Up)
 predicted = ifelse(logreg.probs < 0.5, "Down", "Up")
 
+# logreg.probs[2] same as
+# 1/(1+exp(-sum(coef(logreg.fits) * c(1,unlist(Smarket.2005[2,2:7])))))
+
 ### Construct confusion matrix and performance measures
 cfmat  = table(predicted,Direction.2005)
 performance(cfmat, "Performance of Logistic Regression Model on Smarket Data")

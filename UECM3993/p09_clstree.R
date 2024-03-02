@@ -221,6 +221,18 @@ cf.mat.prune2 = table(tree.pred,Carseats.test$High)
 performance(cf.mat.prune2, "\nPrunned tree::tree to around 2 nodes")
 
 #
+# Conditional Inference Tree
+#
+#install.packages("partykit")   # Less dependencies, required by C5.0
+library(partykit)
+carseats.ctree = ctree(High~., Carseats.train)
+plot(carseats.ctree)
+print(carseats.ctree)
+yhat2 = predict(carseats.ctree,Carseats.test,type="response")
+cf.mat = table(yhat2,Carseats.test$High)
+performance(cf.mat, "\nCarseats with conditional inference tree")
+
+#
 # Comparing to C5.0 tree:
 # C5.0 is the extension of C4.5 which extends ID3 (Quilan)
 # C5.0 is patterned by https://www.rulequest.com/see5-info.html
@@ -250,19 +262,6 @@ cat(C50.tree$tree)
 yhat = predict(C50.tree,Carseats.test,type="class")
 cf.mat = table(yhat,Carseats.test$High)
 performance(cf.mat, "\nCarseats with C5.0 tree")
-
-#
-# Conditional Inference Tree
-#
-#install.packages("party")   # if you haven't installed
-suppressMessages(library(partykit))  # Only supports numerical input
-                                     # converts categorical data to numeric data
-carseats.ctree = ctree(High~., Carseats.train)
-plot(carseats.ctree)
-print(carseats.ctree)
-yhat2 = predict(carseats.ctree,Carseats.test,type="response")
-cf.mat = table(yhat2,Carseats.test$High)
-performance(cf.mat, "\nCarseats with conditional inference tree")
 
 
 cat("
