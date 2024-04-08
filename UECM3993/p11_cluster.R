@@ -9,13 +9,6 @@
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
-#
-# Min-Max scaling functions
-#
-rescale = function(x, to=c(0, 1), from=range(x, na.rm=TRUE, finite=TRUE)) {
-  (x - from[1]) / diff(from) * diff(to) + to[1]
-}
-
 #-------------------------------------------------------------------------
 # Example 1: Basic K-Means with 2 clusters (simulated)
 #-------------------------------------------------------------------------
@@ -36,6 +29,7 @@ plot(x, col=km.out$cluster, main="K-Means Clustering Results with K=2",
 
 dev.new()
 set.seed(3)
+# nstart=20 to minimise the local mimina problem
 km.out=kmeans(x,3,nstart=20)  # 20 random centroids get the one with min WSS
 plot(x, col=km.out$cluster, main="K-Means Clustering Results with K=3", 
   xlab="x", ylab="y", pch=20, cex=2)
@@ -91,6 +85,13 @@ for(k in c(2,3,4,6)) {
       main=sprintf("k-Means with k=%d",k))
 }
 
+#
+# Min-Max scaling functions
+#
+rescale = function(x, to=c(0, 1), from=range(x, na.rm=TRUE, finite=TRUE)) {
+  (x - from[1]) / diff(from) * diff(to) + to[1]
+}
+
 # min-max scaling
 X_rsc = as.data.frame(lapply(X, rescale))
 head(X_rsc)
@@ -126,7 +127,7 @@ points(km$centers, pch=18, cex=2, col="red")
 # To prevent PAM from falling into local-minima
 kmd = pam(X, 2)
 plot(X, col=kmd$clustering, pch=16, cex=2, main="PAM (k=2)")
-points(kmd$medoids, pch=18, cex=2, col="red")
+points(kmd$medoids, pch=18, cex=3.2, col="red")
 
 ## GMM (Gaussian Mixture Model)
 #library(mclust, quietly=TRUE)  #install.packages("mclust")
@@ -240,7 +241,11 @@ plot(pca$x[,1:2], col=hc.s.clusters, pch=16, cex=1.8, main="AGNES(Single-link) b
 text(pca$x[,1:2], nci.labs, cex=0.6)
 
 # Compare unsupervised learning results (clusters) to actual label
+table(km.out$cluster,nci.labs)
 table(hc.c.clusters,nci.labs)
+table(hc.a.clusters,nci.labs)
+table(hc.s.clusters,nci.labs)
+
 
 
 #-------------------------------------------------------------------------
@@ -252,13 +257,14 @@ fraud = read.csv("fraud.csv")
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 ### change data type from numeric to categorical
 fraud[col_fac] = lapply(fraud[col_fac], factor)
+Y = fraud$tag
 fraud[c("id_person", "tag")] = NULL
 
 # Get stats range of each column
 apply(fraud,2,range)
 library(gower)
 # For gower distance (https://jamesmccaffrey.wordpress.com/2020/04/21/example-of-calculating-the-gower-distance/):
-# numeric:     abs(diff) / range 
+# numeric:     abs(diff between two items) / range 
 # non-numeric: 0 if equal, 1 if different
 # E.g. Consider Item 1 vs Item 2 & 3
 # Calculation for Item 1 vs Item 3:
@@ -266,7 +272,7 @@ library(gower)
 # For age: abs(32-21)/(57-21) => 0.3055556
 # For base_value: abs(729.3-683.8)/(729.3-384.1) => 0.1318076
 # gower distance = (3 + 0.3055556 + 0.1318076)/7 = 0.4910519  # 7 columns
-gower_dist(fraud[1,], fraud[2:3,])  # Item 1 vs 3 => 0.4910519
+gower_dist(fraud[1,], fraud[2:3,])  # item 1 vs item 3 => 0.4910519
 
 #
 # Only useful for small number of samples n (not much more than 2000).
@@ -274,14 +280,17 @@ gower_dist(fraud[1,], fraud[2:3,])  # Item 1 vs 3 => 0.4910519
 library(cluster)
 gower_dst = daisy(fraud, metric="gower")  # Dissimilarity Matrix
                                           # Generalisation of distance matrix
+# Don't draw the dendrogram --- super slow
 
 # We can now feed the results into any clustering algorithm that accepts a
 # distance matrix. This primarily includes cluster::pam(), cluster::diana(),
 # and cluster::agnes() (stats::kmeans() and cluster::clara() do not accept
 # distance matrices as inputs).
 
+pam_gower2  = pam(x = gower_dst, k = 2, diss = TRUE)
 pam_gower   = pam(x = gower_dst, k = 8, diss = TRUE)
-agnes_gower = agnes(x = gower_dst, diss = TRUE)  # Can be slow (1 minute?)
+# agnes defaults to using average-linkage
+agnes_gower = agnes(x = gower_dst, diss = TRUE, method="complete")  # Can be slow (1 minute?)
 diana_gower = diana(x = gower_dst, diss = TRUE)  # Diana is very slow
 # Dendrogram plot is not feasible for agnes & diana (>2000: too many points)!
 # pam_gower$clustering

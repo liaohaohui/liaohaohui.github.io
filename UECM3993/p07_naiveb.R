@@ -108,6 +108,7 @@ fraud.test = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
 #fraud.train = fraud[train.row.index, ]
 #fraud.test = fraud[-train.row.index, ]
 
+#install.packages("splitstackshape")
 #library(splitstackshape)    # for stratified()
 #fraud.train <- stratified(fraud,"tag",size=0.7)
 #library(dplyr)  # It has a lot of dependencies.
@@ -125,6 +126,7 @@ cat("
 Calculations without Laplace Smoothing
 ")
 model.nb = naive_bayes(tag~., data = fraud.train)
+print(model.nb)
 #library(e1071)  # for naiveBayes()
 #model.e1071 = naiveBayes(tag~., data=fraud.train, laplace=0)
 p = ncol(fraud.train)-1
@@ -162,8 +164,9 @@ library(tm)  # Text Mining package.  For DocumentTermMatrix, VCorpus, ...
 corpus = VCorpus(VectorSource(d.f$content))
 # The DocumentTermMatrix can be slow for large data
 # and the stemming is too primitive and brutal!
+# tolower = TRUE is the default
+# DocumentTermMatrix will remove all terms with less than 3 characters
 dtm = DocumentTermMatrix(corpus, control = list(
-  tolower = TRUE,
   removeNumbers = TRUE,
   removePunctuation = TRUE,
   stemming = TRUE      # This is bad, need to work on it
@@ -186,6 +189,7 @@ idx.test = 7:10
 test  = as.matrix(dtm[idx.test,])
 Y.test  = d.f$Y[idx.test]
 
+# multinomial_naive_bayes defaults to laplace=0.5 (not what we want)
 classifier = multinomial_naive_bayes(train, Y.train, laplace=1)
 summary(classifier)
 coef(classifier)
@@ -205,13 +209,24 @@ print(cfmat)
 
 ### https://www.kaggle.com/code/abeperez/building-a-spam-filter-using-fastnaivebayes/notebook
 library(fastNaiveBayes)   # for fnb.multinomial()
-mnnb = fnb.multinomial(x=train, y=Y.train, laplace=1)
+mnnb = fnb.multinomial(x=dtm[idx.train,], y=Y.train, laplace=1)
+#mnnb = fnb.multinomial(x=train, y=Y.train, laplace=1)
 # The fastNaiveBayes provides a nice summary of word counts with
 # the list item 'present':
 mnnb$present
 yhat = predict(mnnb, test)
 cfmat = table(yhat, Y.test)
 print(cfmat)
+
+### Runs but the modelling fails completely
+### dtm[idx.train,] is NONNEGATIVE INTEGERS (NOT BINARY)
+### the algorithm didn't complain, so difficult to tell what's
+### going on.
+#bnb = fnb.bernoulli(x=dtm[idx.train,], y=Y.train, laplace=1)
+#bnb$present
+#yhat = predict(bnb, test)
+#cfmat = table(yhat, Y.test)
+#print(cfmat)
 
 ### naivebayes::bernoulli_naive_bayes
 convert2bin = function(x){ifelse(x>0,1,0)}
@@ -240,11 +255,16 @@ test = as.data.frame(apply(dtm[idx.test,],2,convert))
 test = as.data.frame(lapply(test, function(c){factor(c,levels=c("No","Yes"))}))
 Y.test  = factor(d.f$Y[idx.test],levels=c("ham","spam"))
 
+# Using naivebayes library's categorical naive bayes
+m = naive_bayes(train, Y.train, laplace=1)
+Yhat = predict(m, test)
+print(table(Yhat, Y.test))
+
+# Using another library
 library(e1071)    # for naiveBayes()
 classifier = naiveBayes(train, Y.train, laplace=1)
 #classifier$tables$call   # Probability table of seeing the world `call'
 yhat = predict(classifier, test)
-
 cfmat = table(yhat, Y.test)
 performance(cfmat, "e1071 Naive Bayes with Laplace Smoothing")
 
@@ -284,15 +304,15 @@ test  = naive_data[(nrow(naive_data)*.7+1):nrow(naive_data),]
 
 # Without Laplace Smoothing
 #nb_default = naiveBayes(response~., data=train[,-4], laplace=0)
-nb_default = naive_bayes(response~., data=train[,-4])  # laplace defaults to 0
-default_pred = predict(nb_default, test[,-c(4,6)], type="class")
+nb_default = naive_bayes(response~., data=train)  # laplace defaults to 0
+default_pred = predict(nb_default, test[,-c(6)], type="class")
 # To extract information from Naive Bayes Network Model
 #default_raw_pred <- predict(nb_default, test, type="raw")
 table(default_pred, test$response, dnn=c("Prediction","Actual"))
 
-# With Laplace Smoothing
+# With Laplace Smoothing (no difference)
 #nb_laplace1 = naiveBayes(response~., data=train, laplace=1)
 nb_laplace1 = naive_bayes(response~., data=train, laplace=1)
-laplace1_pred = predict(nb_laplace1, test[,-6], type="class")
+laplace1_pred = predict(nb_laplace1, test[,-c(6)], type="class")
 table(laplace1_pred, test$response, dnn=c("Prediction","Actual"))
 
