@@ -69,26 +69,177 @@ performance = function(xtab, desc=""){
     }
 }
 
+# -------------------------------------------------------------------
+#  Practical : Working with Similarity Measures other than
+#  Euclidean distance.  philentrophy library provides distance
+#  measures between two vectors.  They don't work with data.frame
+#
+#  Ref: 
+#    1. https://rstudio-pubs-static.s3.amazonaws.com/1059197_cabed5b55c88477582c1816435e3b1ce.html
+#    2. https://www.youtube.com/watch?v=w2FIg2-ln8s (Part 2 - KNN Solved 
+#       Example Cosine Similarity Manhattan Distance Mahesh Huddar)
+# -------------------------------------------------------------------
+
+library(philentropy)
+# getDistMethods()
+
+#
+# Working with Example 2.1.3
+#
+# Exercise: Compare them to the formulas in Topic 2
+#
+Calculus1 = c(3626, 1446, 915, 798, 552, 556)
+Calculus2 = c( 926,  476, 317, 356, 283, 146)
+print(euclidean(Calculus1, Calculus2, testNA=F))
+# Or: distance(rbind(Calculus1,Calculus2), method="euclidean")
+print(manhattan(Calculus1, Calculus2, testNA=F))
+print(chebyshev(Calculus1, Calculus2, testNA=F))
+print(minkowski(Calculus1, Calculus2, n=3.5, testNA=F))
+# The cosine dissimilarity lack the complement `1-'
+print(1 - cosine_dist(Calculus1, Calculus2, testNA=F))
+
+#
+# Working with Example 2.1.4
+#
+x = c(1, 0, 1, 1, 0, 0, 0, 0, 0, 0)
+y = c(0, 0, 1, 1, 0, 0, 1, 0, 0, 1)
+print(intersection_dist(x,y,testNA=F)/length(x))
+print(jaccard(x,y,testNA=F))
+print(tanimoto(x,y,testNA=F))
+
 
 # -------------------------------------------------------------------
-#  Manual stratified sampling using Base R & Standardising Fraud data
-#  as in Practical 3
+#  Practical : Analysing Fraud data using kNN with Gower similarity
+#  measurement.
 # -------------------------------------------------------------------
+
+#
+#  Gower distance
+#  * numeric     : abs(diff between two items) / range 
+#  * non-numeric : 0 if equal, 1 if different
+#
+#  Note: philentropy's gower is NOT for the Gower distance but for
+#  difference between two probability vectors.  Gower distance
+#  for a mixed of numeric and categorical data is available in 
+#  gower library (StatMatch has too many dependecies)
+#
+#  Example from lecture notes using fraud data (row 1 vs rows 2--4):
+#
+#  n | gender | age | status | employment | acclink | supplement | base  
+#  --|--------|-----|--------|------------|---------|------------|-------
+#  1 |      1 |  32 |      2 |          3 |       0 |          1 | 729.3 
+#  2 |      1 |  57 |      1 |          3 |       0 |          0 | 384.1 
+#  3 |      1 |  21 |      3 |          1 |       0 |          0 | 683.8 
+#  4 |      1 |  27 |      1 |          3 |       0 |          0 | 143.0 
+#
+# Gower_dist(row 1, row 2) 
+# = 1/7 * ((1!=1) + abs((32-57)/(57-21)) + (2!=1) + (3!=3) + (0!=0) + (1!=0) + 
+#     abs((729.3-384.1)/(729.3-143.0)))
+#
+# Gower_dist(row 1, row 3)
+# = 1/7 * ((1!=1) + abs((32-21)/(57-21)) + (2!=3) + (3!=1) + (0!=0) + (1!=0) +
+#     abs((729.3-683.8)/(729.3-143.0)))
+#
+# Gower_dist(row 1, row 4)
+# = 1/7 * ((1!=1) + abs((32-27)/(57-21)) + (2!=1) + (3!=3) + (0!=0) + (1!=0) +
+#     abs((729.3-143.0)/(729.3-143.0)))
+#
+#  Ref:
+#    1. https://jamesmccaffrey.wordpress.com/2020/04/21/example-of-calculating-the-gower-distance/):
+#    2. https://bradleyboehmke.github.io/HOML/kmeans.html
+#
 
 #https://liaohaohui.github.io/UECM3993/fraud.csv
-fraud = read.csv("fraud.csv")
+fraud = read.csv("fraud.csv",row.names=1)
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
-### change data type from numeric to categorical
 fraud[col_fac] = lapply(fraud[col_fac], factor)
 set.seed(123)
-# Option 1 stratified sampling
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
 tag0_idx = sample(nrow(fraud_tag0), size=round(0.7*nrow(fraud_tag0)))
 tag1_idx = sample(nrow(fraud_tag1), size=round(0.7*nrow(fraud_tag1)))
 fraud.train = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
 fraud.test  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
-# Data standardisation with respect to the TRAINING DATA
+
+#
+# Based on what we learned in the lecture and first two practical classes, 
+# here's a simple implementation.
+#
+n_clust = 3
+d.train = fraud.train
+d.test  = fraud.test
+X.train = d.train[,1:7]
+X.test  = d.test[,1:7]
+Y.train = d.train[,8]
+Y.test  = d.test[,8]
+Yhat = c()
+library(gower)
+gdist = matrix(rep(0,nrow(d.train)*nrow(d.test)), nrow=nrow(d.train))
+for (j in 1:nrow(d.test)) {
+  gdist[,j] = gower_dist(X.test[j,], X.train)
+  # Get k smallest distances
+  Yhat[j] = names(sort(-table(Y.train[order(gdist[,j])[1:n_clust]])))[1]
+}
+performance(table(Yhat, Y.test))
+
+#
+# dprep provides an implementation of KNN with Gower distance listed below.
+#
+moda <- structure(function (x, na.rm = TRUE) {
+    if (na.rm == TRUE) 
+        m1 = rev(sort(table(x[])))
+    else
+        m1 = rev(sort(table(x, exclude = NULL)))
+    moda = names(m1[m1 == m1[1]])
+    if (is(x, "numeric")) 
+        moda = as.numeric(moda)
+    return(moda)
+}, source = c("function(x,na.rm=TRUE)", "{", "  ", "#Function that finds the mode of vector x", 
+"", "  if(na.rm==TRUE) m1=rev(sort(table(x[])))", "    else m1=rev(sort(table(x,exclude=NULL)))", 
+"  moda=names(m1[m1==m1[1]])", "  if (is(x,\"numeric\")) moda=as.numeric(moda)", 
+"  return(moda)", "}"))
+
+knngow <- function (train,test,k) {
+  p=dim(train)[2]
+  ntest=dim(test)[1]
+  ntrain=dim(train)[1]
+  classes=rep(0,ntest)
+  if(ntest==ntrain) {
+    for(i in 1:ntest) {
+      tempo = order(gower_dist(test[i,-p],train[-i,-p]))[1:k]
+      classes[i] = moda(train[tempo,p])[1]
+    }
+  } else {
+    for(i in 1:ntest) {
+      tempo = order(gower_dist(test[i,-p],train[,-p]))[1:k] 
+      classes[i] = moda(train[tempo,p])[1]}
+  }
+  classes
+}
+
+yhat2 = knngow(fraud.train, fraud.test, k=n_clust)
+performance(table(Yhat, Y.test))
+
+
+
+# -------------------------------------------------------------------
+#  Practical : Analysing Fraud data using Weighted kNN with
+#  different kernels and Euclidean distance.
+# -------------------------------------------------------------------
+
+#
+# Loading Fraud data and applying data preparation as in Practical 3
+#
+fraud = read.csv("fraud.csv")
+col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
+fraud[col_fac] = lapply(fraud[col_fac], factor)
+set.seed(123)
+fraud_tag0 = fraud[fraud$tag=="0", ]
+fraud_tag1 = fraud[fraud$tag=="1", ]
+tag0_idx = sample(nrow(fraud_tag0), size=round(0.7*nrow(fraud_tag0)))
+tag1_idx = sample(nrow(fraud_tag1), size=round(0.7*nrow(fraud_tag1)))
+fraud.train = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
+fraud.test  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
 normalise.vec <- function(column,ref.col) {
     return ((column - mean(ref.col)) / sd(ref.col))
 }
@@ -100,11 +251,6 @@ fraud.train.knn$base_value = normalise.vec(
     fraud.train.knn$base_value,fraud.train$base_value)
 fraud.test.knn$base_value  = normalise.vec(
     fraud.test.knn$base_value, fraud.train$base_value)
-
-
-# -------------------------------------------------------------------
-#  Weighted kNN
-# -------------------------------------------------------------------
 
 library(kknn) # tons of dependencies: igraph, Matrix, graphics
 cat("\nTraining and validation with wkNN ...\n\n")
@@ -149,8 +295,8 @@ performance(table(yhat.rect, fraud.test.knn$tag), "wkNN.Rectangular")
 #
 
 # -------------------------------------------------------------------
-#  Applying kNN Regressor to Regression Problem
-#  Case Study: `Boston' Dataset
+#  Practical : Applying kNN Regressor to a Regression Problem
+#  using the "Boston" Dataset
 # -------------------------------------------------------------------
 
 ### https://daviddalpiaz.github.io/r4sl/knn-reg.html
@@ -193,11 +339,11 @@ pm.250 = knn.reg(X, test=lstat_grid, y=y, k=250)
 plot(cbind(X,y))
 lines(lstat_grid[,1],pm.250$pred)
 
-# -------------------------------------------------------------------
+#
 # (1) Performance Measurement for Regression Problems using
 #     RMSE (Root Mean Sum of Square Error)
 # (2) Hyperparameter analysis of kNN's k using the Holdout Method
-# -------------------------------------------------------------------
+#
 
 rmse = function(actual, predicted) {
   sqrt(mean((actual - predicted)^2))

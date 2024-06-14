@@ -12,9 +12,13 @@ getwd()
 #setwd("PathToYourFolder")
 
 # -------------------------------------------------------------------
-#  Practical: Data Frame (2D Structured Data to handle the mix of 
-#  numeric and categorical data just like Excel table) & Sorting
-#  Many of the matrix operations are applicable to Data Frame.
+#  Practical: Working with user-defined Data Frame 
+#
+#  R's Data Frame is a 2D Structured Data to handle the mix of 
+#  numeric and categorical data just like Excel table.
+#
+#  Many of the matrix operations from Practical 1 are applicable to 
+#  Data Frame.
 # -------------------------------------------------------------------
 
 #
@@ -24,10 +28,14 @@ X = data.frame(
   Progromme = c("MCCG11503-Kampar","MCCG11503-Kampar",
                 "MECG11503-SL", "MECG11503-SL", "MEME19803", "MEME19803"),
   Name = c("Stud1", "Student2", "Student3", "Student4", "Student5", "Stud6"),
+  LearnerType = c("Visual", "Read-Write", "Read-Write", "Visual", "Read-Write", "Auditory"),
   Quiz1Q1 = c(3.9, 4, 4.7, 5.9, 5.3, 3.4),
   Quiz1Q2 = c(0.9, 0.5, 2, 1.8, 1.5, 0),
   Quiz1Q3 = c(0.5, 1, 0.5, 2, 0, 0.5),
   Assign1 = c(16.9, 16, 14.2, 15.4, 11.1, 11.1))
+
+# Univariate Analysis
+summary(X)
 
 #
 # The $ sign is used to access the `Column' of the `Table': Table$Column
@@ -36,10 +44,10 @@ X = data.frame(
 X$Quiz1 = X$Quiz1Q1 + X$Quiz1Q2 + X$Quiz1Q3
 
 # apply(Data, 1 or 2, operation):  1 = ack along row, 2 = ack along column
-X$Quiz1 = apply(X[,3:5],1,sum)     # Classical R syntax
+X$Quiz1 = apply(X[,4:6],1,sum)     # Classical R syntax
 # f(x,y) can be written as x |> f(y)
 # h(g(f(x))) === x |> f |> g |> h
-X$Quiz1 = X[,3:5] |> apply(1,sum)  # Functional R syntax (only for R 4.1 and above):
+X$Quiz1 = X[,4:6] |> apply(1,sum)  # Functional R syntax (only for R 4.1 and above):
 
 # -------------------------------------------------------------------
 #  Alternative Technology --- https://dplyr.tidyverse.org/
@@ -69,19 +77,52 @@ X$Tot1  = X$Quiz1 + X$Assign1
 
 sort(X$Tot1)    # Sort results
 
-rank(X$Tot1)    # Ranking
+rank(X$Tot1)    # Ranking (small to large)
+cbind(X[, c("Name", "Tot1")], Rank=rank(-X$Tot1))  # large to small
 
+# Sort by column "Tot1" from small to large as in Excel
 order(X$Tot1)   # Get the order
-X[order(X$Tot1), c("Name", "Tot1")]
-cbind(X[order(X$Tot1), c("Name", "Tot1")], Rank=rank(X$Tot1))
+X[order(X$Tot1), c("Name", "Tot1")]    # Order by total
+
+#
+# Dealing with Categorical Data (Topic 1)
+# 1. If the categorical data in string type, try changing them to 
+#    categorical data in R using factor()
+# 2. Check data type: sapply(X, class)
+X$LearnerType = factor(X$LearnerType)
+summary(X)
+
+#
+# Removing some irrelevant columns, e.g. Name
+#
+X$Name      = NULL
+
+#
+# Converting useful categorical data to numeric:
+# 1. Create a copy of selected columns of the original data
+# 2. Convert categorical data to numeric, treating it as ordinal
+#
+X.numeric = X[ , 2:8]
+X.numeric$LearnerType = as.integer(X.numeric$LearnerType)
+
+#
+# Standardisation of X.numeric
+#
+X.numeric.std = scale(X.numeric)
+#
+# Min-Max Scaling of X.numeric : Need to do it manually or load library
+#
+minmax = function(x) { (x-min(x))/(max(x)-min(x)) }
+X.numeric.mms = apply(X.numeric, 2, minmax)   # 1 = row, 2 = column
 
 
 # -------------------------------------------------------------------
-#  Practical: IO on tabular data
+#  Practical: Working with IO on tabular data
 # -------------------------------------------------------------------
 
 #
 # Reading data frame from string
+# When column 1 is the row names, we can use row.names=1
 #
 d.f = read.csv(text=
 "Day,Outlook,Temp,Humidity,Wind,Decision
@@ -98,12 +139,8 @@ d.f = read.csv(text=
 11,Sunny,75,70,Strong,Yes
 12,Overcast,72,90,Strong,Yes
 13,Overcast,81,75,Weak,Yes
-14,Rain,71,80,Strong,No")
+14,Rain,71,80,Strong,No", row.names=1)
 
-#
-# We can delete the first column Day using
-#
-d.f$Day = NULL
 #
 # The Temp(erature) is in USA Fahrenheit scale.
 # We want to convert it to Celcius, we can
@@ -133,116 +170,152 @@ CPU = read.csv("cpu.arff", skip=17, header=FALSE)
 
 #
 #  Reading data frame from tabular data with `spacing'.
+#  E.g. https://liaohaohui.github.io/UECM3993/Auto.data
 #
+#  Need to set header to true when the data has a header
+#
+Auto=read.table("Auto.data", header=T)
 
-# https://liaohaohui.github.io/UECM3993/Auto.data
-Auto=read.table("Auto.data")          # Default to no header
-head(Auto)
+
+# -------------------------------------------------------------------
+#  Practical: Exploratory Data Analysis (EDA) on Tabular Data (e.g. Auto)
+# -------------------------------------------------------------------
+
+# Check dimension or data
 dim(Auto)      # nrow(Auto)  ncol(Auto)
-Auto=read.table("Auto.data",header=T) # Use first row as header
+
+# Looking at the first few columns
 head(Auto)
-names(Auto)    # column names.  Alternative: colnames(Auto)
-dim(Auto)      # nrow(Auto)  ncol(Auto)
-summary(Auto)    # We cannot see the missing values which is `?'
+
+# Looking at the first few columns
+tail(Auto)
+
+# Getting the headers / column names.  Alternative: colnames(Auto)
+names(Auto)
+
+#
+# EDA : Numeric Univariate Analysis
+#
+# 1. Check each column data type
 sapply(Auto, class)   # horsepower is "character", something wrong
-table(Auto$horsepower)    # We can find something interesting: `?'
-apply(Auto=="?",1,sum)    # the `?' is missing value
+
+# 2. If the column data type is "character", then
+#    summary() may not produce good results
+summary(Auto)    # We cannot see the missing values which is `?'
+
+# 3. For the column data type being "character", using table()
+#    may give more useful information.
+table(Auto$horsepower)
+
+# 4. We find "?" showing up in the last part apart from all numeric values
+#    We suspect it is a missing value and check the rows with missing value "?"
+apply(Auto=="?",1,sum)
 
 #
-# If we want to set column strings to `categorical data' format,
-# we need to set stringsAsFactors=TRUE
+# 5. If we discover missing values which read.table() cannot recognise,
+#    we need to re-read the data again with na.strings=c("?")
 #
-Auto=read.table("Auto.data",header=T,na.strings="?",stringsAsFactors=TRUE)
+Auto=read.table("Auto.data",header=T,na.strings="?")
+
+# 6. Don't forget to perform Univariate Analysis after loading the data
+#    We can find NA's showing horsepower.
+#    In R, NA = Not Available = Missing Value
+#
 summary(Auto)    # Now the summary is nice
 
 #
-# Commands to understand basic statistics of a data frame
-# and commands to remove `missing values'
+# Some statisitcal commands in R will automatically omit NA's in 
+# the calculations but some will not.
 #
-# Inside R, NA = Not Available = Missing Value
-Auto=na.omit(Auto)   # na.omit removes all rows with missing values
-dim(Auto)      # check the dimension again to see if some rows are removed
+# Let us investigate the mean, var, sd on Columns 1 to 8
+#
+colMeans(Auto[,1:8])           # Handles NA by returning NA
+colMeans(Auto[,1:8], na.rm=T)  # NA will be omitted
+# Variances are usually large
+apply(Auto[,1:8], 2, function(column) { var(column, na.rm=T) })
+# We may prefer sample standard deviation
+apply(Auto[,1:8], 2, function(column) { sd(column, na.rm=T) })
 
 #
-# Exploratory Data Analysis (EDA) with Data Visualisation
+# Using na.rm=T all the time is tedious, we may consider removing
+# rows with missing values when the missing values are less than
+# 5% of the original data
 #
-#  (a) Histogram => univariate numeric data
-par(mfrow=c(1,2))
-hist(Auto$mpg)
-hist(Auto$mpg,col=2)  # 2 = "red" (k, rgb, cmy, gray)
+# 1. showing rows with missing values (NA = Not Available)
+# 2. create a clean data without missing values
+# 3. compare the dimension of the original and clean data
+#
+Auto[apply(is.na(Auto),1,sum)>0,]
+Auto.clean = na.omit(Auto)   # na.omit removes all rows with missing values
 
-#  (b) scatter plot => numeric input vs numeric output
-plot(Auto$cylinders, Auto$mpg)
-#  (c) boxplot => categorical input vs numeric output
-cylinders=as.factor(Auto$cylinders)   # In R, factor = categorical data
+dim(Auto)
+dim(Auto.clean)   # 5 rows removed
+
+#
+# EDA : Visual Univariate Analysis (Data Visualisation) => Histograms
+# hist() seems to remove NA's automatically 
+#
+par(mfrow=c(2,4))
+cn = names(Auto)[1:8]
+for (i in 1:8) {
+  hist(Auto[,i],col="blue",xlab="",main=cn[i])
+}
+
+#
+# EDA : Numeric Bivariate Analysis (Data Visualisation)
+#   (a) numeric input vs numeric output     => correlation coefficient
+#       Many correlation coefficients => correlation matrix
+#   (b) categorical input vs numeric output => ???
+#   (c) categorical input vs categorical output => Chi square test?
+#
+round(cor(Auto[,1:8]),2)           # Using original data with missing values
+round(cor(Auto.clean[,1:8]),2)     # Using clean data
+
+#
+# EDA : Visual Bivariate Analysis (Data Visualisation)
+#   (a) numeric input vs numeric output     => scatter plot
+#       Many scatter plots => pair plot
+#   (b) categorical input vs numeric output => boxplot
+#   (c) categorical input vs categorical output => barplot
+#
+plot(Auto[,1:8])     # or pairs(Auto[,1:8])
+
+# If we want to select particular columns to focus, we need to use
+# "formula".  An expression in R with a tilde (~) is a formula.
+#
+pairs(~ mpg + displacement + horsepower + weight + acceleration, Auto)
+
+#
+# Based on the Univariate Analysis, some numeric columns should be changed
+# to categorical data, e.g. cylinders, origin
+#
+Auto$cylinders = as.factor(Auto$cylinders)
+Auto$origin    = as.factor(Auto$origin)
+
+#
+# Making prettier boxplots with extra options
+#
+cylinders = Auto$cylinders
 mpg = Auto$mpg
-plot(cylinders, mpg)
-#  Decorations: Making prettier plots
 par(mfrow=c(2,2))   # create a 2x2 subplots
 plot(cylinders, mpg, col="red")
 plot(cylinders, mpg, col="red", varwidth=T)
 plot(cylinders, mpg, col="red", varwidth=T, horizontal=T)
 plot(cylinders, mpg, col="red", varwidth=T, xlab="cylinders", ylab="MPG")
 
-#  (d) matrix of scatter plots => pair plot
+#
+#  Bar plot example  vs  Tabular presentation
+#
 par(mfrow=c(1,1))
-pairs(Auto)         # Pair plots = Scatter plots for all numeric columns
-pairs(~ mpg + displacement + horsepower + weight + acceleration, Auto)
-plot(Auto$horsepower,mpg)
-
-#
-#  (e) barplot is for categorical vs categorical (difficult to interpret)
-#
-plot(as.factor(Auto$cylinders), as.factor(Auto$origin))
-#
-#  table is better for categorical data vs categorical data
-#
+plot(Auto$cylinders, Auto$origin)
 table(Auto$cylinders, Auto$origin)
+#
+#  table is usually better for categorical data vs categorical data
+#
 
 
 # -------------------------------------------------------------------
-#  Practical:  More advanced programming techniques with Penguins Data,
-#  which were collected and made available by Dr. Kristen Gorman and 
-#  the Palmer Station, Antarctica LTER, a member of the Long Term 
-#  Ecological Research Network.
-#  install.packages("palmerpenguins")
-#  Ref: https://allisonhorst.github.io/palmerpenguins/
-# -------------------------------------------------------------------
-library(palmerpenguins)   # for `penguins' data
-summary(penguins)
-cor(penguins[,3:6])       # The missing values will give useless values
-
-# Show rows with missing values (NA = Not Available)
-penguins[apply(is.na(penguins),1,sum)>0,]
-
-cor(na.omit(penguins[,3:6]))
-#
-# Let us investgate column 3 w.r.t. the output using histograms
-# and for loops
-#
-Y = penguins$species
-sps = levels(penguins$species)
-par(mfrow=c(1,length(sps)))
-for(i in 1:length(sps)){
-	hist(penguins[Y==sps[i], ]$bill_length_mm, xlab=sps[i], main="")
-}
-#
-# The histograms are not good for comparison.  We want to put them
-# together according to 
-# https://stackoverflow.com/questions/3541713/how-to-plot-two-histograms-together-in-r
-#
-p = list()
-for(i in 1:length(sps)){
-	p[[i]] = hist(penguins[Y==sps[i], ]$bill_length_mm, xlab=sps[i], main="")
-}
-par(mfrow=c(1,1))
-plot(p[[1]], col=rgb(1,0,0,1/4), xlim=range(na.omit(penguins[,3])), ylim=c(0,40))
-plot(p[[2]], col=rgb(0,1,0,1/4), add=TRUE)
-plot(p[[3]], col=rgb(0,0,1,1/4), add=TRUE)
-
-
-# -------------------------------------------------------------------
-#  Practical: Resampling
+#  Practical: Resampling for estimating statistics
 # -------------------------------------------------------------------
 
 #
@@ -295,7 +368,5 @@ mean(fold)
 set.seed(2024)
 idx.boostrap = sample(count, 0.7*count, replace=TRUE)
 sd(the.samples[idx.boostrap])
-
-
 
 

@@ -13,19 +13,25 @@
 library(ISLR2)   # provides the Smarket (US Stock Market 2001-2005 data)
 
 # -------------------------------------------------------------------
-# Split data into train set and validation set
-# train set = data from Year 2001-2004
-# validation set = data from Year 2005
+#  Practical : Analyse Smarket data with kNN Classifier
+#
+#  Smarket is a time series data and the linear split is based
+#  on a cut-off time.  Be careful about similar data in assignment.
 # -------------------------------------------------------------------
-### Explore the dataset
+
+### Simple EDA on Smarket data
 #View(Smarket)
 names(Smarket)
 dim(Smarket)
+summary(Smarket)
 
-# -------------------------------------------------------------------
-#  Analysis of the reduced `Smarket' Dataset with kNN Classifier
-# -------------------------------------------------------------------
-# For Holdout Method / Train-Test Split / Validation Set approach / ...
+#
+# For Holdout Method / Train-Test Split / Validation Set approach / ...,
+# split data into train set and validation set
+# train set = data from Year 2001-2004
+# validation set = data from Year 2005
+#
+
 train = (Smarket$Year < 2005)
 attach(Smarket)
 train.X= cbind(Lag1,Lag2)[ train,]  # cbind = Column Binding
@@ -42,39 +48,59 @@ knn.pred = knn(train.X,test.X,train.y,k=3)
 table(knn.pred,test.y)
 accuracy = mean(knn.pred==test.y)   # Evaluation for Classification: Accuracy
 
-# Summary: Financial Stochastic Data is ``not'' predictable
+#
+# Lesson Learn from Smarket data: Financial Stochastic Data is ``not'' 
+# predictable
+#
 # More advanced maths like SDE (Financial Econ II) to model the risk
 # to develop asset (stock, futures, etc.) derivatives
+#
 
 # -------------------------------------------------------------------
-#  Analysis of the `Fraud' Dataset with kNN Classifier
+#  Practical : Analysis of the Fraud data with kNN Classifier
+#
+#  The target of Fraud data is binary and imbalanced.  So we try
+#  stratified sampling.
 # -------------------------------------------------------------------
+
 #https://liaohaohui.github.io/UECM3993/fraud.csv
-fraud = read.csv("fraud.csv")
+fraud = read.csv("fraud.csv",row.names=1)
+
+### Simple EDA
+### Data is 2003 x 8 (p = 7, n = 2003)
+### Target for fraud: tag (0=fraud, 1=no fraud)
+dim(fraud)
 sapply(fraud,class)
-#colnames(fraud)
+summary(fraud)
+
+### Simple EDA tells us that some columns need to be converted to categorical
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud_fac = fraud    # create a copy
 ### change data type from integer to categorical
 fraud_fac[col_fac] = lapply(fraud[col_fac], factor)
-# "After type conversion .....
+#
+# Check type conversion and compare the data before and after type conversion
+#
 sapply(fraud,class)
 sapply(fraud_fac,class)
+summary(fraud)
+summary(fraud_fac)
 
-# Linear sampling:  Just sample a portion (e.g. 70%) from the data
-# Stratified sampling:  Split the data based on the output class C1, C2
-#                       Sample 70% from C1, 70% from C2, then combine.
+#
+# Stratified sampling for Binary Classification Problem : 
+#   1. Split the data based on the output class C1, C2
+#   2. Sample (without replacement) 70% from C1, 70% from C2, then 
+#      combine as training data
+#   3. Take the remainder 30% from C1 and 30% from C2 to form
+#      the testing data
+#
 
-# -------------------------------------------------------------------
-#  Stratified sampling for Binary Classification Problem
-# -------------------------------------------------------------------
-
-# Target for fraud: tag (0=fraud, 1=no fraud)
-# 2003 x 9 (p = 8, n = 2003)
-
+#
+# Option 1: Manual stratified sampling using Base R ...
+#
+# Ref: https://stackoverflow.com/questions/23479512/stratified-random-sampling-from-data-frame
+#
 set.seed(123)   # Reduce randomness by allowing repetition
-cat("Option 1: Manual stratified sampling using Base R ...\n")
-### https://stackoverflow.com/questions/23479512/stratified-random-sampling-from-data-frame
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
 tag0_idx = sample(nrow(fraud_tag0), size=round(0.7*nrow(fraud_tag0)))
@@ -83,7 +109,19 @@ fraud.train = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
 fraud.test  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
 summary(fraud.test)
 
-#cat("Option 2: Using splitstackshape ...\n")
+#
+# Option 2: caTools (use to be called by dplyr) ...
+#
+#library(caTools)
+#split = sample.split(fraud$tag, SplitRatio=0.7)
+#fraud.train = fraud[ split,]
+#fraud.test  = fraud[!split,]
+
+#
+# Option 3: Using splitstackshape ...
+#
+# Note: We are not using it because UTAR blocks R from assessing Internet
+#
 #library(splitstackshape)  # depends on data.table
 #set.seed(123)
 #fraud.train = stratified(fraud,"tag",size=0.7,keep.rownames=TRUE)
@@ -93,20 +131,16 @@ summary(fraud.test)
 ## If I don't convert fraud.train to data.frame, I will get error
 ## with kNN because splitstackshape convert data.frame to data.table
 
-#cat("Option 3: caTools (use to be called by dplyr) ...\n")
-#library(caTools)
-#split = sample.split(fraud$tag, SplitRatio=0.7)
-#fraud.train = fraud[ split,]
-#fraud.test  = fraud[!split,]
-
-# -------------------------------------------------------------------
-#  Feature Scaling with Standardisation
+#
+#  Data Preparation : Feature Scaling with Standardisation
 #  => Data standardisation with respect to the TRAINING DATA
-# -------------------------------------------------------------------
+#
+#  Rationale : age and base_value have large standard deviations
+#  compare to other columns
+#
 
-cat("\nData Preparation/Preprocessing: Data standardisation ...\n")
-normalise.vec <- function(column,ref.col) {
-    return ((column - mean(ref.col)) / sd(ref.col))
+normalise.vec <- function(column,ref.column) {
+    return ((column - mean(ref.column)) / sd(ref.column))
 }
 fraud.train.knn     = fraud.train
 fraud.test.knn      = fraud.test
@@ -117,13 +151,16 @@ fraud.train.knn$base_value = normalise.vec(
 fraud.test.knn$base_value  = normalise.vec(
     fraud.test.knn$base_value, fraud.train$base_value)
 
-# -------------------------------------------------------------------
-#  Modelling with kNN & Evaluation for Binary Classification
-# -------------------------------------------------------------------
+# 
+#  Modelling with kNN (k=3)
+# 
 cat("\nTraining and validation with kNN ...\n\n")
-yhat = knn(fraud.train.knn[,2:8], fraud.test.knn[,2:8], fraud.train.knn[,9], k=3)
-cftable.std = table(yhat, fraud.test.knn$tag)
+yhat = knn(fraud.train.knn[,1:7], fraud.test.knn[,1:7], fraud.train.knn[,8], k=3)
 
+#
+# Evaluation for Binary Classification using formulas for Topic 1
+#
+cftable.std = table(yhat, fraud.test.knn$tag)
 ACR = sum(diag(cftable.std))/sum(cftable.std)
 TPR = cftable.std[1,1]/sum(cftable.std[,1])
 TNR = cftable.std[2,2]/sum(cftable.std[,2])
@@ -244,105 +281,43 @@ performance = function(xtab, desc=""){
 }
 
 performance(cftable.std, "Confusion matrix and performance of kNN")
+#
+# If you are using caret in your assignment, you can just use
+# confusionMatrix() rather than the performance()
+#
+
 
 # -------------------------------------------------------------------
-#  On the "More Performance Evaluation" in Lecture Slide
-#  => validation set approach / holdout method is sensitive
-#     to the stratified sampling / linear sampling
-# -------------------------------------------------------------------
-
-fraud_tag0 = fraud[fraud$tag=="0", ]
-fraud_tag1 = fraud[fraud$tag=="1", ]
-
+#  Practical : Analysis of the Iris Flower data (3-class output) 
+#  with kNN Classifier.
 #
-# (1) Take only the odd numbers
+#  Iris only has has 150 rows of data.  So it is small (e.g. < 500)
+#  We can consider using K-Fold CV or LOOCV.  knn.cv() performs
+#  LOOCV and we will try it here.
 #
-tag0_idx = seq(1,nrow(fraud_tag0),2)
-tag1_idx = seq(1,nrow(fraud_tag1),2)
-fraud.train     = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
-fraud.test.knn  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
-fraud.train.knn = fraud.train
-# Data Preprocessing
-fraud.train.knn$age = normalise.vec(fraud.train.knn$age,fraud.train$age)
-fraud.test.knn$age  = normalise.vec(fraud.test.knn$age, fraud.train$age)
-fraud.train.knn$base_value = normalise.vec(
-    fraud.train.knn$base_value,fraud.train$base_value)
-fraud.test.knn$base_value  = normalise.vec(
-    fraud.test.knn$base_value, fraud.train$base_value)
-yhat = knn(fraud.train.knn[,2:8], fraud.test.knn[,2:8], fraud.train.knn[,9], k=3)
-cftable.std = table(yhat, fraud.test.knn$tag)
-performance(cftable.std, "Odd index for training, even index for testing")
-
+#  Note that when we use LOOCV, we don't need to split data.
 #
-# (2) Now, take only the even numbers
-#
-tag0_idx = seq(2,nrow(fraud_tag0),2)
-tag1_idx = seq(2,nrow(fraud_tag1),2)
-fraud.train     = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
-fraud.test.knn  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
-fraud.train.knn = fraud.train
-# Data Preprocessing
-fraud.train.knn$age = normalise.vec(fraud.train.knn$age,fraud.train$age)
-fraud.test.knn$age  = normalise.vec(fraud.test.knn$age, fraud.train$age)
-fraud.train.knn$base_value = normalise.vec(
-    fraud.train.knn$base_value,fraud.train$base_value)
-fraud.test.knn$base_value  = normalise.vec(
-    fraud.test.knn$base_value, fraud.train$base_value)
-yhat = knn(fraud.train.knn[,2:8], fraud.test.knn[,2:8], fraud.train.knn[,9], k=3)
-cftable.std = table(yhat, fraud.test.knn$tag)
-performance(cftable.std, "Even index for training, odd index for testing")
-
-# -------------------------------------------------------------------
-#  Analysis of the IRIS Flower Dataset (3-class output) with kNN Classifier
 #  Input:  iris[ , c("Sepal.Length", ..., "Petal.Width")]
 #  Target: iris$Species
 # -------------------------------------------------------------------
 
-# Linear Sampling 70% for training, 30% for testing
-idx.train = sample(nrow(iris), 0.7*nrow(iris))
-
-X.train = iris[ idx.train, 1:4]
-y.train = iris[ idx.train, 5]
-X.test  = iris[-idx.train, 1:4]
-y.test  = iris[-idx.train, 5]
-
-yhat = knn(X.train, X.test, y.train, k=1)   # Exercise: practise with k>1
-performance(table(yhat, y.test), "Iris flower with kNN")
+### Simple EDA
+dim(iris)
+table(iris$Species)
 
 #
-# Compare to caret's confusionMatrix:
+# Performance Measurement for kNN(k=1) using LOOCV
 #
-#> print(confusionMatrix(yhat, y.test))
-#
-#Confusion Matrix and Statistics
-#
-#            Reference
-#Prediction   setosa versicolor virginica
-#  setosa         12          0         0
-#  versicolor      0         15         1
-#  virginica       0          3        14
-#
-#Overall Statistics
-#                                          
-#               Accuracy : 0.9111          
-#                 95% CI : (0.7878, 0.9752)
-#    No Information Rate : 0.4             
-#    P-Value [Acc > NIR] : 9.959e-13       
-#                                          
-#                  Kappa : 0.8655          
-#                                          
-# Mcnemar's Test P-Value : NA              
-#
-#Statistics by Class:
-#
-#                     Class: setosa Class: versicolor Class: virginica
-#Sensitivity                 1.0000            0.8333           0.9333
-#Specificity                 1.0000            0.9630           0.9000
-#Pos Pred Value              1.0000            0.9375           0.8235
-#Neg Pred Value              1.0000            0.8966           0.9643
-#Prevalence                  0.2667            0.4000           0.3333
-#Detection Rate              0.2667            0.3333           0.3111
-#Detection Prevalence        0.2667            0.3556           0.3778
-#Balanced Accuracy           1.0000            0.8981           0.9167
+yhat = knn.cv(iris[,1:4], iris[,5], k=1)
+performance(table(yhat, iris[,5]), "Iris flower with kNN(k=1)")
+
+ACC = c()
+ir = 1:25
+for (i in ir) {
+  yhat = knn.cv(iris[,1:4], iris[,5], k=2*i+1)
+  ACC[i] = sum(diag(table(yhat, iris[,5])))/150
+}
+k = 2*ir+1
+plot(k, ACC, "b")
 
 

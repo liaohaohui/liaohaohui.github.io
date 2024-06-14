@@ -355,11 +355,8 @@ apply(A, 2, sum)    # sum along the columns
 # Normal                 rnorm     pnorm        qnorm     dnorm     
 # Poisson                rpois     ppois        qpois     dpois     
 # Student t              rt        pt           qt        dt        
-# Studentized Range      rtukey    ptukey       qtukey    dtukey    
 # Uniform                runif     punif        qunif     dunif     
 # Weibull                rweibull  pweibull     qweibull  dweibull  
-# Wilcoxon Rank Sum      rwilcox   pwilcox      qwilcox   dwilcox   
-# Wilcoxon Signed Rank   rsignrank psignrank    qsignrank dsignrank 
 #
 # Ref: https://www.stat.umn.edu/geyer/old/5101/rlook.html
 # -------------------------------------------------------------------
