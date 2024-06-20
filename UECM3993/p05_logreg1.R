@@ -70,29 +70,20 @@ performance = function(xtab, desc=""){
 }
 
 # -------------------------------------------------------------------
-#  Logistic Regression Analysis of the `Smarket' Dataset
+#  Practical : Logistic Regression Analysis of the `Smarket' Dataset
+#
+#  Exercise: Analysis of the `Weekly' data set using Logistic Regression
+#  Note: `Weekly' data set is more or less the same as the `Smarket' (daily)
 # -------------------------------------------------------------------
 
 library(ISLR2)   # For Smarket data
 
-### Explore the dataset
-#View(Smarket)   # From ISLR
-names(Smarket)   # or colnames
-summary(Smarket) # Except for the 1st & last columns, the rests are numerics
-pairs(Smarket)   # Practical 1: scatter plots of all columns
-#cor(Smarket)        # Won't work, Direction is numeric
-cor(Smarket[,-9])    # Remove variable Direction
-# `Some' correlation between Year and Volume
-plot(Smarket$Year,Smarket$Volume)
-
-### Split data into train set and validation set
-### For time series, we always split the data into `past' and `present'
-### train set = data from Year 2001-2004
-### validation set = data from Year 2005
-train = (Smarket$Year < 2005)     # Practical 2
-Smarket.2005 = Smarket[!train,]
-dim(Smarket.2005)     # Check the dimension of the testing data table
-Direction.2005 = Smarket.2005$Direction
+### 
+### Working with Smarket data (refer to Practical 3)
+### 
+train = (Smarket$Year < 2005)
+Smarket.test = Smarket[!train,]
+Direction.test = Smarket.test$Direction
 
 ### Fit the train set into logistic regression (parametric predictive model)
 # Output / Target / Response = Direction (Interested to see how price go)
@@ -107,49 +98,33 @@ summary(logreg.fits)
 ### Apply model into validation set and predict the probability to be Class 1
 # Response = P(Y=1 | X=x) = 1/(1 + exp(-(DefaultT)))
 # DefaultT = beta0 + beta1*x1 + ... + betap*xp
-logreg.probs = predict(logreg.fits, newdata=Smarket.2005, type="response")
+logreg.probs = predict(logreg.fits, newdata=Smarket.test, type="response")
 # contrasts is used for the construction of one-hot encoding
 contrasts(Smarket$Direction)    # To show the value (1/0) for level (Up/Down)
 ### Make prediction based on the probability computed (>=0.5 is Up)
 predicted = ifelse(logreg.probs < 0.5, "Down", "Up")
 
 # logreg.probs[2] same as
-# 1/(1+exp(-sum(coef(logreg.fits) * c(1,unlist(Smarket.2005[2,2:7])))))
+# 1/(1+exp(-sum(coef(logreg.fits) * c(1,unlist(Smarket.test[2,2:7])))))
 
 ### Construct confusion matrix and performance measures
-cfmat  = table(predicted,Direction.2005)
+cfmat  = table(predicted,Direction.test)
 performance(cfmat, "Performance of Logistic Regression Model on Smarket Data")
 
-# -------------------------------------------------------------------
-#  Exercise: Analysis of the `Weekly' data set using Logistic Regression
-#  Note: `Weekly' data set is more or less the same as the `Smarket' (daily)
-# -------------------------------------------------------------------
-
-summary(Weekly)
-pairs(Weekly)
-cor(Weekly[, -9])
-# ... build the logistic models ...
-bool.idx = Weekly$Year < 2005   # Roughly 70%~75% vs 30%~25%
-Weekly.train = Weekly[bool.idx, ]
-lr.model = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume, Weekly.train,
-	family=binomial)
-print(summary(lr.model))
-# ... do the prediction & check the performance ...
-
 
 # -------------------------------------------------------------------
-#  Analysis of the `Fraud' Dataset using Logistic Regression glm
+#  Practical : Analysis of the `Fraud' Dataset using Logistic Regression
 # -------------------------------------------------------------------
 
-###
-###  Manual stratified sampling using Base R & Standardising Fraud data
-###  as in Practical 3
-###
+### 
+### Working with Fraud data (refer to Practical 3)
+### 
 
 #https://liaohaohui.github.io/UECM3993/fraud.csv
-fraud = read.csv("fraud.csv")
+fraud = read.csv("fraud.csv", row.names=1)
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud[col_fac] = lapply(fraud[col_fac], factor)
+set.seed(123)
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
 tag0_idx = sample(nrow(fraud_tag0), size=0.7*nrow(fraud_tag0))
@@ -164,34 +139,31 @@ summary(fraud.test)
 ### may auto-adjust.  However, we still need to be careful when 
 ### optimisation converges badly.
 ###
-logreg_model = glm(tag~.-id_person, data=fraud.train, family=binomial)
+logreg_model = glm(tag~., data=fraud.train, family=binomial)
 print(summary(logreg_model))
 
 #
 # There are two ways to perform classification.  Here, we follow 
 # the lecture slides using the conditional probability (type='response')
 #
-fraud.test.prob = predict(logreg_model,
-  newdata=subset(fraud.test,select=c(1:8)), type='response')
-#fraud.test.prob = predict(logreg_model, newdata=fraud.test[ ,1:8], type='response')
+fraud.test.prob = predict(logreg_model, newdata=fraud.test[ ,1:7], type='response')
 yhat = ifelse(fraud.test.prob < 0.5, "pred_0", "pred_1")
 cfmat = table(yhat, fraud.test$tag)
 performance(cfmat, "Performance of the Logistic Regression Model")
 
+
 # -------------------------------------------------------------------
-#  Analysis of the standardised `Fraud' Dataset using Logistic Regression
-#  We now working with `scaled' data just to compare it to kNN models.
+#  Practical : Analysis of the standardised `Fraud' Dataset using 
+#  Logistic Regression.  The Logistic Regression trained on 
+#  the unscaled Fraud data has an interesting comparison to 
+#  the Logistic Regression with the scaled Fraud data.
 # -------------------------------------------------------------------
 
 summary(fraud)
 
-normalise.vec <- function(column,ref.col) {
-    return ((column - mean(ref.col)) / sd(ref.col))
-}
 fraud.tran.std     = fraud.train
 fraud.test.std     = fraud.test
-#fraud.tran.std$age = normalise.vec(fraud.tran.std$age, fraud.train$age)
-#fraud.test.std$age = normalise.vec(fraud.test.std$age, fraud.train$age)
+# Standardisation
 mu_age = mean(fraud.train$age)
 si_age = sd(  fraud.train$age)
 fraud.tran.std$age = scale(fraud.tran.std$age,mu_age,si_age)[,1]
@@ -202,13 +174,13 @@ si_bsv = sd(  fraud.train$base_value)
 fraud.tran.std$base_value = scale(fraud.tran.std$base_value, mu_bsv, si_bsv)[,1]
 fraud.test.std$base_value = scale(fraud.test.std$base_value, mu_bsv, si_bsv)[,1]
 
-model.for.scaleddata = glm(tag~., data=fraud.tran.std[,2:9], family=binomial)
+model.for.scaleddata = glm(tag~., data=fraud.tran.std, family=binomial)
 print(summary(model.for.scaleddata))
 
 #
 # Logit can be used instead of probability in prediction
 #
-fraud.test.logit = predict(model.for.scaleddata, fraud.test.std[,2:8])
+fraud.test.logit = predict(model.for.scaleddata, fraud.test.std[,1:7])
 yhat = ifelse(fraud.test.logit < 0, "pred_0", "pred_1")
 cfmat = table(yhat, fraud.test$tag)
 performance(cfmat, "Performance of the Logistic Regression Model")

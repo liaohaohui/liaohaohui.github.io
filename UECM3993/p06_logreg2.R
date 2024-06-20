@@ -71,20 +71,18 @@ performance = function(xtab, desc=""){
 
 
 # -------------------------------------------------------------------
-#  Analysis of the `Fraud' Dataset using Multinomial LR nnet::multinom
+#  Practical : Analysis of the `Fraud' Dataset using Multinomial LR 
+#  nnet::multinom
 # -------------------------------------------------------------------
-library(nnet)   # Already in Base R
 
-###
-###  Manual stratified sampling using Base R & Standardising Fraud data
-###  as in Practical 3
-###
+### 
+### Working with Fraud data (refer to Practical 3)
+### 
 
 #https://liaohaohui.github.io/UECM3993/fraud.csv
-fraud = read.csv("fraud.csv")
+fraud = read.csv("fraud.csv", row.names=1)
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud[col_fac] = lapply(fraud[col_fac], factor)
-rm(col_fac)
 set.seed(123)
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
@@ -92,16 +90,13 @@ tag0_idx = sample(nrow(fraud_tag0), size=round(0.7*nrow(fraud_tag0)))
 tag1_idx = sample(nrow(fraud_tag1), size=round(0.7*nrow(fraud_tag1)))
 fraud.train = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
 fraud.test  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
-rm(fraud_tag0)
-rm(fraud_tag1)
-rm(tag0_idx)
-rm(tag1_idx)
 
 ###
 ### Multinomial Logistic Regression can be regarded as ANN with single layer,
 ### i.e. no hidden layer.
 ###
-mlr_model = multinom(tag ~ .-id_person, data=fraud.train)
+library(nnet)   # Already in Base R
+mlr_model = multinom(tag ~ ., data=fraud.train)
 ###
 ### Z-statistic & p-values are not provided.  We can obtain them
 ### using concepts from statistics
@@ -114,52 +109,93 @@ Z     = betas/SE
 # 2-tailed Z test
 p     = (1 - pnorm(abs(Z), 0, 1)) * 2
 print(p)
+#
+# Note: p-value may not be meaningful when there are more than two
+# classes because there is no Hypothesis Testing for multiple class case.
+#
 
-# Similar to glm with family=binomial (logistic regression)
-yhat = predict(mlr_model, newdata=subset(fraud.test,select=1:8), type='class')
+#
+# Similar to glm with family=binomial (logistic regression) but
+# not exact due to numeric approximation errors
+#
+yhat = predict(mlr_model, newdata=fraud.test, type='class')
 performance(table(yhat, fraud.test$tag), "Multinomial LR with K=2")
 # K = number of classes in the output
 
 #
 # Comparing the multinom results to GLM model results (from Practical 5)
 #
-lr_model = glm(tag ~ .-id_person, data=fraud.train, family=binomial(link="logit"))
+lr_model = glm(tag~., data=fraud.train, family=binomial)
 summary(lr_model)
 probs = predict(lr_model, newdata=fraud.test[,1:8], type='response')
 yhat = ifelse(probs<0.5, 0, 1)
 performance(table(yhat, fraud.test$tag), "LR (GLM with binomial) with K=2")
 
+
 # -------------------------------------------------------------------
-#  Analysis of the `Iris flower' Dataset using Multinomial LR nnet::multinom
-#  K = 3 (classes)
+#  Practical : Analysis of the Fraud data using 1-hidden layer
+#  Neural Network nnet().
+#
+#  According to
+#  https://stackoverflow.com/questions/64835527/plot-neural-network-of-nnet-object
+#  we can visualise it using NeuralNetTools but this package
+#  depends on ggplot2() and has many dependencies and will be skipped in 
+#  the practical class.
+# -------------------------------------------------------------------
+
+set.seed(123)    # For the random initial weights
+the.hidden.size = 20
+nnm = nnet(tag~., data=fraud.train, size=the.hidden.size)
+summary(nnm)
+
+yhat = predict(nnm, newdata=fraud.test, type='class')
+performance(table(yhat, fraud.test$tag), paste0("NN(hidden=",the.hidden.size,")"))
+
+###https://beckmw.wordpress.com/2013/11/14/visualizing-neural-networks-in-r-update/
+# install.packages("NeuralNetTools")
+# library(NeuralNetTools)
+# plotnet(nn)
+
+
+# -------------------------------------------------------------------
+#  Practical : Analysis of the `Iris flower' Dataset (K = 3 classes) 
+#  using Multinomial LR nnet::multinom
 # -------------------------------------------------------------------
 
 # Since the ratio is 50:50:50, we can do linear sampling
-set.seed(321)
+set.seed(123)
 idx = sample(nrow(iris), 0.7*nrow(iris))
 iris.train = iris[ idx, ]
 iris.test  = iris[-idx, ]
-# glm won't work!  The algorithm does not converge!!!
+
 mlr_model2 = multinom(Species ~ ., iris.train)
 summary(mlr_model2)
 #probs = predict(mlr_model2, newdata=iris.test, type='probs')
 yhat2 = predict(mlr_model2, newdata=iris.test, type='class')
 # performance() only works for binary classification
 confusion.matrix = table(yhat2, iris.test$Species)
-print(confusion.matrix)
-cat("Accuracy = ", sum(diag(confusion.matrix))/nrow(iris.test), "\n")
+performance(confusion.matrix)
 
 #
-# ANN = Artificial Neural Network
+# glm won't work correctly as it only take two classes
 #
-# Include an example of ANN in future?
-# Problem: ANN takes super long time to calculate for any useful applications
-# Data Preprocessing like standardisation is required to make ANN converge
-# better.
-#
+
 
 # -------------------------------------------------------------------
-#  Analysis of the `Fraud' Dataset using ElasticNet
+#  Practical : Analysis of the Iris data using 1-hidden layer
+#  Neural Network nnet().
+# -------------------------------------------------------------------
+
+set.seed(123)    # For the random initial weights
+the.hidden.size = 20
+nnm = nnet(Species~., data=iris.train, size=the.hidden.size)
+
+yhat = predict(nnm, newdata=iris.test, type='class')
+performance(table(yhat, iris.test$Species), paste0("NN(hidden=",the.hidden.size,")"))
+
+
+# -------------------------------------------------------------------
+#  Practical : Analysis of the `Fraud' Dataset using ElasticNet
 #
 #  ElasticNet = GLM + Constraints on the coefficients b0, b1, ..., bp
 #  Combining `feature selection' & `parameter estimation'
@@ -167,12 +203,12 @@ cat("Accuracy = ", sum(diag(confusion.matrix))/nrow(iris.test), "\n")
 #  Supported by GLMNET package
 #  Standardisation is necessary when using GLMNET to make sure
 #  the constraint part has reasonable scales.
+#
+#  Ref: https://stats.stackexchange.com/questions/72251/an-example-lasso-regression-using-glmnet-for-binary-outcome
 # -------------------------------------------------------------------
-library(glmnet)   # install.packages("glmnet")
 
-# -------------------------------------------------------------------
-# https://stats.stackexchange.com/questions/72251/an-example-lasso-regression-using-glmnet-for-binary-outcome
-# -------------------------------------------------------------------
+# install.packages("glmnet")
+library(glmnet)
 
 #
 # Problem: Categorical inputs are regarded as integers
@@ -187,32 +223,16 @@ library(glmnet)   # install.packages("glmnet")
 # Just being lazy: no standardization.  Need to include it in future.
 #
 # remove the first column with `intersection' data
-X = model.matrix(tag ~ .-id_person, data=fraud.train)[,-1]
-glmmod = glmnet(x=X, y=fraud.train[,9], alpha=1, family=binomial, lambda=1e-5)
+X = model.matrix(tag~., data=fraud.train)[,-1]
+glmmod = glmnet(x=X, y=fraud.train[,8], alpha=1, family=binomial, lambda=1e-5)
 print(coef(glmmod))   # Same as glmmod$beta
 # Close but not exactly the same as Logistic Regression due to numerical errors
 
 #
 # When lambda is not set, it is a sequence
 #
-glmmod = glmnet(x=X, y=fraud.train[,9], alpha=1, family="binomial")
+glmmod = glmnet(x=X, y=fraud.train[,8], alpha=1, family="binomial")
 plot(glmmod, lwd=5)   # The x-axis defaults to L1-Norm
 plot(glmmod, lwd=5, xvar="lambda")
-
-
-# -------------------------------------------------------------------
-#  Exercise: Analysis of the `Auto' Dataset
-#  Converting from regression problem to classification problem
-# -------------------------------------------------------------------
-
-library("ISLR2")
-summary(Auto)   # From ISLR2, n=392, p=9 (it is a cleanup of Auto.data)
-attach(Auto)    # We have seen it in Practical 1
-mpg01 = rep(0, length(mpg))
-mpg01[mpg > median(mpg)] = 1
-Auto = data.frame(Auto, mpg01)
-cor(Auto[, -9])
-pairs(Auto)
-# ... build the logistic models, multinomial LR, ...
 
 
