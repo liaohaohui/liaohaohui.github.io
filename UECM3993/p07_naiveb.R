@@ -75,44 +75,19 @@ performance = function(xtab, desc=""){
 #    Dataset 1: Building Naive Bayes Model for Fraud Data
 # -------------------------------------------------------------------
 
-# If there is a column with categorical data, using stringsAsFactors=TRUE
-# is more convenient.
 #https://liaohaohui.github.io/UECM3993/fraud.csv
-fraud = read.csv("fraud.csv")  # categorical data are encoded as integers
-
-# change data type from integer to categorical (mentioned in Practical 3)
+fraud = read.csv("fraud.csv", row.names=1)
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud[col_fac] = lapply(fraud[col_fac], factor)
-fraud$id_person = NULL
 
-### Stratified sampling (mentioned in Practical 2)
+### Stratified sampling (Same as Practical 3)
 set.seed(123)
-
-#
-# Use the following if the company only has R and no other
-# libraries available.
-#
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
 tag0_idx = sample(1:nrow(fraud_tag0), size=0.7*nrow(fraud_tag0))
 tag1_idx = sample(1:nrow(fraud_tag1), size=0.7*nrow(fraud_tag1))
 fraud.train = rbind(fraud_tag0[tag0_idx,],fraud_tag1[tag1_idx,])
 fraud.test = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
-
-#
-# If you can install extra libraries from CRAN (Internet), then
-# you should use `caTools' or splitstackshape + dplyr
-#
-#library(caTools)   # for sample.split()
-#train.row.index = sample.split(fraud, SplitRatio=0.7)
-#fraud.train = fraud[train.row.index, ]
-#fraud.test = fraud[-train.row.index, ]
-
-#install.packages("splitstackshape")
-#library(splitstackshape)    # for stratified()
-#fraud.train <- stratified(fraud,"tag",size=0.7)
-#library(dplyr)  # It has a lot of dependencies.
-#fraud.test <- anti_join(fraud, fraud.train, by="id_person")
 
 #
 # Choices for Naive Bayes:
@@ -180,7 +155,8 @@ inspect(dtm)
 # turn on the Laplace smoothing!
 #
 
-library(naivebayes)    # for multinomial_naive_bayes()
+#library(naivebayes)    # loaded earlier
+# naivebayes provides multinomial_naive_bayes()
 
 idx.train = 1:6
 train = as.matrix(dtm[idx.train,])    # not suitable for large matrix
@@ -218,15 +194,16 @@ yhat = predict(mnnb, test)
 cfmat = table(yhat, Y.test)
 print(cfmat)
 
-### Runs but the modelling fails completely
-### dtm[idx.train,] is NONNEGATIVE INTEGERS (NOT BINARY)
-### the algorithm didn't complain, so difficult to tell what's
-### going on.
-#bnb = fnb.bernoulli(x=dtm[idx.train,], y=Y.train, laplace=1)
-#bnb$present
-#yhat = predict(bnb, test)
-#cfmat = table(yhat, Y.test)
-#print(cfmat)
+###
+### fastNaiveBayes's fnb.bernoulli() requires the training data to be
+### binary, otherwise, the prediction will given NaN.
+###
+X.binary = ifelse(as.matrix(dtm[idx.train,])==0,0,1)
+bnb = fnb.bernoulli(x=X.binary, y=Y.train, laplace=1)
+bnb$present
+test.binary = ifelse(as.matrix(test)==0,0,1)
+yhat = predict(bnb, test.binary)
+performance(table(yhat, Y.test))
 
 ### naivebayes::bernoulli_naive_bayes
 convert2bin = function(x){ifelse(x>0,1,0)}
@@ -268,51 +245,4 @@ yhat = predict(classifier, test)
 cfmat = table(yhat, Y.test)
 performance(cfmat, "e1071 Naive Bayes with Laplace Smoothing")
 
-
-# -------------------------------------------------------------------
-#    Working with Simulated Data
-# -------------------------------------------------------------------
-
-no_resp = 500
-resp = 100
-set.seed(1)
-response = factor(c(rep(0,no_resp),rep(1,resp)))
-purchased_previously = factor(c(sample(0:1,no_resp,prob=c(0.6,0.4),replace=T),
-                          sample(0:1,resp,prob=c(0.2,0.8),replace=T)))
-opened_previously = factor(sample(0:1,(no_resp+resp),prob=c(0.8,0.2),replace=T))
-sales_12mo = c(rnorm(n=no_resp,mean = 50, sd = 10),
-               rnorm(n=resp,mean = 60, sd = 5))
-none_open_buy = factor(c(sample(0:1, no_resp,prob=c(0.8,0.2),replace=T),
-                          rep(1,resp)))
-test_var = sample(LETTERS[1:2],(resp+no_resp),replace=T)
- 
-naive_data = data.frame(purchased_previously = purchased_previously,
-                        opened_previously = opened_previously,
-                        sales_12mo = sales_12mo,
-                        none_open_buy = none_open_buy,
-                        test_var = test_var,
-                        response = response)
-
-#
-# Linear Sampling
-#
-# Shuffle all the rows
-naive_data = naive_data[sample(1:nrow(naive_data),nrow(naive_data)),]
-# Take first 70% for training and the remainder for testing
-train = naive_data[1:(nrow(naive_data)*.7),]
-test  = naive_data[(nrow(naive_data)*.7+1):nrow(naive_data),]
-
-# Without Laplace Smoothing
-#nb_default = naiveBayes(response~., data=train[,-4], laplace=0)
-nb_default = naive_bayes(response~., data=train)  # laplace defaults to 0
-default_pred = predict(nb_default, test[,-c(6)], type="class")
-# To extract information from Naive Bayes Network Model
-#default_raw_pred <- predict(nb_default, test, type="raw")
-table(default_pred, test$response, dnn=c("Prediction","Actual"))
-
-# With Laplace Smoothing (no difference)
-#nb_laplace1 = naiveBayes(response~., data=train, laplace=1)
-nb_laplace1 = naive_bayes(response~., data=train, laplace=1)
-laplace1_pred = predict(nb_laplace1, test[,-c(6)], type="class")
-table(laplace1_pred, test$response, dnn=c("Prediction","Actual"))
 

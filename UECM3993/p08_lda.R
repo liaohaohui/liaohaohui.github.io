@@ -77,33 +77,40 @@ performance = function(xtab, desc=""){
 #
 
 # -------------------------------------------------------------------
-#  Analysis of the `Smarket' Dataset with LDA & QDA Classifier
+#   Practical : Analyse the `Smarket' Dataset with LDA & QDA Classifier
+#   following the main reference book
 # -------------------------------------------------------------------
+
 library(ISLR2)
 
-# Split data into train set and validation set
-# train set = data from Year 2001-2004
-# validation set = data from Year 2005
+### 
+### Holdout Method on Smarket data (refer to Practical 3)
+### 
 train = (Smarket$Year < 2005)
-Smarket.2005 = Smarket[!train,]
-Direction.2005 = Smarket$Direction[!train]
+Smarket.test = Smarket[!train,]
+Direction.test = Smarket.test$Direction
 
 #
-# EDA (histogram) tells us that the numeric data seems normal
-# LDA (& QDA) may not be a bad choice.
-# Note that LDA works with non-normal distributed data as well!
+# Unlike Practical 3, we consider all columns except Today
+# because Direction is obtained from Today.
 #
-par(mfrow=c(2,4))
-hist(Smarket$Lag1)
-hist(Smarket$Lag2)
-hist(Smarket$Lag3)
-hist(Smarket$Lag4)
-hist(Smarket$Lag5)
-hist(Smarket$Volume)
-hist(Smarket$Today)
+# We can check this using
+# 
+# table(ifelse(Smarket$Today>=0,"Up","Down"), Smarket$Direction)
+#
+# If we use Today, we are cheating, rather than predicting.
+#
+library(MASS)
+lda.fit=lda(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,data=Smarket[train,])
+### The matrix of the LDA model is not shown but rather a summary of it
+print(lda.fit)
 
 #
-# Simlpe Bivariate Analysis
+# For binary classification, the "projection" plot is interesting
+# and we can compare it to the Simlpe Bivariate Analysis.
+#
+# We just show the Simlpe Bivariate Analysis on the Lag1 column,
+# the rest will be left as exercise.
 #
 par(mfrow=c(2,1))
 attach(Smarket)
@@ -116,57 +123,28 @@ plot(Lag1~Direction, Smarket)
 detach(Smarket)
 
 #
-# EDA's correlation analysis is IMPORTANT
+# Make prediction using the trained LDA model
 #
-table(ifelse(Smarket$Today>=0,"Up","Down"), Smarket$Direction)
-# Today is actually used to obtain the Direction !!!!
-# So Today needs to be removed from the input to Direction
-
-library(MASS)  # supports LDA & QDA
-#lda.fit=lda(Direction~Today,data=Smarket[train,])
-#
-# Year is something like `index', not useful as a predictor
-#
-# We usually start of with all VARIABLES which are useful
-#
-#lda.fit=lda(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,data=Smarket[train,])
-#
-# Other choices (some features may `confuse' the predictive model)
-#
-lda.fit=lda(Direction~Lag1+Lag2+Lag3+Lag4+Lag5,data=Smarket[train,])
-#
-# Performance analysis seems to suggest that volume is confusing
-# the predictive model.
-#
-#lda.fit=lda(Direction~Lag1+Lag2,data=Smarket,subset=train)
-#lda.fit=lda(Direction~Lag1+Lag2,data=Smarket[train,])
-
-lda.fit
-
-# Make prediction based on LDA model
-yhat = predict(lda.fit,Smarket.2005)
-#names(yhat)
+yhat = predict(lda.fit,Smarket.test)
 # yhat$posterior -> posterior `probability'
-cfmat = table(yhat$class, Direction.2005)
+cfmat = table(yhat$class, Direction.test)
 performance(cfmat, "Smarket data analysis with LDA")
 
-qda.fit=qda(Direction~Lag1+Lag2+Lag3+Lag4+Lag5,data=Smarket,subset=train)
-#qda.fit=qda(Direction~Lag1+Lag2,data=Smarket,subset=train)
+qda.fit=qda(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,data=Smarket[train,])
+### The matrix of the QDA model is not shown at all
 qda.fit
-qda.class=predict(qda.fit,Smarket.2005)$class
-cfmat = table(qda.class,Direction.2005)
+qda.class=predict(qda.fit,Smarket.test)$class
+cfmat = table(qda.class,Direction.test)
 performance(cfmat, "Smarket data analysis with QDA")
 
 
 # -------------------------------------------------------------------
-#  Analysis of the `Fraud' Dataset with LDA Classifier ???
+#   Practical : Analysis of the `Fraud' Dataset with LDA Classifier
+#   assuming the categorical data are encoded as integers.
 # -------------------------------------------------------------------
 #https://liaohaohui.github.io/UECM3993/fraud.csv
-fraud = read.csv("fraud.csv")
-col_fac = c("tag")
-fraud[col_fac] = lapply(fraud[col_fac], factor)
-fraud$id_person = NULL
-sapply(fraud,class)
+fraud = read.csv("fraud.csv", row.names=1)
+fraud$tag = factor(fraud$tag)
 
 # EDA
 par(mfrow=c(2,4))
@@ -175,8 +153,10 @@ for(i in 1:7){
    hist(fraud[,i], main=header[i])
 }
 
+#
+# Holdout method on Fraud Data as in Practical 3
+#
 set.seed(123)
-### https://stackoverflow.com/questions/23479512/stratified-random-sampling-from-data-frame
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
 tag0_idx = sample(nrow(fraud_tag0), size=round(0.7*nrow(fraud_tag0)))
@@ -195,19 +175,30 @@ fraud.train.knn$base_value = normalise.vec(
 fraud.test.knn$base_value  = normalise.vec(
     fraud.test.knn$base_value, fraud.train$base_value)
 
+#
+# Training the LDA model
+#
 lda.fit = lda(tag ~ ., fraud.train.knn)
+#
+# Exercise: Looking at the trained LDA model
+#
 
 yhat = predict(lda.fit, fraud.test.knn)$class
 cfmat = table(yhat, fraud.test.knn$tag)
 performance(cfmat, "LDA")
 
+#
+# Training the QDA model
+#
 qda.fit = qda(tag ~ ., fraud.train.knn)
 
 yhat = predict(qda.fit, fraud.test.knn)$class
 cfmat = table(yhat, fraud.test.knn$tag)
 performance(cfmat, "QDA")
 
-
+#
+# Comparing LDA to Logistic Regression because both are linear models
+#
 lr.fit = glm(tag ~ ., fraud.train.knn, family=binomial)
 
 prob = predict(lr.fit, fraud.test.knn, type="response")
@@ -215,61 +206,12 @@ yhat = ifelse(prob>=0.5, 1, 0)
 cfmat = table(yhat, fraud.test.knn$tag)
 performance(cfmat, "LR (with numeric input)")
 
-# Exercise: Compare to Practical 5
 
 
 # -------------------------------------------------------------------
-#  Analysis of the `Weekly' Dataset with LDA Classifier
-#  Very similar to the `Smarket' data
-# -------------------------------------------------------------------
-# Q2(a)
-train = (Weekly$Year < 2009)
-Weekly.0910 = Weekly[!train, ]   # 2009 & 2010
-Direction.0910 = Weekly$Direction[!train]
-#lda.fit = lda(Direction ~ Lag2, data=Weekly[train,])
-#lda.fit = lda(Direction ~ . - Year, data=Weekly[train,])
-#lda.fit = lda(Direction ~ . - Today - Year, data=Weekly[train,])
-lda.fit = lda(Direction ~ . - Volume - Today - Year, data=Weekly[train,])
-
-lda.pred = predict(lda.fit, Weekly.0910)
-cfmat = table(lda.pred$class, Direction.0910)
-performance(cfmat, "Weekly data analysis using LDA")
-
-#qda.fit = qda(Direction ~ . - Today - Year, data=Weekly[train,])
-qda.fit = qda(Direction ~ . - Volume - Today - Year, data=Weekly[train,])
-qda.pred = predict(qda.fit, Weekly.0910)
-cfmat = table(qda.pred$class, Direction.0910)
-performance(cfmat, "Weekly data analysis using QDA")
-
-#
-# Q2(c): We can compare LDA to various models such as kNN, LR, etc.
-#
-library(class)
-# Lag2 = column 3; Direction = column 9
-#yhat = knn(as.matrix(Weekly[train,3]), as.matrix(Weekly.0910[,3]), Weekly[train,9]) #k=1
-#yhat = knn(as.matrix(Weekly[train,2:8]), as.matrix(Weekly.0910[,2:8]), Weekly[train,9]) #k=1
-# 2..6: Lag1..Lag5, 7=Volume, 9=Direction
-kidx = seq(1,200,2)
-accu = 0
-for(i in 1:length(kidx)) {
-  #yhat = knn(as.matrix(Weekly[train,2:7]), as.matrix(Weekly.0910[,2:7]), Weekly[train,9], k=kidx[i]) #k=1
-  yhat = knn(as.matrix(Weekly[train,2:6]), as.matrix(Weekly.0910[,2:6]), Weekly[train,9], k=kidx[i]) #k=1
-  cfmat = table(yhat, Direction.0910)
-  #performance(cfmat, paste("Weekly data analysis using kNN(k=",kidx[i],")",sep=""))
-  accu[i] = sum(diag(cfmat))/sum(cfmat)
-}
-par(mfrow=c(1,1))
-plot(kidx, accu, type="b", xlab="kNN's k", ylab="Accuracy", 
-  main="Performance of kNN(Direction~Lag1+...+Lag5)")
-
-# Q2(d) For the Weekly Data, there is no best result when using Lag2
-# Q2(d) For the Weekly Data, LDA performs better than kNN (k=1)??
-# kNN with larger k seems to perform better than LDA maybe due to 
-# the data cancelling the "noise" in the data.
-
-
-# -------------------------------------------------------------------
-#  Analysis of the `Auto' Dataset from ISLR2 with LDA Classifier
+#   Practical : Analysis of the `Auto' Dataset from ISLR2 with 
+#   LDA Classifier and comparing it with kNN (which requires
+#   input to be all numeric)
 # -------------------------------------------------------------------
 # New Target for classification: Petrol efficiency
 Auto$mpg01 = factor(ifelse(Auto$mpg > median(Auto$mpg), 1, 0))
@@ -312,11 +254,6 @@ cf.mat = table(qda.pred$class, X_y.test$mpg01)
 performance(cf.mat, "\nAuto Data with QDA")
 
 
-
-#
-# Try standardisation to see if the trained model would be better
-#
-
 #
 # Comparing LDA to kNN with various k
 #
@@ -339,13 +276,13 @@ for (k in c(1,5, 10,20,100)){
 #
 
 # -------------------------------------------------------------------
-#  Analysis of the `MNIST' Dataset with LDA Classifier.
+#  Practical : Analyse the `MNIST' Dataset with LDA Classifier.
 #  `MNIST' Dataset is a beginner's image recognition example.
 #  Learn that the TIME for training/computation is MOSTLY VERY VERY LONG
+#
+#  The MNIST data mnist_train.psv (~7M) & mnist_test.psv (~2M) are
+#  obtained from https://github.com/statsmaths/stat665/find/gh-pages
 # -------------------------------------------------------------------
-
-# Download mnist_train.psv (~7M) & mnist_test.psv (~2M) from
-#  https://github.com/statsmaths/stat665/find/gh-pages
 
 #https://liaohaohui.github.io/UECM3993/mnist_train.psv
 train = read.csv("mnist_train.psv", sep="|", as.is=TRUE, header=FALSE)
@@ -355,6 +292,7 @@ dim(train)  # ncol(train) = 1 + 16x16
 #
 # Each row is an image with a label at Column 1
 # To look at ONE ROW.  Note: First column is the `label'.
+#
 par(mfrow=c(1,1))
 X = matrix(as.matrix(train[3400,-1]),16,16,byrow=TRUE)
 X = 1 - (X + 1)*0.5
@@ -430,22 +368,4 @@ performance(cfmat, "\nkNN with k=3")
 #predRf = predict(outRf, Xtest)
 #performance(table(predRf, ytest), "\nMNIST with Random Forest")
 
-#---------------------------------------------------------------
-# The various SVM predictive models
-#---------------------------------------------------------------
-
-library(e1071)
-outSvm  = svm(Xtrain,  factor(ytrain), kernel="linear", cost=1)
-cat("dim(Input Training Data) = ", dim(Xtrain), "\n")
-cat("dim(alpha*y) = ", dim(outSvm$coefs), "\n")
-cat("dim(support vector) = ", dim(outSvm$SV), "\n")
-predSvm = predict(outSvm, Xtest)
-performance(table(predSvm, ytest), "\nMNIST with linear-SVM")
-
-### Do not run the following three lines if your computer is slow
-### The radial-`SVM' predictive model is very very very slow.
-### Use radial when the data are seperated as "two rings"
-#outSvm  = svm(Xtrain,  factor(ytrain), kernel="radial", cost=1)
-#predSvm = predict(outSvm, Xtest)
-#performance(table(predSvm, ytest), "\nMNIST with radial-SVM")
 
