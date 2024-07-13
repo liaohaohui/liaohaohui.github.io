@@ -1,8 +1,7 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Working with Classification Problems
-#          with (a) Tree Based Predictive Models in R
-#               (b) kNN (k-Nearest Neighbour) Models in R
-# Author : Liew How Hui (2023)
+#          with Tree Based Predictive Models in R
+# Author : Liew How Hui (2024)
 # Reference & Data: 
 #  1. https://hastie.su.domains/ISLR2/Labs/R_Labs/Ch8-baggboost-lab.R
 #  2. https://daviddalpiaz.github.io/r4sl/trees.html
@@ -11,7 +10,7 @@
 #  5. https://cran.r-project.org/web/packages/C50/vignettes/C5.0.html
 # License: BSD-3
 # Software: R 4.x
-# Duration: 1.5 hours
+# Duration: 1 hour
 # -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
@@ -90,11 +89,12 @@ X1 X2  Y
 
 library(C50)
 tree.model = C5.0(d.f[,1:2], d.f[,3], control=C5.0Control(subset=FALSE,noGlobalPruning=TRUE,earlyStopping=FALSE,minCases=1,CF=1) )
-plot(tree.model)   # smaller compare to lecture slide's tree
+plot(tree.model)   # smaller tree comparing to lecture slide's tree
 
 
 # -------------------------------------------------------------------
 #  Example 2: Analysis of the `Tennis' Dataset with C5.0
+#  (Multiway split --- used in lecture)
 # -------------------------------------------------------------------
 
 #https://liaohaohui.github.io/MEME19903/playtennis.csv
@@ -139,7 +139,7 @@ print(summary(rule.model))
 
 
 # -------------------------------------------------------------------
-#  Analysis of the `Tennis' Dataset with CART Tree (BINARY)
+#  Analysis of the `Tennis' Dataset with CART Tree (binary splits)
 # -------------------------------------------------------------------
 
 #install.packages("tree")
@@ -159,14 +159,14 @@ print(summary(tree.model))  # calc. deviance & misclassification
 tree.model2 = tree(playtennis ~ ., d.f, control=
   tree.control(nrow(d.f), minsize=1))
 par(mfrow=c(1,2))
-plot(tree.model2,main="Full(?) CART Tree")
-text(tree.model2)
-plot(tree.model,main="Default \"Not fullly grown\" CART Tree")
+plot(tree.model,main="Default \"Pre-Pruned\" CART Tree")
 text(tree.model)
+plot(tree.model2,main="Fully-grown CART Tree")
+text(tree.model2)
 
 
 # -------------------------------------------------------------------
-#  Analysis of the `Carseats' Dataset with Classification Tree (tree)
+#  Analysis of the `Carseats' Dataset with CART Tree & Pruning
 # -------------------------------------------------------------------
 
 ### Initial Exploration of the Dataset ``Carseats''
@@ -312,7 +312,8 @@ iris.test  = iris[-idx,]
 # If we need perfect ratio, we need `stratified sampling'
 
 # -------------------------------------------------------------------
-# Conditional Inference Tree (input needs to be numeric): partykit
+# Conditional Inference Tree (theoretically the inputs need to be
+# numeric): partykit
 # -------------------------------------------------------------------
 library(partykit)   # converts categorical data to numeric data
 iris.ctree = ctree(Species ~ ., iris.train)   # Conditional Inference Tree
@@ -364,6 +365,7 @@ mean((yhat - boston.test.Y)^2)
 
 ##------------------------------------------------------------------
 ## Bagging and Random Forests with MASS' Boston Data
+## (Collection of trees)
 ##------------------------------------------------------------------
 
 library(randomForest)
@@ -396,7 +398,7 @@ varImpPlot(rf.boston)
 ## Boosting with MASS' Boston Data
 ##------------------------------------------------------------------
 
-library(gbm)
+library(gbm)  # no longer developed in 2024. gbm3 is newer version
 set.seed(1)
 boost.boston <- gbm(medv ~ ., data = Boston[train, ],
     distribution = "gaussian", n.trees = 5000,
@@ -409,102 +411,13 @@ plot(boost.boston, i = "lstat")
 ###
 yhat.boost <- predict(boost.boston,
     newdata = Boston[-train, ], n.trees = 5000)
-mean((yhat.boost - boston.test)^2)
+mean((yhat.boost - boston.test.Y)^2)
 ###
 boost.boston <- gbm(medv ~ ., data = Boston[train, ],
     distribution = "gaussian", n.trees = 5000,
     interaction.depth = 4, shrinkage = 0.2, verbose = F)
 yhat.boost <- predict(boost.boston,
     newdata = Boston[-train, ], n.trees = 5000)
-mean((yhat.boost - boston.test)^2)
+mean((yhat.boost - boston.test.Y)^2)
 
-
-
-# -------------------------------------------------------------------
-#  Feature Scaling with Standardisation for kNN
-# -------------------------------------------------------------------
-
-#https://liaohaohui.github.io/MEME19903/fraud.csv
-fraud = read.csv("fraud.csv")
-### change data type from integer to categorical
-#col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
-# All categorical inputs will be converted from factor to integer for kNN
-col_fac = c("tag")
-fraud[col_fac] = lapply(fraud[col_fac], factor)
-
-#
-# Manual stratified sampling (from Practical for Classification 1)
-# Ref: https://stackoverflow.com/questions/23479512/stratified-random-sampling-from-data-frame
-#
-set.seed(123)
-fraud_tag0 = fraud[fraud$tag=="0", ]
-fraud_tag1 = fraud[fraud$tag=="1", ]
-tag0_idx = sample(nrow(fraud_tag0), size=0.7*nrow(fraud_tag0))
-tag1_idx = sample(nrow(fraud_tag1), size=0.7*nrow(fraud_tag1))
-fraud.train = rbind(fraud_tag0[ tag0_idx,],fraud_tag1[ tag1_idx,])
-fraud.test  = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
-summary(fraud.test)
-
-# Data standardisation with respect to the TRAINING DATA
-cat("\nData Preparation/Preprocessing: Data standardisation ...\n")
-normalise.vec <- function(column,ref.col) {
-    return ((column - mean(ref.col)) / sd(ref.col))
-}
-fraud.train.knn     = fraud.train
-fraud.test.knn      = fraud.test
-fraud.train.knn$age = normalise.vec(fraud.train.knn$age,fraud.train$age)
-fraud.test.knn$age  = normalise.vec(fraud.test.knn$age, fraud.train$age)
-fraud.train.knn$base_value = normalise.vec(
-    fraud.train.knn$base_value,fraud.train$base_value)
-fraud.test.knn$base_value  = normalise.vec(
-    fraud.test.knn$base_value, fraud.train$base_value)
-
-# -------------------------------------------------------------------
-#  Predicting with kNN & Evaluation with Holdout Method
-# -------------------------------------------------------------------
-cat("\nTraining and validation with kNN ...\n\n")
-library(class)
-yhat = knn(fraud.train.knn[,2:8], fraud.test.knn[,2:8], fraud.train.knn[,9], k=3)
-cftable.std = table(yhat, fraud.test.knn$tag)
-performance(cftable.std, "Confusion matrix and performance with kNN")
-
-
-# -------------------------------------------------------------------
-#  kNN Analysis of the ISLR2's `Smarket' Dataset
-# -------------------------------------------------------------------
-
-# -------------------------------------------------------------------
-# Split data into train set and validation set
-# train set = data from Year 2001-2004
-# validation set = data from Year 2005
-# -------------------------------------------------------------------
-### Explore the dataset
-#View(Smarket)
-names(Smarket)
-dim(Smarket)
-train = (Smarket$Year < 2005)
-Smarket.2005 = Smarket[!train,]   # MATLAB: Masking / Python: Boolean indexing
-# , for picking rows in 2D data
-
-# -------------------------------------------------------------------
-#  Analysis of the reduced `Smarket' Dataset with kNN Classifier
-# -------------------------------------------------------------------
-library(class)   # for kNN
-#library(FNN)    # also provides the kNN we can use here.
-attach(Smarket)
-train.X= cbind(Lag1,Lag2)[ train,]  # cbind = Column Binding
-train.y = Direction[train]
-test.X = cbind(Lag1,Lag2)[!train,]
-test.y = Direction[!train]  # Direction.2005, associated with Smarket.2005
-detach(Smarket)
-#set.seed(1)
-knn.pred = knn(train.X,test.X,train.y)  # Computer Default: k=1
-table(knn.pred,test.y)  # k=1: (83+43)/252
-knn.pred = knn(train.X,test.X,train.y,k=3)
-table(knn.pred,test.y)
-accuracy = mean(knn.pred==test.y)
-
-# Summary: Financial Stochastic Data is ``not'' predictable
-# More advanced maths like SDE (Financial Econ II) to model the risk
-# to develop asset (stock, futures, etc.) derivatives
 

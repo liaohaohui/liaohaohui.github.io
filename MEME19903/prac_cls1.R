@@ -1,20 +1,78 @@
-# -------------------------------------------------------------------
+# ===================================================================
 # Purpose: Practical for Working with Logistic Regression Model 
 #          (and its extensions) for Classification Problems in R
-# Author : Liew How Hui (2023)
+# Author : Liew How Hui (2024)
 # Reference & Data: 
 #  1. https://www.statlearning.com/resources-second-edition
 # License: BSD-3
 # Software: R 4.x
 # Duration: 1 hour
-# -------------------------------------------------------------------
+# Data1: Default (from ISLR2, simulated default data on credit card)
+# ===================================================================
 
+cat("
+# -------------------------------------------------------------------
+#  Part 1: Trying to understand the theory --- finding coefficients
+#  (Lecture Slide Example 2)
+# -------------------------------------------------------------------
+")
+
+### Install the ISLR2 library if the loading fails
 #install.packages("ISLR2")
 library(ISLR2)
 
-#
-# Working with Example 2 from Lecture Slide s41_logreg.pdf
-#
+# Default data is very imbalance: 97% No, 3% Yes
+data.No  = Default[Default$default=="No", ]
+data.Yes = Default[Default$default=="Yes",]
+set.seed(3)
+# Taking from Default 7 data with No as output, 3 data with Yes as output
+mydata = rbind(data.No[sample(nrow(data.No),7),], 
+               data.Yes[sample(nrow(data.Yes),3),])
+m = glm(default ~ balance, mydata, family=binomial)
+x = mydata$balance
+y = ifelse(mydata$default=="No",1,0)  # Convert to binary
+coeff.beta = m$coefficients
+
+# Compare to Equation (4) in s41_logreg.pdf
+lnL = function(betas) {
+  beta0 = betas[1]
+  beta1 = betas[2]
+  sum(y*(beta0 + beta1*x)) - sum(log(1+exp(beta0 + beta1*x)))
+}
+# Max lnL = Min (-LnL)
+neg.lnL = function(betas) { -lnL(betas) }
+res = optim(c(1,0), neg.lnL, method="BFGS")
+if (res$convergence == 0) {
+  print(res$par)
+  # compare to coeff.beta
+}
+
+null.neg.lnL = function(beta0) {
+  - (sum(y*beta0) - length(y)*(log(1+exp(beta0))))
+}
+
+res.null = optim(1, null.neg.lnL, method="BFGS")
+if (res.null$convergence == 0) {
+  print(res.null$par)
+}
+
+# According to https://stats.stackexchange.com/questions/184753/in-a-glm-is-the-log-likelihood-of-the-saturated-model-always-zero
+# Saturated model for LR with ungrouped data is 0
+null.coeffs = rep(0,length(res$par))
+null.coeffs[1] = res.null$par
+cat("Null Deviance = 2(LL(saturated)-LL(null)) =", 2*(0-lnL(null.coeffs)), "\n")
+cat("Residue Deviance = 2(LL(saturated)-LL(fitted)) =", 2*(0-lnL(res$par)), "\n")
+
+print(summary(m))     # Summary of the fitted Logistic Regression model
+
+
+cat("
+# -------------------------------------------------------------------
+#  Part 2: Working with Lecture's Example 4 (single numeric input)
+#  Improvement in Deviance => Well fitted model
+# -------------------------------------------------------------------
+")
+
 lr.fit = glm(default ~ balance, data=Default, family=binomial)
 print(summary(lr.fit))
 
@@ -53,23 +111,10 @@ print(table(compare))    # Ask R to summarise the comparison
 #     P(default=1|balance=2000) = 0.5857694
 #
 
-#
-# Working with Qualitative Predictors (Example 3) from 
-# Lecture Slide s41_logreg.pdf
-#
-
-# First, make sure the input is categorical by either:
-class(Default$student)
-summary(Default$student)
-
-lr.fit = glm(default ~ student, data=Default, family=binomial)
-print(summary(lr.fit))
-
-#
-# Do you know why we have a new variable studentYes?  Where is 
-# the variable student?
-#
-
+cat("
+# -------------------------------------------------------------------
+#  Part 3: Working with Lecture's Example 5 (single categorical input)
+#  Lack of Improvement in Deviance => Poorly fitted model
 #
 # The small difference between null deviance and residual deviance
 # suggest the model to be a poor fit despite the p-values
@@ -97,6 +142,21 @@ print(summary(lr.fit))
 # 
 # Number of Fisher Scoring iterations: 6
 #
+# -------------------------------------------------------------------
+")
+
+# First, make sure the input is categorical by either:
+class(Default$student)
+summary(Default$student)
+
+lr.fit = glm(default ~ student, data=Default, family=binomial)
+print(summary(lr.fit))
+
+#
+# Do you know why we have a new variable studentYes?  Where is 
+# the variable student?
+#
+
 
 #
 # We can see the terrible specificity despite the accuracy is OK.
@@ -126,20 +186,73 @@ predict(lr.fit, data.frame(student="Yes"), type="response")
 # to know because it will come out in exam.
 #
 
-#
-# Relating categorical variables with dummy variables
-#
-# (a) Original Data with Original Variables
-head(Default)
-# (B) Original Categorical Variables are Transformed to Dummy Variables
-head(model.matrix(default ~ ., Default))
-
-
+cat("
 # -------------------------------------------------------------------
-# Performance Measures for Classification
+#  Part 4: Logistic Regression Analysis of the ISLR2's `Smarket' Dataset
+#  (unpredictable data) following the main reference book
 # -------------------------------------------------------------------
+")
 
-# A more sophisticated implementation is caret::confusionMatrix
+### Univariate Analysis of Tabular Dataset
+#View(Smarket)       # From ISLR
+dim(Smarket)         # Check the dimension of the data
+names(Smarket)       # Show the column names
+summary(Smarket)     # Except for the 1st & last columns, the rests are numerics
+par(mfrow=c(2,4))
+for (column in 1:8) {    # Exclude the output Direction which is not numeric
+  hist(Smarket[,column], main=names(Smarket)[column], xlab="")
+}
+par(mfrow=c(1,1))
+
+### Bivariate Analysis of Tabular Dataset
+# (1) Numeric statistical analysis => correlation coefficients, cor()
+# (2) Visual statistics => pairs = scatter plots of every pair of the columns
+
+#cor(Smarket)        # Won't work: Direction is categorical
+cor(Smarket[,-9])    # Remove variable Direction
+pairs(Smarket)       # Scatter plots of all columns
+# Pair plot is only OK when we have less than 15 or so numeric columns
+
+# Focusing into absolute correlation >=0.5 using scatter plot:
+# E.g. Year and Volume
+plot(Smarket$Year,Smarket$Volume)
+
+### Time series data are always split into `past' and `present' !!!
+### Linear sampling and stratified sampling are not applicable.
+### train set = data from Year 2001-2004
+### validation set = data from Year 2005
+train = (Smarket$Year < 2005)     # For Boolean selection
+Smarket.2005 = Smarket[!train,]   # !TRUE == FALSE
+Y.2005 = Smarket.2005$Direction
+
+### Fit the train set into logistic regression (parametric predictive model)
+# Output / Target / Response = Direction (Interested to see how price go)
+# Inputs / Factors / Predictors / Independent Variables = various variations
+#
+# Why no 'Today'?  Because Up / Down is BASED on Today & they are correlated
+#
+lr.fit = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,
+                  data=Smarket[train,], family=binomial)
+summary(lr.fit)
+anova(lr.fit)      # analysis of variance of input in sequential order
+
+### Apply model into validation set and predict the probability to be Class 1
+# Response = P(Y=1 | X=x) = 1/(1 + exp(-(DefaultT)))
+# DefaultT = beta0 + beta1*x1 + ... + betap*xp
+# 1 = Up; 0 = Down
+probs.of.Y1 = predict(lr.fit, newdata=Smarket.2005, type="response")
+
+### Make prediction based on the probability computed (>=0.5 is Up)
+yhat = ifelse(probs.of.Y1 >= 0.5, "Up", "Down")
+
+### Construct confusion matrix and performance measures
+cfmat  = table(yhat,Y.2005)
+
+### We can use caret's confusionMatrix() to show the performance
+### measurements for classification problem.  But the caret library
+### has many dependencies, so I define a function using the definitions 
+### from Week 1 to avoid the need to install too many R libraries.
+
 performance = function(xtab, desc=""){
     cat(desc,"\n")
     print(xtab)
@@ -195,73 +308,15 @@ performance = function(xtab, desc=""){
     }
 }
 
-# -------------------------------------------------------------------
-#  Logistic Regression Analysis of the ISLR2's `Smarket' Dataset
-# -------------------------------------------------------------------
-
-### Explore the dataset
-#View(Smarket)       # From ISLR
-names(Smarket)       # or colnames
-summary(Smarket)     # Except for the 1st & last columns, the rests are numerics
-#
-# pairs = scatter plots of every pair of the columns
-# Purpose: try to rule out correlation 
-# => correlation is BAD for Logistic Regression
-#
-pairs(Smarket)       # Scatter plots of all columns
-# Pair plot is only OK when we have less than 15 or so numeric columns
-#cor(Smarket)        # Won't work, Direction is numeric
-cor(Smarket[,-9])    # Remove variable Direction
-#
-# Correlation can be visualised using HeatMap.
-#
-# `Some' correlation between Year and Volume
-plot(Smarket$Year,Smarket$Volume)
-
-### Split data into train set and validation set
-### For time series, we always split the data into `past' and `present'
-### train set = data from Year 2001-2004
-### validation set = data from Year 2005
-train = (Smarket$Year < 2005)     # For Boolean selection
-Smarket.2005 = Smarket[!train,]   # !TRUE == FALSE
-dim(Smarket.2005)     # Check the dimension of the testing data table
-Y.2005 = Smarket.2005$Direction
-
-### Fit the train set into logistic regression (parametric predictive model)
-# Output / Target / Response = Direction (Interested to see how price go)
-# Inputs / Factors / Predictors / Independent Variables = various variations
-#
-# Why no 'Today'?  Because Up / Down is BASED on Today & they are correlated
-#
-#lr.fit = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,
-#             data=Smarket, subset=train, family=binomial)
-### Equivalent expression
-lr.fit = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,
-                  data=Smarket[train,], family=binomial)
-summary(lr.fit)    # Need to understand for final exam
-
-### Apply model into validation set and predict the probability to be Class 1
-# Response = P(Y=1 | X=x) = 1/(1 + exp(-(DefaultT)))
-# DefaultT = beta0 + beta1*x1 + ... + betap*xp
-Y.probs = predict(lr.fit, newdata=Smarket.2005, type="response")
-# contrasts is used for the construction of one-hot encoding
-contrasts(Smarket$Direction)    # To show the value (1/0) for level (Up/Down)
-### Make prediction based on the probability computed (>=0.5 is Up)
-yhat = ifelse(Y.probs >= 0.5, "Up", "Down")
-
-### Construct confusion matrix and performance measures
-cfmat  = table(yhat,Y.2005)
 performance(cfmat, "Performance of Logistic Regression Model on Smarket Data")
 
-#
-#  Model Comparison for Badly Fitted Data does not make sense --- Skip
-#
 
-
-
+cat("
 # -------------------------------------------------------------------
-#  Analysis of the original `Fraud' Dataset using Logistic Regression glm
+#  Part 5: Logistic Regression Analysis of `Fraud' Dataset
+#  (predictable data)
 # -------------------------------------------------------------------
+")
 
 #https://liaohaohui.github.io/MEME19903/fraud.csv
 fraud = read.csv("fraud.csv")
@@ -283,66 +338,74 @@ fraud.test  = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
 summary(fraud.test)
 
 ### logistic regression (use the data without normalization)
-logreg_model = glm(tag~.-id_person, data=fraud.train, family=binomial)
-summary(logreg_model)    # Need to understand for final
-
-## Remove those with p-value > 0.05
-#logreg_model = glm(tag~.-id_person-base_value, data=fraud.train, family=binomial)
-#summary(logreg_model)
+logreg_m = glm(tag~.-id_person, data=fraud.train, family=binomial)
+print(summary(logreg_m))
 
 #
 # Perform binary classification using conditional probability
 #
-fraud.test.prob = predict(logreg_model, 
-  newdata=fraud.test[ ,1:8], type='response')
-#fraud.test.prob = predict(logreg_model,
-#  newdata=subset(fraud.test,select=1:8), type='response')
+fraud.test.prob = predict(logreg_m, newdata=fraud.test[ ,1:8], type='response')
 
 yhat = ifelse(fraud.test.prob >= 0.5, "pred_1", "pred_0")
 cfmat = table(yhat, fraud.test$tag)
 performance(cfmat, "Performance of the Logistic Regression Model")
 
 
+### When a model does not fit the data, the model should be discarded.
 
+cat("
 # -------------------------------------------------------------------
-#  Model Comparison for Nicely Fitted Data makes sense
+#  Part 6a: Model Comparison for ISLR's Default Data (Case Study 1)
 # -------------------------------------------------------------------
+")
 
-# Is removing the base_value and age better?
-reduced.model = glm(tag~ gender + status + employment + account_link + supplement, data=fraud.train[,2:9], family=binomial)
-summary(reduced.model)
+m = glm(default ~ ., Default, family=binomial)
+print(anova(m, test="Chisq"))
+
+m0 = glm(default ~ 1, Default, family=binomial)   # Null Model
+m1 = glm(default ~ student, Default, family=binomial)
+m2 = glm(default ~ student + balance, Default, family=binomial)
+m3 = glm(default ~ student + balance + income, Default, family=binomial)
+print(anova(m0,m1,m2,m3,test="Chisq"))
+
+cat("
+# -------------------------------------------------------------------
+#  Part 6b: Model Comparison for Fraud Data (nicely fitted)
+# -------------------------------------------------------------------
+")
+
+reduced.m = glm(tag~ gender + status + employment + account_link + supplement, data=fraud.train[,2:9], family=binomial)
+print(summary(reduced.m))
 # What about removing employment as well?
 rm2 = glm(tag~ gender + status + account_link + supplement, data=fraud.train[,2:9], family=binomial)
-summary(rm2)
+print(summary(rm2))
 
-anova(logreg_model, reduced.model, rm2, test="Cp")
-anova(logreg_model, reduced.model, rm2, test="Chisq")
-anova(logreg_model, reduced.model, rm2, test="Rao")
+#
+# Chisq, Rao tests are OK for binary output with p-value given.
+# Cp is AIC when GLM is LR (deviance improvement, larger better)
+#
+anv0 = anova(rm2, reduced.m, logreg_m)
+anv1 = anova(rm2, reduced.m, logreg_m, test="LRT")    # Likelihood Ratio Test
+anv2 = anova(rm2, reduced.m, logreg_m, test="Chisq")  # Same as LRT for LR
+anv3 = anova(rm2, reduced.m, logreg_m, test="Rao")
+anv4 = anova(rm2, reduced.m, logreg_m, test="Cp")     # Cp == AIC
 
-# The p-values of the coefficients suggest NO variable is
-# able to "explain" the output nicely.
-#
-# Try the model with only one input Lag1 and compare it to the full model
-#
-lr.fit2 = glm(Direction~Lag1, data=Smarket[train,], family=binomial)
-summary(lr.fit2)
-#
-# The residual deviance improves a bit but the model is still bad
-#
-anova(lr.fit, lr.fit2)
-#
-# Chisq, Rao, tests are OK for binary output:
-# The result suggests bad model.
-#
-anova(lr.fit, lr.fit2, test="Cp")     # Cp == AIC
-anova(lr.fit, lr.fit2, test="Chisq")  # Same thing as LRT for logistic regression 
-anova(lr.fit, lr.fit2, test="LRT")    # LRT = Likelihood Ratio Test
-anova(lr.fit, lr.fit2, test="Rao")
+print(anv0)
+cat("-----------------------------------------\n")
+print(anv1)
+cat("-----------------------------------------\n")
+print(anv2)
+cat("-----------------------------------------\n")
+print(anv3)
+cat("-----------------------------------------\n")
+print(anv4)
 
-
+cat("
 # -------------------------------------------------------------------
-#  Multinomial LR is a Generalisation of LR
+#  Part 7: Multinomial LR is a Generalisation of LR (can work with
+#  multiclass)
 # -------------------------------------------------------------------
+")
 
 library(nnet)
 mlr.model = multinom(tag ~ ., data=fraud.train[,2:9])
@@ -351,5 +414,4 @@ print(summary(mlr.model))
 
 # Basically multinom() witk K=2 is the same as glm() except Z-statistic 
 # and p-values are not provided.
-
 

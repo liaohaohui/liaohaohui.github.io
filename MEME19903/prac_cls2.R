@@ -1,14 +1,14 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Working with Naive Bayes Predictive Models
 #          for Classification Problems
-# Author : Liew How Hui (2022)
+# Author : Liew How Hui (2024)
 # References: 
 #  1. https://www.statlearning.com/resources-second-edition
 #  2. http://www.dbenson.co.uk/Rparts/subpages/spamR/
 #  3. http://www.learnbymarketing.com/tutorials/naive-bayes-in-r/
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
-# Software: R 3.6 & R 4.x
+# Software: R 4.x
 # Duration: 1 hour
 # -------------------------------------------------------------------
 
@@ -92,9 +92,15 @@ d.f$X3 = factor(d.f$X3)
 print(d.f)
 #install.packages("naivebayes")
 library(naivebayes)
-m = naive_bayes(Y ~ X1+X2+X3, d.f)
+m = naive_bayes(Y ~ X1+X2+X3, d.f)   # No Laplace smoothing
 print(m)
 
+# Predict response Y for X1=B, X2=Yes, X3=1
+newX = data.frame(X1='B', X2='Yes', X3='1')
+prob = predict(m, newX, type="prob")
+# Try to compare to the `products' in Case Study 1:
+# prop.table(c(3/7*2/3*2/3*1/3, 4/7*1/4*1/2*3/4))
+yhat = predict(m, newX, type="class")
 
 # -------------------------------------------------------------------
 # Working with Case Study 2 from Lecture Slide s42_nb.pdf
@@ -214,7 +220,7 @@ d.f = read.csv(text='
 ham,1,"Hi sir, just want to ask you if the formula xxx is OK?"
 spam,1,"Maxis great deal is here"
 ham,2,"If I solve the problem the following way ... is it OK?"
-ham,3,"You solution is correct.  Great job"
+ham,3,"Your solution is correct.  Great job"
 spam,2,"Discount 20% from Maxis when dinning at ..."
 ham,4,"The maximum value for ... is the coefficient for the model ..."
 spam,3,"Win a phone when subscribing to Maxis new plan ..."
