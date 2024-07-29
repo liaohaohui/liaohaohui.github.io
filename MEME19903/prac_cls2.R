@@ -157,12 +157,10 @@ print(m2)
 # If there is a column with categorical data, using stringsAsFactors=TRUE
 # is more convenient.
 #https://liaohaohui.github.io/MEME19903/fraud.csv
-fraud = read.csv("fraud.csv")  # categorical data are encoded as integers
-
+fraud = read.csv("fraud.csv", row.names=1)
 # change data type from integer to categorical
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud[col_fac] = lapply(fraud[col_fac], factor)
-fraud$id_person = NULL
 
 #
 # Manual stratified sampling for binary classes with R
@@ -185,13 +183,13 @@ fraud.test = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
 #
 
 #
-# Choices for Naive Bayes:
+# Various Choices for Naive Bayes:
 # (1) naivebayes library (used by the main reference book)
 # (2) e1071 library
 # (3) klaR library
 # (4) fastNaiveBayes library
 #
-library(naivebayes)   # for naive_bayes()
+
 cat("
 Calculations without Laplace Smoothing
 ")

@@ -30,7 +30,7 @@ mydata = rbind(data.No[sample(nrow(data.No),7),],
                data.Yes[sample(nrow(data.Yes),3),])
 m = glm(default ~ balance, mydata, family=binomial)
 x = mydata$balance
-y = ifelse(mydata$default=="No",1,0)  # Convert to binary
+y = ifelse(mydata$default=="No",0,1)  # Convert to binary
 coeff.beta = m$coefficients
 
 # Compare to Equation (4) in s41_logreg.pdf
@@ -41,7 +41,8 @@ lnL = function(betas) {
 }
 # Max lnL = Min (-LnL)
 neg.lnL = function(betas) { -lnL(betas) }
-res = optim(c(1,0), neg.lnL, method="BFGS")
+#res = optim(c(1,0), neg.lnL, method="BFGS")
+res = optim(c(1,0), neg.lnL)
 if (res$convergence == 0) {
   print(res$par)
   # compare to coeff.beta
