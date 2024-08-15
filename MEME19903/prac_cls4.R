@@ -13,6 +13,7 @@
 #  Gower Distance ....
 # -------------------------------------------------------------------
 
+#https://liaohaohui.github.io/UECM3993/fraud.csv
 fraud = read.csv("fraud.csv",row.names=1)
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 ### change data type from numeric to categorical
@@ -22,6 +23,7 @@ Y = fraud$tag
 # Get stats range of each column
 apply(fraud,2,range)
 library(gower)
+fraud$tag = NULL
 # For gower distance (https://jamesmccaffrey.wordpress.com/2020/04/21/example-of-calculating-the-gower-distance/):
 # numeric:     abs(diff between two items) / range 
 # non-numeric: 0 if equal, 1 if different
@@ -81,8 +83,9 @@ X,Y
 d.f.new = data.frame(X=12)
 
 library(FNN)
-yhat = knn.reg(matrix(d.f.train[,1],nrow=nrow(d.f.train)), 
-                  d.f.new, matrix(d.f.train[,2],nrow=nrow(d.f.train)), k=3)
+#yhat = knn.reg(matrix(d.f.train[,1],nrow=nrow(d.f.train)), 
+#                  d.f.new, matrix(d.f.train[,2],nrow=nrow(d.f.train)), k=3)
+yhat = knn.reg(data.frame(X=d.f.train[,1]), d.f.new, d.f.train[,2], k=3)
 
 
 # -------------------------------------------------------------------
@@ -121,15 +124,9 @@ accuracy = mean(knn.pred==test.y)   # Evaluation for Classification: Accuracy
 #  Analysis of the `Fraud' Dataset with kNN Classifier using 
 #  "Ordinal encoding" for "categorical data".
 # -------------------------------------------------------------------
-#https://liaohaohui.github.io/UECM3993/fraud.csv
-fraud = read.csv("fraud.csv", row.names=1)
-sapply(fraud,class)
-#colnames(fraud)
-col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
-fraud_fac = fraud    # create a copy
-### change data type from integer to categorical
-fraud_fac[col_fac] = lapply(fraud[col_fac], factor)
-# "After type conversion .....
+# Already loaded above from Lecture Slide Example 1
+fraud_fac = cbind(fraud, tag=Y)    # create a copy
+fraud = read.csv("fraud.csv",row.names=1)
 sapply(fraud,class)
 sapply(fraud_fac,class)
 

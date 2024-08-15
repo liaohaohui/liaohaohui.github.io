@@ -209,6 +209,7 @@ Carseats.test  = rbind(cs_tag0[-tag0_idx,],cs_tag1[-tag1_idx,])
 tree.carseats = tree(High~.,Carseats.train)
 # Text layout is suitable for programming
 print(tree.carseats)
+summary(tree.carseats)
 # Diagram representation
 plot(tree.carseats)
 text(tree.carseats,cex=0.8)
