@@ -81,8 +81,7 @@ par(mfrow=c(1,1))
 
 # Original Source: https://userpage.fu-berlin.de/soga/300/30100_data_sets/food-texture.csv
 #https://liaohaohui.github.io/UECM3993/foodtexture.csv
-food = read.csv("foodtexture.csv")
-food$X = NULL   # Remove the first column
+food = read.csv("foodtexture.csv", row.names=1)
 apply(food, 2, sd)   # this tells us why the scale=TRUE
 pca=prcomp(food, scale=TRUE)  # Normalised data to var=1
 summary(pca)
