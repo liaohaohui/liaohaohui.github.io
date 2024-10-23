@@ -108,15 +108,6 @@ Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
 # C5.0 tree only supports classification problems!!!
 # C5.0 is an extension of C4.5 which is an extension of ID3 by Quinlan
 
-#install.packages("Cubist")
-library(Cubist)  # Extension of Quinlan's M5 tree
-reg.model = cubist(x=as.matrix(data.train[,2:11]), y=data.train$Sales)
-Model.list = c(Model.list, "cubist")
-yhat = predict(reg.model, data.train)
-Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
-yhat = predict(reg.model, data.test)
-Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
-
 #
 # partikit requires libcoin, mvtnorm, Formula, inum
 #
@@ -169,6 +160,15 @@ yhat = predict(lr, data.train)
 Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
 yhat = predict(lr, data.test)
 Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
+
+#install.packages("Cubist")
+library(Cubist)  # Extension of Quinlan's M5 tree (linear models in rules)
+reg.model = cubist(x=data.train[,2:11], y=data.train$Sales)
+Model.list = c(Model.list, "cubist")
+yhat1 = predict(reg.model, data.train)
+Train.list = c(Train.list, performance.regression.MSE(yhat1, data.train$Sales))
+yhat2 = predict(reg.model, data.test)
+Test.list  = c(Test.list, performance.regression.MSE(yhat2, data.test$Sales))
 
 print(data.frame(
   tree.model = Model.list,
