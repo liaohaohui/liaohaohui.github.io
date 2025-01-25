@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for LDA & QDA Models in R
-# Author : Liew How Hui (2024)
+# Author : Liew How Hui (2025)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 #  2. http://euler.stat.yale.edu/~tba3/stat665/lectures/lec11/script11.html
@@ -11,11 +11,10 @@
 # -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
-# performance() is taken from p03_knn1.R.  It is a simple 
-# implementation of caret::confusionMatrix()
+# performance() is taken from p03_knn1.R with minor adjustment
 # -------------------------------------------------------------------
 
-performance = function(xtab, desc=""){
+performance = function(xtab, desc="", digits=7){
     cat("\n", desc,"\n", sep="")
     print(xtab)
 
@@ -49,7 +48,7 @@ performance = function(xtab, desc=""){
         }
         b = data.frame(rbind(sensitivity,specificity,ppv,npv))
         names(b) = lvls
-        print(b)
+        print(round(b,digits))
     } else {
          #names(dimnames(xtab)) = c("Prediction", "Actual")
          TPR = xtab[1,1]/sum(xtab[,1]); TNR = xtab[2,2]/sum(xtab[,2])
@@ -299,7 +298,7 @@ X = 1 - (X + 1)*0.5
 plot(0,0)
 rasterImage(X,-1,-1,1,1)
 
-set.seed(2024)
+set.seed(2025)
 iset <- sample(nrow(train),5*7)   # Take 35 samples from training data
 par(mar=c(0,0,0,0))
 par(mfrow=c(5,7))
@@ -327,7 +326,7 @@ cfmat = table(Prediction=yhat$class, Actual=ytest)
 #performance(cfmat, "MNIST performance with LDA")
 cfmat
 cat("Accuracy =", sum(diag(cfmat))/length(ytest), "\n")
-performance(cfmat)
+performance(cfmat, digits=2)
 
 # qda? --- not working --- requires filtering of features
 # E.g. Perform PCA to the data???
@@ -348,7 +347,7 @@ cfmat = table(Prediction=predKnn, Actual=ytest)
 # The performance function is only for binary classification
 # not appropriate here.
 #
-performance(cfmat, "\nkNN with k=3")
+performance(cfmat, "\nkNN with k=3", digits=2)
 #
 # glmnet is an extension of Multivariate logit
 #

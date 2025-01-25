@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Regression Trees & Regressive Predictive Models in R
-# Author : Liew How Hui (2024)
+# Author : Liew How Hui (2025)
 # References: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%208%20Lab.txt
 #  2. https://rstudio-pubs-static.s3.amazonaws.com/446972_323b4475ff0749228fe4057c4d7685f5.html
@@ -62,7 +62,7 @@ performance.regression.R2  = function(yhat, y){
 # 400 different stores
 #-------------------------------------------------------------------------
 library(ISLR2)
-set.seed(2024)
+set.seed(2025)
 idx = sample(nrow(Carseats), 0.7*nrow(Carseats))
 data.train = Carseats[ idx, ]
 data.test  = Carseats[-idx, ]
@@ -71,6 +71,16 @@ data.test  = Carseats[-idx, ]
 Model.list = c()
 Train.list = c()
 Test.list  = c()
+
+library(FNN)   # for knn regressor
+# kNN k=3
+k = 3
+# column 1 is y; removing categorical data at column 7,10,11.
+yhat = knn.reg(data.train[,-c(1,7,10,11)],test=data.train[,-c(1,7,10,11)],y=data.train[,1],k=k)
+Model.list = c(Model.list, paste0("knn.reg(k=",k,")"))
+Train.list = c(Train.list, performance.regression.MSE(yhat$pred, data.train$Sales))
+yhat = knn.reg(data.train[,-c(1,7,10,11)],test=data.test[,-c(1,7,10,11)],y=data.train[,1],k=k)
+Test.list = c(Test.list, performance.regression.MSE(yhat$pred, data.test$Sales))
 
 #
 # CART = Classification & Regression Trees
@@ -107,6 +117,15 @@ Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
 
 # C5.0 tree only supports classification problems!!!
 # C5.0 is an extension of C4.5 which is an extension of ID3 by Quinlan
+
+#install.packages("Cubist")
+library(Cubist)  # Extension of Quinlan's M5 tree
+reg.model = cubist(x=as.matrix(data.train[,2:11]), y=data.train$Sales)
+Model.list = c(Model.list, "cubist")
+yhat = predict(reg.model, data.train)
+Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
+yhat = predict(reg.model, data.test)
+Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
 
 #
 # partikit requires libcoin, mvtnorm, Formula, inum
@@ -160,15 +179,6 @@ yhat = predict(lr, data.train)
 Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
 yhat = predict(lr, data.test)
 Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
-
-#install.packages("Cubist")
-library(Cubist)  # Extension of Quinlan's M5 tree (linear models in rules)
-reg.model = cubist(x=data.train[,2:11], y=data.train$Sales)
-Model.list = c(Model.list, "cubist")
-yhat1 = predict(reg.model, data.train)
-Train.list = c(Train.list, performance.regression.MSE(yhat1, data.train$Sales))
-yhat2 = predict(reg.model, data.test)
-Test.list  = c(Test.list, performance.regression.MSE(yhat2, data.test$Sales))
 
 print(data.frame(
   tree.model = Model.list,
@@ -262,7 +272,7 @@ Xend = pi
 # Deterministic input
 #X = seq(Xbeg,Xend,length.out=NS)
 # Random input
-set.seed(2024)
+set.seed(2025)
 X = Xbeg + runif(NS,min=0,max=Xend)
 # Output without noise
 y = sin(X)
@@ -316,8 +326,7 @@ lines(Xx, predictions, pch='.', col=5, lwd=glw)
 #  kNN
 #-------------------------------------------------------------------------
 
-# Using sklearn
-library(FNN)
+# knn.reg (loaded earlier)
 knnk = 5
 predictions = knn.reg(d.f.train$X, test=data.frame(X=Xx), y=d.f.train$y, k=knnk)$pred
 #dev.new()
@@ -329,7 +338,7 @@ lines(Xx, predictions, pch='.', col=5, lwd=glw)
 #  Neural Network Regressor
 #-------------------------------------------------------------------------
 library(neuralnet)
-model = neuralnet(y ~ ., data=d.f.train, hidden=c(10))
+model = neuralnet(y ~ ., data=d.f.train, hidden=c(10,10))
 print(model)
 predictions = predict(model,newdata=data.frame(X=Xx))
 original.data("1L(10) neural net")

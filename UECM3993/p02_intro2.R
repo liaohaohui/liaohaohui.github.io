@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Basic Commands for Data Processing in R (Part 2)
-# Author : Liew How Hui (2024)
+# Author : Liew How Hui (2025)
 # License: BSD-3
 # Software: R 4.1+
 # Duration: 1 hour
@@ -11,14 +11,75 @@ getwd()
 # Change the working directory
 #setwd("PathToYourFolder")
 
+
 # -------------------------------------------------------------------
-#  Practical: Working with user-defined Data Frame 
+#  (A) Matrix is a kind of 2-D Numeric Array
+#      We cannot construct a matrix using Practical 1's c()
+#      We need matrix(), to get help for matrix type ?matrix
+# -------------------------------------------------------------------
+
+# A is a 4 by 4 matrix (data is filled in columns by default)
+
+A = matrix(1:16,nrow=4,ncol=4)
+
+# To fill in by rows, we need to set option "byrow"
+
+B = matrix(1:16,4,4,byrow=TRUE)
+
+# matrix transpose
+
+t(B)    # same as A
+
+#
+# Stacking matrices
+#
+cbind(A,B)    # stack horizontally
+rbind(A,B)    # stack vertically
+
+#
+# Matrix arithmetic operations
+#
+2*A     # scalar multiplication
+A+2     # adding every element with a number
+A+B     # matrix addition
+A*B     # elementwise multiplication, NOT matrix multiplication
+A%*%B   # matrix multiplication
+# A*B == B*A BUT A%*%B != B%*%A
+
+#
+# Indexing using [ row index , column index ]
+#
+dim(A)             # Get the shape of the matrix A
+A[2,3]             # Get an element from matrix
+A[1,]              # Get first row
+A[,2]              # Get second column
+A[1:2,]            # Get first two rows
+A[,1:2]            # Get first two columns
+A[1:3,2:4]         # Get intersection between rows and columns
+A[c(1,3),c(2,4)]   # Get intersection between rows and columns
+A[-c(1,3),]        # Remove first and third rows
+A[-c(1,3),-c(3,4)] # Remove some rows and some columns
+
+#
+# Statistical analysis using Reduction apply()
+#
+apply(A, 1, sum)    # sum along the rows
+apply(A, 2, sum)    # sum along the columns
+rowSums(A)
+rowMeans(A)
+colSums(A)
+colMeans(A)
+apply(A, 1, var)    # variance along the rows
+apply(A, 2, var)    # variance along the columns
+
+
+
+# -------------------------------------------------------------------
+#  (B) Working with user-defined Data Frame 
 #
 #  R's Data Frame is a 2D Structured Data to handle the mix of 
 #  numeric and categorical data just like Excel table.
-#
-#  Many of the matrix operations from Practical 1 are applicable to 
-#  Data Frame.
+#  Many of the matrix operations are applicable to Data Frame.
 # -------------------------------------------------------------------
 
 #
@@ -315,7 +376,7 @@ table(Auto$cylinders, Auto$origin)
 
 
 # -------------------------------------------------------------------
-#  Practical: Resampling for estimating statistics
+#  (C) Resampling for estimating statistics (corresponding to Topic 2)
 # -------------------------------------------------------------------
 
 #
@@ -323,7 +384,7 @@ table(Auto$cylinders, Auto$origin)
 #
 the.mean = 10
 the.stdv =  2   # standard deviation is 2
-set.seed(2024)  # Fix the starting value of random number generator
+set.seed(2025)  # Fix the starting value of random number generator
 the.samples = rnorm(100, the.mean, the.stdv)
 count = length(the.samples)
 #
@@ -335,7 +396,7 @@ sd(the.samples)
 
 # Holdout Resampling Method Estimate
 # the 'sample' function depends on the seed
-set.seed(2024)
+set.seed(2025)
 idx = sample(count, 0.7*count)   # Linear Sampling of 70% of the Indices
 # We are 'resampling' from the samples!
 sd(the.samples[idx])
@@ -365,7 +426,7 @@ for(i in 1:10){
 mean(fold)
 
 # Simple Boostrapping (Sample with Replacement)
-set.seed(2024)
+set.seed(2025)
 idx.boostrap = sample(count, 0.7*count, replace=TRUE)
 sd(the.samples[idx.boostrap])
 

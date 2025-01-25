@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Logistic Regression Models in R (Part 2)
-# Author : Liew How Hui (2024)
+# Author : Liew How Hui (2025)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
@@ -177,7 +177,8 @@ confusion.matrix = table(yhat2, iris.test$Species)
 performance(confusion.matrix)
 
 #
-# glm won't work correctly as it only take two classes
+# glm() won't work correctly for data with more than 2 classes as 
+# it only take two classes
 #
 
 

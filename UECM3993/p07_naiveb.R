@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Naive Bayes Predictive Models in R
-# Author : Liew How Hui (2024)
+# Author : Liew How Hui (2025)
 # References: 
 #  1. http://www.dbenson.co.uk/Rparts/subpages/spamR/
 #  2. http://www.learnbymarketing.com/tutorials/naive-bayes-in-r/

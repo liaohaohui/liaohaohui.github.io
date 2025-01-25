@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for PCA in R for simple dimensional reduction
 #          and using it a preprocessing stage for supervised models
-# Author : Liew How Hui (2024)
+# Author : Liew How Hui (2025)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%2010%20Labs.txt
 #  2. https://uc-r.github.io/pca
@@ -118,7 +118,7 @@ for (i in 1:40) {
 Nfigs = 40
 dataY = data.frame(label=rep(1:Nfigs,each=10))
 
-set.seed(2024)
+set.seed(2025)
 K = 10
 M = 7
 idx.train = rep(sample(K,M), Nfigs) + rep(K*(0:(Nfigs-1)), each=M)
@@ -357,6 +357,6 @@ for (i in c(1:K)){
   yhat = knn(X.train.pca, X.test.pca, y.train)
   cfmat = table(yhat, y.test)
   results[i] = sum(diag(cfmat))/sum(cfmat)
-  cat("Run", i, ": The PCA + KNN classifier had ", 100*results[i],"% accuracy.\n")
+  cat("Run", i, paste0(": The PCA + kNN(k=",K,") classifier had "), 100*results[i],"% accuracy.\n")
 }
 

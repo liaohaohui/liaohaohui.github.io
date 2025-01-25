@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for kNN (k-Nearest Neighbour) Models in R (Part 1)
-# Author : Liew How Hui (2024)
+# Author : Liew How Hui (2025)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
@@ -306,7 +306,8 @@ dim(iris)
 table(iris$Species)
 
 #
-# Performance Measurement for kNN(k=1) using LOOCV
+# Performance Measurement for kNN(k=1) using LOOCV (use only
+# when the data sample size is small)
 #
 yhat = knn.cv(iris[,1:4], iris[,5], k=1)
 performance(table(yhat, iris[,5]), "Iris flower with kNN(k=1)")

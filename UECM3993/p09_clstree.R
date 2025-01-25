@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Classification Tree Based Predictive Models in R
-# Author : Liew How Hui (2024)
+# Author : Liew How Hui (2025)
 # References: 
 #  1. https://daviddalpiaz.github.io/r4sl/trees.html
 #  2. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%208%20Lab.txt
@@ -74,29 +74,88 @@ performance = function(xtab, desc=""){
 
 
 # -------------------------------------------------------------------
-#  Analysis of the `Carseats' Dataset with Classification Tree (tree)
+#  Practical : Analysis of the fraud Dataset with Classification 
+#  Tree (tree)
+#
+#  tree package is developed by Professor Brian D. Ripley
+#  for his book: http://www.stats.ox.ac.uk/~ripley/PRbook/
+#  Ref: https://stat.ethz.ch/pipermail/r-help/2005-May/070922.html
+#  It is generates binary tree and is a kind of CART.
+#
+#  Alternative: library(rpart), default each leaves has 5 items 
+#  from the data table.
+#  rpart's tree pruning is more complex than the tree library.
 # -------------------------------------------------------------------
 
-#install.packages("tree")
-library(tree)   # Requires R >= 3.6 (no dependencies)
+fraud = read.csv("fraud.csv",row.names=1)
+fraud$tag = factor(fraud$tag)
+col_fac = c("gender", "status", "employment", "account_link", "supplement")
+fraud_fac = fraud    # create a copy
+fraud_fac[col_fac] = lapply(fraud[col_fac], factor)
 
-### Initial Exploration of the Dataset ``Carseats''
-Orig.Carseats = ISLR2::Carseats
+set.seed(123)
+fraud_tag0 = fraud[fraud$tag=="0", ]
+fraud_tag1 = fraud[fraud$tag=="1", ]
+tag0_idx = sample(nrow(fraud_tag0), size=round(0.7*nrow(fraud_tag0)))
+tag1_idx = sample(nrow(fraud_tag1), size=round(0.7*nrow(fraud_tag1)))
+fraud.train = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
+fraud.test  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
+
+set.seed(123)
+fraud_fac_tag0 = fraud_fac[fraud_fac$tag=="0", ]
+fraud_fac_tag1 = fraud_fac[fraud_fac$tag=="1", ]
+tag0_idx = sample(nrow(fraud_fac_tag0), size=round(0.7*nrow(fraud_fac_tag0)))
+tag1_idx = sample(nrow(fraud_fac_tag1), size=round(0.7*nrow(fraud_fac_tag1)))
+fraud_fac.train = rbind(fraud_fac_tag0[ tag0_idx,], fraud_fac_tag1[ tag1_idx,])
+fraud_fac.test  = rbind(fraud_fac_tag0[-tag0_idx,], fraud_fac_tag1[-tag1_idx,])
+
+#install.packages("tree")
+library(tree)
+m.t1 = tree(tag ~ ., fraud.train)
+m.t2 = tree(tag ~ ., fraud_fac.train)
+par(mfrow=c(1,2))
+plot(m.t1)
+title("Numeric Features")
+text(m.t1)
+plot(m.t2)
+title("Categorical Features")
+text(m.t2)
+par(mfrow=c(1,1))
+
+cfmat1 = table(predict(m.t1, fraud.test, type="class"), fraud.test$tag)
+performance(cfmat1, "Numeric Feature+Tree")
+cfmat2 = table(predict(m.t2, fraud_fac.test, type="class"), fraud_fac.test$tag)
+performance(cfmat2, "Categorical Feature+Tree")
+
+
+# -------------------------------------------------------------------
+#  Practical : Analysis of the `Carseats' Dataset (from ISLR2 or ISLR) 
+#  with CART, Conditional Inference Tree (ctree) and C5.0
+# -------------------------------------------------------------------
+
+library(ISLR2)
+Orig.Carseats = Carseats
 sapply(Orig.Carseats,class)
 Carseats = Orig.Carseats
- 
+
+#
+# Regression Tree for the Sales
+#
+reg.tree = tree(Sales ~ ., Carseats)
+plot(reg.tree)
+text(reg.tree)
+
 ### Sales is the ``response'' variable with respect to the rest
 ### To turn it to a ``classification problem'', we need to discretise
 ### it: "High" = "Yes" if "Sales" > 8 and "No" if "Sales"<= 8
 #
-# Adding new column to EXISTING TABLE.
+# Adding categorical target "High" based on "Sales".
 #
 Carseats$High  = factor(ifelse(Carseats$Sales<=8,"No","Yes"))
 #
-# Removing the Y=Sales (regression).
+# Removing the Y=Sales to prevent cheating
 #
-dim(Carseats)
-Carseats$Sales = NULL  # To delete a column ``Sales'' from Carseats
+Carseats$Sales = NULL
 # Turning the regression problem (Y=Sales) to binary classification
 # problem with Y=High(Sales)
 dim(Carseats)
@@ -110,19 +169,6 @@ tag0_idx = sample(nrow(cs_tag0), size=0.7*nrow(cs_tag0))
 tag1_idx = sample(nrow(cs_tag1), size=0.7*nrow(cs_tag1))
 Carseats.train = rbind(cs_tag0[ tag0_idx,],cs_tag1[ tag1_idx,])
 Carseats.test  = rbind(cs_tag0[-tag0_idx,],cs_tag1[-tag1_idx,])
-### Alternative way of splitting data:
-#library(splitstackshape)
-#Carseats.train = stratified(Carseats,"High",size=0.7,keep.rownames=TRUE)
-#Carseats.test  = Carseats[-as.integer(Carseats.train$rn),]
-#Carseats.train = Carseats.train[,-c("rn")]
-
-### Train the tree model
-### A decision tree package developed by Professor Brian D. Ripley
-### for his book: http://www.stats.ox.ac.uk/~ripley/PRbook/
-### Ref: https://stat.ethz.ch/pipermail/r-help/2005-May/070922.html
-### It is generates binary tree and is a kind of CART
-# Alternative: library(rpart)
-# default each leaves has 5 items from the data table
 
 #
 # Train the CART tree predictive model
@@ -131,6 +177,7 @@ tree.carseats = tree(High~.,Carseats.train)
 # Text layout is suitable for programming
 print(tree.carseats)
 # Diagram representation
+dev.new()
 plot(tree.carseats)
 text(tree.carseats,cex=0.8)
 title("Carseats tree model")
@@ -209,20 +256,40 @@ performance(cf.mat.prune, "\nPrunned tree::tree to `minimal' nodes")
 #
 # Prune on our own decision on how many leaves to keep
 #
-prune.carseats = prune.misclass(tree.carseats,best=2)
+NLeaves = 5
+prune.carseats = prune.misclass(tree.carseats,best=NLeaves)
+par(mfrow = c(1, 2))
 plot(prune.carseats)
 text(prune.carseats,cex=0.8)
-title("Pruned Tree with 2 leaves")
+title(paste0("Pruned Tree with around ", NLeaves, " leaves"))
 plot(tree.carseats)
 text(tree.carseats,cex=0.8)
 title("Original Tree")
 tree.pred=predict(prune.carseats,Carseats.test,type="class")
 cf.mat.prune2 = table(tree.pred,Carseats.test$High)
-performance(cf.mat.prune2, "\nPrunned tree::tree to around 2 nodes")
+performance(cf.mat.prune2, paste0("\nPrunned tree::tree to around ", NLeaves, " nodes"))
 
+# -------------------------------------------------------------------
+# Conditional Inference Tree (ctree.  Input needs to be numeric):
+# -------------------------------------------------------------------
+# party & partykit depend on 'modeltoolsa' 'zoo', 'sandwich', 
+# 'strucchange', matrixStats, TH.data, multicomp, 'coina', etc.
 #
-# Conditional Inference Tree
+# http://www.di.fc.ul.pt/~jpn/r/tree/tree.html
+# Conditional inference trees estimate a regression relationship by binary
+# recursive partitioning in a conditional inference framework. Roughly, the
+# algorithm works as follows: 
+#  1) Test the global null hypothesis of independence between any of 
+#     the input variables and the response (which may be multivariate as well). 
+#     Stop if this hypothesis cannot be rejected.
+#     Otherwise select the input variable with strongest association to 
+#     the resonse.  This association is measured by a p-value corresponding 
+#     to a test for the partial null hypothesis of a single input variable 
+#     and the response.
+#  2) Implement a binary split in the selected input variable. 
+#  3) Recursively repeat steps 1) and 2)
 #
+
 #install.packages("partykit")   # Less dependencies, required by C5.0
 library(partykit)
 carseats.ctree = ctree(High~., Carseats.train)
@@ -254,6 +321,16 @@ library(C50)
 # otherwise C5.0 will prefer binary split than multiway split.
 #
 
+# By default, C5.0 tend to construct binary trees
+C50.tree = C5.0(High~.,Carseats.train)
+plot(C50.tree)
+summary(C50.tree)
+cat(C50.tree$tree)
+yhat = predict(C50.tree,Carseats.test,type="class")
+cf.mat = table(yhat,Carseats.test$High)
+performance(cf.mat, "\nCarseats with C5.0 tree")
+
+# Configure C5.0 to be more like C4.5 / ID3 tree
 C50.tree = C5.0(High~.,Carseats.train,control=C5.0Control(subset=FALSE, minCases=10))
 #C50.tree = C5.0(High~.,Carseats.train,control=C5.0Control(minCases=5))
 plot(C50.tree)
@@ -264,26 +341,10 @@ cf.mat = table(yhat,Carseats.test$High)
 performance(cf.mat, "\nCarseats with C5.0 tree")
 
 
-cat("
 # -------------------------------------------------------------------
-#  Analysis of the `Iris' Dataset with Conditional Inference Tree 
-#  Classification Tree (partykit) => Unbias (statistics)
+#  Practical : Analysis of the `Iris' Dataset with CART tree, 
+#  Conditional Inference Tree (partykit)
 # -------------------------------------------------------------------
-")
-
-# http://www.di.fc.ul.pt/~jpn/r/tree/tree.html
-# Conditional inference trees estimate a regression relationship by binary
-# recursive partitioning in a conditional inference framework. Roughly, the
-# algorithm works as follows: 
-#  1) Test the global null hypothesis of independence between any of 
-#     the input variables and the response (which may be multivariate as well). 
-#     Stop if this hypothesis cannot be rejected.
-#     Otherwise select the input variable with strongest association to 
-#     the resonse.  This association is measured by a p-value corresponding 
-#     to a test for the partial null hypothesis of a single input variable 
-#     and the response.
-#  2) Implement a binary split in the selected input variable. 
-#  3) Recursively repeat steps 1) and 2)
 
 set.seed(1)
 idx = sample(nrow(iris), size=0.7*nrow(iris))
@@ -299,40 +360,62 @@ par(mfrow=c(1,1))
 plot(iris.tree)
 text(iris.tree)
 title("CART tree")
+
+cat("On the training data:\n")
 yhat = predict(iris.tree, iris.train, type="class")
 print(table(yhat, iris.train$Species))
 
-# -------------------------------------------------------------------
-# Conditional Inference Tree (input needs to be numeric): party & partykit
-# -------------------------------------------------------------------
-# Depends on 'modeltoolsa' 'zoo', 'sandwich', 'strucchange', 
-# matrixStats, TH.data, multicomp, 'coina'
+cat("On the testing data:\n")
+yhat = predict(iris.tree, iris.test, type="class")
+print(table(yhat, iris.test$Species))
+
+# We should prune the CART tree => Exercise
+prune.iris = prune.misclass(iris.tree,best=3)
+dev.new()
+par(mfrow=c(1,2))
+plot(iris.tree)
+text(iris.tree)
+title("CART tree")
+plot(prune.iris)
+text(prune.iris)
+title("Prune CART tree for IRIS data")
+
+cat("On the testing data:\n")
+yhat = predict(prune.iris, iris.test, type="class")
+print(table(yhat, iris.test$Species))
+
 iris.ctree = ctree(Species ~ ., iris.train)   # Conditional Inference Tree
 dev.new()
 plot(iris.ctree, main="Conditional Inference Tree")
 #iris.ctree = ctree(Fraud ~ RearEnd, train)
 #plot.party(cart.ctree, newpage=FALSE)
+
 #
 cat("\n*** Confusion Matrix for Training Data\n")
 #
 yhat = predict(iris.ctree, iris.train)
 cf.mat.train = table(yhat, iris.train$Species)
-print(cf.mat.train)
-cat("Accuracy for train=", sum(diag(cf.mat.train))/nrow(iris.train), "\n")
+performance(cf.mat.train)
+
 #
 cat("\n*** Confusion Matrix for Testing Data\n")
 #
 yhat = predict(iris.ctree, iris.test)
 cf.mat.test = table(yhat, iris.test$Species)
-cat("Accuracy for test=", sum(diag(cf.mat.test))/nrow(iris.test), "\n")
-#performance(cf.mat.test)
-# gmodels::CrossTable(yhat, iris.test$Species)
+print(cf.mat.test)
+performance(cf.mat.test)
 
-cat("
+iris.C50 = C5.0(Species ~ ., iris.train)
+plot(iris.C50)
+yhat = predict(iris.C50, iris.test)
+cf.mat.test = table(yhat, iris.test$Species)
+performance(cf.mat.test)
+
+
 # -------------------------------------------------------------------
-#  Analysis of the `credit_data' with C5.0
+#  Practical : Analysis of the `credit_data' with C5.0
 # -------------------------------------------------------------------
-")
+
 ##install.packages("modeldata")
 #library(modeldata)   # modeldata requires dplyr, no go
 # https://github.com/gastonstat/CreditScoring
@@ -345,7 +428,7 @@ credit_data = read.csv("credit_data.csv", stringsAsFactors=T)
 #
 # Linear Sampling
 #
-set.seed(2024)
+set.seed(2025)
 in_train   = sample(nrow(credit_data), size = 3000)
 train_data = credit_data[ in_train,]
 test_data  = credit_data[-in_train,]
