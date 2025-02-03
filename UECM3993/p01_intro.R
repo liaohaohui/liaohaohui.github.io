@@ -164,14 +164,14 @@ y4 = sqrt(abs(x))
 #
 # In R, we can just write
 
-x + c(1,2)
+c(5, 4, 5, 3, 5, 5,　5, 2)　+ c(1,2)
 
 # R will perform cyclic repeat for us.
 
 #
 # Are you able to tell y5 below without using R?
 #
-y5 = c(2,3)*x + c(5,4,-2,3)
+y5 = c(2,3)*c(5,4,5,3,5,5,5,2) + c(5,4,-2,3)
 
 #
 # Plotting of y vs x (scatter plot) is not as convenient as in
@@ -242,11 +242,15 @@ today = Sys.Date()
 TRUE  & TRUE
 TRUE  | FALSE
 !FALSE
-((a < b) & (d < e)) | (f > g)
+((1 < 2) & (3 < 10)) | (1 > 2)
 
 #
 # Application of Booleans: Comparing two 1-D arrays
+# = or <- means assignment
+# == means comparing for equality
+# != means comparing for inequality
 #
+c(1,2,3) != c(3,2,1)
 c(1,2,3) == c(3,2,1)
 any(c(1,2,3) == c(3,2,1))    # Any single true element?
 all(c(1,2,3) == c(3,2,1))    # Are all elements true?
@@ -254,6 +258,8 @@ all(c(1,2,3) == c(3,2,1))    # Are all elements true?
 
 # -------------------------------------------------------------------
 # (F) Array of Letters and Array of Strings and operations
+#
+# Relevant: https://en.wikipedia.org/wiki/Escape_sequences_in_C
 # -------------------------------------------------------------------
 
 "A String in double quotes"
