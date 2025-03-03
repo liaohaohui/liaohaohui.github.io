@@ -86,7 +86,7 @@ apply(A, 2, var)    # variance along the columns
 # Define Data Frame using data.frame() and vectors from Practical 1
 #
 X = data.frame(
-  Progromme = c("MCCG11503-Kampar","MCCG11503-Kampar",
+  Programme = c("MCCG11503-Kampar","MCCG11503-Kampar",
                 "MECG11503-SL", "MECG11503-SL", "MEME19803", "MEME19803"),
   Name = c("Stud1", "Student2", "Student3", "Student4", "Student5", "Stud6"),
   LearnerType = c("Visual", "Read-Write", "Read-Write", "Visual", "Read-Write", "Auditory"),
