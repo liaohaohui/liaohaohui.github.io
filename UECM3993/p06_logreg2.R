@@ -154,7 +154,7 @@ performance(table(yhat, fraud.test$tag), paste0("NN(hidden=",the.hidden.size,")"
 ###https://beckmw.wordpress.com/2013/11/14/visualizing-neural-networks-in-r-update/
 # install.packages("NeuralNetTools")
 # library(NeuralNetTools)
-# plotnet(nn)
+# plotnet(nnm)
 
 
 # -------------------------------------------------------------------

@@ -321,12 +321,9 @@ yhat = predict(lda.fit, test)
 cfmat = table(Prediction=yhat$class, Actual=ytest)
 #
 # The performance function is only for binary classification
-# not appropriate here.
+# not appropriate for classification of 10 classes
 #
-#performance(cfmat, "MNIST performance with LDA")
-cfmat
-cat("Accuracy =", sum(diag(cfmat))/length(ytest), "\n")
-performance(cfmat, digits=2)
+performance(cfmat, digits=2, "MNIST performance with LDA")
 
 # qda? --- not working --- requires filtering of features
 # E.g. Perform PCA to the data???
