@@ -115,20 +115,42 @@ Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
 yhat = predict(reg.model, data.test)
 Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
 
+#
+# Random Forest with ensemble of CARTs (Gini Impurity, Info Gain)
+#
+cat("Processing randomForest ...\n")
+library(randomForest)
+reg.model  = randomForest(Sales ~ ., data.train)  # ntree=500
+Model.list = c(Model.list, "randomForest")
+yhat = predict(reg.model, data.train)
+Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
+yhat = predict(reg.model, data.test)
+Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
+
 # C5.0 tree only supports classification problems!!!
 # C5.0 is an extension of C4.5 which is an extension of ID3 by Quinlan
 
+#
+# M5 tree
+#
 #install.packages("Cubist")
 library(Cubist)  # Extension of Quinlan's M5 tree
+reg.model = cubist(x=data.train[,2:11], y=data.train$Sales)
+Model.list = c(Model.list, "cubist (data.frame)")
+yhat = predict(reg.model, data.train)
+Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
+yhat = predict(reg.model, data.test)
+Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
+
 reg.model = cubist(x=as.matrix(data.train[,2:11]), y=data.train$Sales)
-Model.list = c(Model.list, "cubist")
+Model.list = c(Model.list, "cubist (as.matrix)")
 yhat = predict(reg.model, data.train)
 Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
 yhat = predict(reg.model, data.test)
 Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
 
 #
-# partikit requires libcoin, mvtnorm, Formula, inum
+# Conditional Inference Tree
 #
 # Bias problem => regression (less in classification)
 # CART (based on information theory => Info Gain, Gini Impurity) => more bias
@@ -153,16 +175,9 @@ Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
 yhat = predict(reg.model, data.test)
 Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
 
-# Usual Random Forest with CARTs (Gini Impurity, Info Gain)
-cat("Processing randomForest ...\n")
-library(randomForest)
-reg.model  = randomForest(Sales ~ ., data.train)  # ntree=500
-Model.list = c(Model.list, "randomForest")
-yhat = predict(reg.model, data.train)
-Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
-yhat = predict(reg.model, data.test)
-Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
-
+#
+# Boosting Trees
+#
 cat("Processing Gradient Boosting Trees ...\n")
 library(gbm)
 reg.model  = gbm(Sales ~ ., "gaussian", data=data.train)  # n.trees = 100
@@ -172,7 +187,9 @@ Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
 yhat = predict(reg.model, data.test)
 Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
 
+#
 # Multivariate Linear Regression Models
+#
 lr = lm(Sales ~ ., data.train)   # categorical => one-hot encoded
 Model.list = c(Model.list, "linear regression")
 yhat = predict(lr, data.train)
