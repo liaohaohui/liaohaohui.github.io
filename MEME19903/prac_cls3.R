@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------
 # Purpose: Practical for Working with Classification Problems
 #          with Tree Based Predictive Models in R
-# Author : Liew How Hui (2024)
+# Author : Liew How Hui
 # Reference & Data: 
 #  1. https://hastie.su.domains/ISLR2/Labs/R_Labs/Ch8-baggboost-lab.R
 #  2. https://daviddalpiaz.github.io/r4sl/trees.html

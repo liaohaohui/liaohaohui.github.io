@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for kNN (k-Nearest Neighbour) Models in R (Part 1)
-# Author : Liew How Hui (2024)
+# Purpose: Practical for kNN (k-Nearest Neighbour) Models in R
+# Author : Liew How Hui
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html

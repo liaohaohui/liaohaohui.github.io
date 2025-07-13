@@ -1,258 +1,24 @@
-# ===================================================================
-# Purpose: Practical for Working with Logistic Regression Model 
-#          (and its extensions) for Classification Problems in R
-# Author : Liew How Hui (2024)
-# Reference & Data: 
+# -------------------------------------------------------------------
+# Purpose: Practical for Working with Naive Bayes Predictive Models
+#          for Classification Problems
+# Author : Liew How Hui
+# References: 
 #  1. https://www.statlearning.com/resources-second-edition
+#  2. http://www.dbenson.co.uk/Rparts/subpages/spamR/
+#  3. http://www.learnbymarketing.com/tutorials/naive-bayes-in-r/
+# Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
 # License: BSD-3
 # Software: R 4.x
 # Duration: 1 hour
-# Data1: Default (from ISLR2, simulated default data on credit card)
-# ===================================================================
-
-cat("
 # -------------------------------------------------------------------
-#  Part 1: Trying to understand the theory --- finding coefficients
-#  (Lecture Slide Example 2)
-# -------------------------------------------------------------------
-")
 
-### Install the ISLR2 library if the loading fails
 #install.packages("ISLR2")
 library(ISLR2)
 
-# Default data is very imbalance: 97% No, 3% Yes
-data.No  = Default[Default$default=="No", ]
-data.Yes = Default[Default$default=="Yes",]
-set.seed(3)
-# Taking from Default 7 data with No as output, 3 data with Yes as output
-mydata = rbind(data.No[sample(nrow(data.No),7),], 
-               data.Yes[sample(nrow(data.Yes),3),])
-m = glm(default ~ balance, mydata, family=binomial)
-x = mydata$balance
-y = ifelse(mydata$default=="No",0,1)  # Convert to binary
-coeff.beta = m$coefficients
-
-# Compare to Equation (4) in s41_logreg.pdf
-lnL = function(betas) {
-  beta0 = betas[1]
-  beta1 = betas[2]
-  sum(y*(beta0 + beta1*x)) - sum(log(1+exp(beta0 + beta1*x)))
-}
-# Max lnL = Min (-LnL)
-neg.lnL = function(betas) { -lnL(betas) }
-#res = optim(c(1,0), neg.lnL, method="BFGS")
-res = optim(c(1,0), neg.lnL)
-if (res$convergence == 0) {
-  print(res$par)
-  # compare to coeff.beta
-}
-
-null.neg.lnL = function(beta0) {
-  - (sum(y*beta0) - length(y)*(log(1+exp(beta0))))
-}
-
-res.null = optim(1, null.neg.lnL, method="BFGS")
-if (res.null$convergence == 0) {
-  print(res.null$par)
-}
-
-# According to https://stats.stackexchange.com/questions/184753/in-a-glm-is-the-log-likelihood-of-the-saturated-model-always-zero
-# Saturated model for LR with ungrouped data is 0
-null.coeffs = rep(0,length(res$par))
-null.coeffs[1] = res.null$par
-cat("Null Deviance = 2(LL(saturated)-LL(null)) =", 2*(0-lnL(null.coeffs)), "\n")
-cat("Residue Deviance = 2(LL(saturated)-LL(fitted)) =", 2*(0-lnL(res$par)), "\n")
-
-print(summary(m))     # Summary of the fitted Logistic Regression model
-
-
-cat("
 # -------------------------------------------------------------------
-#  Part 2: Working with Lecture's Example 4 (single numeric input)
-#  Improvement in Deviance => Well fitted model
+# Performance Measurements for Classification Problem
+# A more sophisticated implementation is caret::confusionMatrix
 # -------------------------------------------------------------------
-")
-
-lr.fit = glm(default ~ balance, data=Default, family=binomial)
-print(summary(lr.fit))
-
-#
-# The null deviance is larger than residual deviance, it seems
-# that the logistic regression model with 1 input fits the data quite well.
-#
-
-#
-# We can try to find the contingency table for the training data.
-#
-prob1  = predict(lr.fit, Default, type="response")   # P(Y=1|balance)
-# If we don't specify type="response", we will get link, i.e.
-# ln( P(Y=1|balance)/P(Y=0|balance) )
-link1  = predict(lr.fit, Default)
-pred   = ifelse(prob1>=0.5, 1, 0)
-actual = Default$default
-compare = data.frame(pred, actual)  # Compare like Excel
-print(head(compare))     # Show the first few rows
-print(tail(compare))     # Show the last few rows
-print(table(compare))    # Ask R to summarise the comparison
-
-#
-# The fitting below is actually not very good since specificity is low.
-#
-#      actual
-#  pred   No  Yes
-#     0 9625  233
-#     1   42  100
-#
-
-#
-# Do you know how to calculate the conditional probabilities using R?
-#
-# (b) P(default=1|balance=1000) = 0.005752145
-#     P(default=1|balance=2000) = 0.5857694
-#
-
-cat("
-# -------------------------------------------------------------------
-#  Part 3: Working with Lecture's Example 5 (single categorical input)
-#  Lack of Improvement in Deviance => Poorly fitted model
-#
-# The small difference between null deviance and residual deviance
-# suggest the model to be a poor fit despite the p-values
-# Pr(>|z|) are small:
-#
-# Call:
-# glm(formula = default ~ student, family = binomial, data = Default)
-# 
-# Deviance Residuals: 
-#     Min       1Q   Median       3Q      Max  
-# -0.2970  -0.2970  -0.2434  -0.2434   2.6585  
-# 
-# Coefficients:
-#             Estimate Std. Error z value Pr(>|z|)    
-# (Intercept) -3.50413    0.07071  -49.55  < 2e-16 ***
-# studentYes   0.40489    0.11502    3.52 0.000431 ***
-# ---
-# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-# 
-# (Dispersion parameter for binomial family taken to be 1)
-# 
-#     Null deviance: 2920.6  on 9999  degrees of freedom
-# Residual deviance: 2908.7  on 9998  degrees of freedom
-# AIC: 2912.7
-# 
-# Number of Fisher Scoring iterations: 6
-#
-# -------------------------------------------------------------------
-")
-
-# First, make sure the input is categorical by either:
-class(Default$student)
-summary(Default$student)
-
-lr.fit = glm(default ~ student, data=Default, family=binomial)
-print(summary(lr.fit))
-
-#
-# Do you know why we have a new variable studentYes?  Where is 
-# the variable student?
-#
-
-
-#
-# We can see the terrible specificity despite the accuracy is OK.
-#
-#      actual
-#  pred   No  Yes
-#     0 9667  333
-#
-# This confirms that the LR is a poor model for default ~ student.
-#
-
-prob1  = predict(lr.fit, Default, type="response")   # P(Y=1|student)
-pred   = ifelse(prob1>=0.5, 1, 0)
-actual = Default$default
-compare = data.frame(pred, actual)  # Compare like Excel
-print(head(compare))     # Show the first few rows
-print(tail(compare))     # Show the last few rows
-print(table(compare))    # Ask R to summarise the comparison
-
-#
-# The P(default=1 | student = Yes) can be calculated by
-#
-predict(lr.fit, data.frame(student="Yes"), type="response")
-#
-# Do you know how to calculate P(default=1 | student = Yes)?
-# Do you know how to calculate using mathematical formula?  You need
-# to know because it will come out in exam.
-#
-
-cat("
-# -------------------------------------------------------------------
-#  Part 4: Logistic Regression Analysis of the ISLR2's `Smarket' Dataset
-#  (unpredictable data) following the main reference book
-# -------------------------------------------------------------------
-")
-
-### Univariate Analysis of Tabular Dataset
-#View(Smarket)       # From ISLR
-dim(Smarket)         # Check the dimension of the data
-names(Smarket)       # Show the column names
-summary(Smarket)     # Except for the 1st & last columns, the rests are numerics
-par(mfrow=c(2,4))
-for (column in 1:8) {    # Exclude the output Direction which is not numeric
-  hist(Smarket[,column], main=names(Smarket)[column], xlab="")
-}
-par(mfrow=c(1,1))
-
-### Bivariate Analysis of Tabular Dataset
-# (1) Numeric statistical analysis => correlation coefficients, cor()
-# (2) Visual statistics => pairs = scatter plots of every pair of the columns
-
-#cor(Smarket)        # Won't work: Direction is categorical
-cor(Smarket[,-9])    # Remove variable Direction
-pairs(Smarket)       # Scatter plots of all columns
-# Pair plot is only OK when we have less than 15 or so numeric columns
-
-# Focusing into absolute correlation >=0.5 using scatter plot:
-# E.g. Year and Volume
-plot(Smarket$Year,Smarket$Volume)
-
-### Time series data are always split into `past' and `present' !!!
-### Linear sampling and stratified sampling are not applicable.
-### train set = data from Year 2001-2004
-### validation set = data from Year 2005
-train = (Smarket$Year < 2005)     # For Boolean selection
-Smarket.2005 = Smarket[!train,]   # !TRUE == FALSE
-Y.2005 = Smarket.2005$Direction
-
-### Fit the train set into logistic regression (parametric predictive model)
-# Output / Target / Response = Direction (Interested to see how price go)
-# Inputs / Factors / Predictors / Independent Variables = various variations
-#
-# Why no 'Today'?  Because Up / Down is BASED on Today & they are correlated
-#
-lr.fit = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,
-                  data=Smarket[train,], family=binomial)
-summary(lr.fit)
-anova(lr.fit)      # analysis of variance of input in sequential order
-
-### Apply model into validation set and predict the probability to be Class 1
-# Response = P(Y=1 | X=x) = 1/(1 + exp(-(DefaultT)))
-# DefaultT = beta0 + beta1*x1 + ... + betap*xp
-# 1 = Up; 0 = Down
-probs.of.Y1 = predict(lr.fit, newdata=Smarket.2005, type="response")
-
-### Make prediction based on the probability computed (>=0.5 is Up)
-yhat = ifelse(probs.of.Y1 >= 0.5, "Up", "Down")
-
-### Construct confusion matrix and performance measures
-cfmat  = table(yhat,Y.2005)
-
-### We can use caret's confusionMatrix() to show the performance
-### measurements for classification problem.  But the caret library
-### has many dependencies, so I define a function using the definitions 
-### from Week 1 to avoid the need to install too many R libraries.
 
 performance = function(xtab, desc=""){
     cat(desc,"\n")
@@ -309,110 +75,249 @@ performance = function(xtab, desc=""){
     }
 }
 
-performance(cfmat, "Performance of Logistic Regression Model on Smarket Data")
-
-
-cat("
 # -------------------------------------------------------------------
-#  Part 5: Logistic Regression Analysis of `Fraud' Dataset
-#  (predictable data)
+# Working with Case Study 1 from Lecture Slide s41_nb.pdf
 # -------------------------------------------------------------------
-")
 
+d.f = read.csv(text="
+X1,X2,X3,Y
+C, No,0,Positive
+A,Yes,1,Positive
+B,Yes,0,Negative
+B,Yes,0,Negative
+A, No,1,Positive
+C, No,1,Negative
+B,Yes,1,Positive", stringsAsFactors=TRUE)
+d.f$X3 = factor(d.f$X3)
+print(d.f)
+#install.packages("naivebayes")
+library(naivebayes)
+m = naive_bayes(Y ~ X1+X2+X3, d.f)   # No Laplace smoothing
+print(m)
+
+# Predict response Y for X1=B, X2=Yes, X3=1
+newX = data.frame(X1='B', X2='Yes', X3='1')
+prob = predict(m, newX, type="prob")
+# Try to compare to the `products' in Case Study 1:
+# prop.table(c(3/7*2/3*2/3*1/3, 4/7*1/4*1/2*3/4))
+yhat = predict(m, newX, type="class")
+
+# -------------------------------------------------------------------
+# Working with Case Study 2 from Lecture Slide s41_nb.pdf
+# -------------------------------------------------------------------
+
+d.f = read.csv(text="
+Weather,Car,Y
+sunny,working,go-out
+rainy,broken ,go-out
+sunny,working,go-out
+sunny,working,go-out
+sunny,working,go-out
+rainy,broken ,stay-home
+rainy,broken ,stay-home
+sunny,working,stay-home
+sunny,broken ,stay-home
+rainy,broken ,stay-home",stringsAsFactors=TRUE)
+m = naive_bayes(Y ~ ., d.f)
+print(m)   # Compare them to the lecture slides
+
+
+# -------------------------------------------------------------------
+# Working with Case Studies 3 & 6 from Lecture Slide s41_nb.pdf
+# -------------------------------------------------------------------
+
+d.f = read.csv(text="
+balance,student,Default
+500 ,No ,N
+1980,Yes,Y
+60  ,No ,N
+2810,Yes,Y
+1400,No ,N
+300 ,No ,N
+2000,Yes,Y
+940 ,No ,N
+1630,No ,Y
+2170,Yes,Y",stringsAsFactors=TRUE)
+#
+# Without Laplace smoothing: There is a zero prob.
+#
+m = naive_bayes(Default ~ ., d.f)
+print(m)
+#
+# Using Laplace smoothing to remove zero prob warning
+#
+m2 = naive_bayes(Default ~ ., d.f, laplace=1)
+print(m2)
+
+
+# -------------------------------------------------------------------
+#    Dataset 1: Building Naive Bayes Model for Fraud Data
+# -------------------------------------------------------------------
+
+# If there is a column with categorical data, using stringsAsFactors=TRUE
+# is more convenient.
 #https://liaohaohui.github.io/MEME19903/fraud.csv
-fraud = read.csv("fraud.csv")
-### change data type from integer to categorical
+fraud = read.csv("fraud.csv", row.names=1)
+# change data type from integer to categorical
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud[col_fac] = lapply(fraud[col_fac], factor)
 
 #
-# Manual stratified sampling
-# Ref: https://stackoverflow.com/questions/23479512/stratified-random-sampling-from-data-frame
+# Manual stratified sampling for binary classes with R
 #
 set.seed(123)
 fraud_tag0 = fraud[fraud$tag=="0", ]
 fraud_tag1 = fraud[fraud$tag=="1", ]
-tag0_idx = sample(nrow(fraud_tag0), size=0.7*nrow(fraud_tag0))
-tag1_idx = sample(nrow(fraud_tag1), size=0.7*nrow(fraud_tag1))
-fraud.train = rbind(fraud_tag0[ tag0_idx,],fraud_tag1[ tag1_idx,])
-fraud.test  = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
-summary(fraud.test)
-
-### logistic regression (use the data without normalization)
-logreg_m = glm(tag~.-id_person, data=fraud.train, family=binomial)
-print(summary(logreg_m))
+tag0_idx = sample(1:nrow(fraud_tag0), size=0.7*nrow(fraud_tag0))
+tag1_idx = sample(1:nrow(fraud_tag1), size=0.7*nrow(fraud_tag1))
+fraud.train = rbind(fraud_tag0[tag0_idx,],fraud_tag1[tag1_idx,])
+fraud.test = rbind(fraud_tag0[-tag0_idx,],fraud_tag1[-tag1_idx,])
 
 #
-# Perform binary classification using conditional probability
+# Alternative: caTools's sample.split
 #
-fraud.test.prob = predict(logreg_m, newdata=fraud.test[ ,1:8], type='response')
+#library(caTools)   # for sample.split()
+#train.row.index = sample.split(fraud, SplitRatio=0.7)
+#fraud.train = fraud[train.row.index, ]
+#fraud.test = fraud[-train.row.index, ]
+#
 
-yhat = ifelse(fraud.test.prob >= 0.5, "pred_1", "pred_0")
-cfmat = table(yhat, fraud.test$tag)
-performance(cfmat, "Performance of the Logistic Regression Model")
-
-
-### When a model does not fit the data, the model should be discarded.
+#
+# Various Choices for Naive Bayes:
+# (1) naivebayes library (used by the main reference book)
+# (2) e1071 library
+# (3) klaR library
+# (4) fastNaiveBayes library
+#
 
 cat("
-# -------------------------------------------------------------------
-#  Part 6a: Model Comparison for ISLR's Default Data (Case Study 1)
-# -------------------------------------------------------------------
+Calculations without Laplace Smoothing
 ")
-
-m = glm(default ~ ., Default, family=binomial)
-print(anova(m, test="Chisq"))
-
-m0 = glm(default ~ 1, Default, family=binomial)   # Null Model
-m1 = glm(default ~ student, Default, family=binomial)
-m2 = glm(default ~ student + balance, Default, family=binomial)
-m3 = glm(default ~ student + balance + income, Default, family=binomial)
-print(anova(m0,m1,m2,m3,test="Chisq"))
+model.nb = naive_bayes(tag~., data = fraud.train)
+#library(e1071)  # for naiveBayes()
+#model.e1071 = naiveBayes(tag~., data=fraud.train, laplace=0)
+p = ncol(fraud.train)-1
+pred.nb = predict(model.nb, newdata = fraud.test[,1:p])  # columns 1:p for inputs
+cfmat = table(pred.nb, actual.fraud=fraud.test$tag)
+performance(cfmat, "Performance of Naive Bayes without Laplace Smoothing")
 
 cat("
-# -------------------------------------------------------------------
-#  Part 6b: Model Comparison for Fraud Data (nicely fitted)
-# -------------------------------------------------------------------
+Calculations with Laplace Smoothing
 ")
+model.nb.lp = naive_bayes(tag~., data=fraud.train, laplace=1)
+pred.nb.lp = predict(model.nb.lp, fraud.test[,1:p])
+cfmat = table(pred.nb.lp, actual.fraud=fraud.test$tag)
+performance(cfmat, "Performance of Naive Bayes with Laplace Smoothing")
 
-reduced.m = glm(tag~ gender + status + employment + account_link + supplement, data=fraud.train[,2:9], family=binomial)
-print(summary(reduced.m))
-# What about removing employment as well?
-rm2 = glm(tag~ gender + status + account_link + supplement, data=fraud.train[,2:9], family=binomial)
-print(summary(rm2))
+
+# -------------------------------------------------------------------
+#    Dataset 2: Spam Filtering with Naive Bayes Model
+# -------------------------------------------------------------------
+
+d.f = read.csv(text='
+ham,1,"Hi sir, just want to ask you if the formula xxx is OK?"
+spam,1,"Maxis great deal is here"
+ham,2,"If I solve the problem the following way ... is it OK?"
+ham,3,"Your solution is correct.  Great job"
+spam,2,"Discount 20% from Maxis when dinning at ..."
+ham,4,"The maximum value for ... is the coefficient for the model ..."
+spam,3,"Win a phone when subscribing to Maxis new plan ..."
+spam,4,"Upgrade to Digi new plan ..."
+spam,5,"Subscribe to ASTRO  ... with only RM250 per month"
+ham,5,"Why can\'t I get the right result?"
+',header=F,col.names=c("Y","id", "content"))
+
+#install.package("tm")
+library(tm)  # Text Mining package.  For DocumentTermMatrix, VCorpus, ...
+corpus = VCorpus(VectorSource(d.f$content))
+# The DocumentTermMatrix can be slow for large data
+# and the stemming is too primitive and brutal!
+dtm = DocumentTermMatrix(corpus, control = list(
+  tolower = TRUE,
+  removeNumbers = TRUE,
+  removePunctuation = TRUE,
+  stemming = TRUE      # This is bad, need to work on it
+))   # Statistical model
+### The features are encoded in
+# dtm$dimnames$...
+inspect(dtm)
 
 #
-# Chisq, Rao tests are OK for binary output with p-value given.
-# Cp is AIC when GLM is LR (deviance improvement, larger better)
+# For `text' classification with Naive Bayes, we may want to
+# turn on the Laplace smoothing!
 #
-anv0 = anova(rm2, reduced.m, logreg_m)
-anv1 = anova(rm2, reduced.m, logreg_m, test="LRT")    # Likelihood Ratio Test
-anv2 = anova(rm2, reduced.m, logreg_m, test="Chisq")  # Same as LRT for LR
-anv3 = anova(rm2, reduced.m, logreg_m, test="Rao")
-anv4 = anova(rm2, reduced.m, logreg_m, test="Cp")     # Cp == AIC
 
-print(anv0)
-cat("-----------------------------------------\n")
-print(anv1)
-cat("-----------------------------------------\n")
-print(anv2)
-cat("-----------------------------------------\n")
-print(anv3)
-cat("-----------------------------------------\n")
-print(anv4)
+library(naivebayes)    # for multinomial_naive_bayes()
 
-cat("
-# -------------------------------------------------------------------
-#  Part 7: Multinomial LR is a Generalisation of LR (can work with
-#  multiclass)
-# -------------------------------------------------------------------
-")
+idx.train = 1:6
+train = as.matrix(dtm[idx.train,])    # not suitable for large matrix
+Y.train = d.f$Y[idx.train]
+idx.test = 7:10
+test  = as.matrix(dtm[idx.test,])
+Y.test  = d.f$Y[idx.test]
 
-library(nnet)
-mlr.model = multinom(tag ~ ., data=fraud.train[,2:9])
-print(mlr.model)
-print(summary(mlr.model))
+classifier = multinomial_naive_bayes(train, Y.train, laplace=1)
+summary(classifier)
+coef(classifier)
+#
+# Let's check the word 'you':
+# p = length(dtm$dimnames$Terms) = 45
+# P(word='you'|Y='ham') = (2+1)/(28+45)
+# number of times the word 'you' occured in training data of class 'ham' = 2
+# number of words in training data of class 'ham' = 28
+# P(word='you'|Y='spam') = (0+1)/(9+45)
+# number of times the word 'you' occured in training data of class 'spam' = 0
+# number of words in training data of class 'spam' = 9
+#
+yhat = predict(classifier, test)
+cfmat = table(yhat, Y.test)
+print(cfmat)
 
-# Basically multinom() witk K=2 is the same as glm() except Z-statistic 
-# and p-values are not provided.
+### https://www.kaggle.com/code/abeperez/building-a-spam-filter-using-fastnaivebayes/notebook
+#install.packages("fastNaiveBayes")
+library(fastNaiveBayes)   # for fnb.multinomial()
+mnnb = fnb.multinomial(x=train, y=Y.train, laplace=1)
+# The fastNaiveBayes provides a nice summary of word counts with
+# the list item 'present':
+mnnb$present
+yhat = predict(mnnb, test)
+cfmat = table(yhat, Y.test)
+print(cfmat)
+
+### naivebayes::bernoulli_naive_bayes
+convert2bin = function(x){ifelse(x>0,1,0)}
+library(Matrix)   # for Matrix() to handle sparse matrix
+train = Matrix(apply(dtm[idx.train,],2,convert2bin),sparse=T)
+Y.train = d.f$Y[idx.train]
+test = Matrix(apply(dtm[idx.test,],2,convert2bin),sparse=T)
+Y.test  = d.f$Y[idx.test]
+
+classifier = bernoulli_naive_bayes(train, Y.train, laplace=1)
+yhat = predict(classifier, test)
+cfmat = table(yhat, Y.test)
+print(cfmat)
+
+#
+# Binary Categorical NB == Bernoulli NB ???
+#
+# naive_bayes from `naivebayes' package has issue with the *PREDICTION*
+#classifier = naive_bayes(train, trainLabels, laplace=1)
+
+convert = function(x){ifelse(x>0,"Yes","No")}
+train = as.data.frame(apply(dtm[idx.train,],2,convert))
+train = as.data.frame(lapply(train, function(c){factor(c,levels=c("No","Yes"))}))
+Y.train = factor(d.f$Y[idx.train],levels=c("ham","spam"))
+test = as.data.frame(apply(dtm[idx.test,],2,convert))
+test = as.data.frame(lapply(test, function(c){factor(c,levels=c("No","Yes"))}))
+Y.test  = factor(d.f$Y[idx.test],levels=c("ham","spam"))
+
+library(e1071)    # for naiveBayes()
+classifier = naiveBayes(train, Y.train, laplace=1)
+#classifier$tables$call   # Probability table of seeing the world `call'
+yhat = predict(classifier, test)
+
+cfmat = table(yhat, Y.test)
+performance(cfmat, "e1071 Naive Bayes with Laplace Smoothing")
+
+
 
