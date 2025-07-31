@@ -126,18 +126,18 @@ print(m)   # Compare them to the lecture slides
 # Working with Case Studies 3 & 6 from Lecture Slide s41_nb.pdf
 # -------------------------------------------------------------------
 
-d.f = read.csv(text="
-balance,student,Default
-500 ,No ,N
-1980,Yes,Y
-60  ,No ,N
-2810,Yes,Y
-1400,No ,N
-300 ,No ,N
-2000,Yes,Y
-940 ,No ,N
-1630,No ,Y
-2170,Yes,Y",stringsAsFactors=TRUE)
+d.f = read.table(text="
+balance student Default
+500     No      N
+1980    Yes     Y
+60      No      N
+2810    Yes     Y
+1400    No      N
+300     No      N
+2000    Yes     Y
+940     No      N
+1630    No      Y
+2170    Yes     Y",header=TRUE,stringsAsFactors=TRUE)
 #
 # Without Laplace smoothing: There is a zero prob.
 #
