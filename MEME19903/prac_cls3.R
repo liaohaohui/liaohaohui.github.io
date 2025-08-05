@@ -87,6 +87,7 @@ X1 X2  Y
  F  T  T
  F  F  T', header=T, colClasses=rep("factor",3))
 
+#install.packages(C50)
 library(C50)
 tree.model = C5.0(d.f[,1:2], d.f[,3], control=C5.0Control(subset=FALSE,noGlobalPruning=TRUE,earlyStopping=FALSE,minCases=1,CF=1) )
 plot(tree.model)   # smaller tree comparing to lecture slide's tree
