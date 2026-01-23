@@ -1,6 +1,7 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for kNN (k-Nearest Neighbour) Models in R (Part 2)
-# Author : Liew How Hui (2025)
+# Purpose: Application using Statistical Software (Part 1)
+# Detail: Case Study 1: Prediction and Estimation
+# Author : Liew How Hui (2026)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
@@ -109,8 +110,8 @@ print(tanimoto(x,y,testNA=F))
 
 
 # -------------------------------------------------------------------
-#  Practical : Analysing Fraud data using kNN with Gower similarity
-#  measurement.
+#  Case Study 1 : Using Fraud data using kNN with Gower similarity
+#  measurement for Prediction & Estimation
 # -------------------------------------------------------------------
 
 #
@@ -223,8 +224,8 @@ performance(table(Yhat, Y.test))
 
 
 # -------------------------------------------------------------------
-#  Practical : Analysing Fraud data using Weighted kNN with
-#  different kernels and Euclidean distance.
+#  Case Study 1 : Using Fraud data using Weighted kNN with
+#  different kernels and Euclidean distance for Prediction & Estimation
 # -------------------------------------------------------------------
 
 #
@@ -295,8 +296,10 @@ performance(table(yhat.rect, fraud.test.knn$tag), "wkNN.Rectangular")
 #
 
 # -------------------------------------------------------------------
-#  Practical : Applying kNN Regressor to a Regression Problem
-#  using the "Boston" Dataset
+#  Case Study 1 : Applying kNN Regressor to a Regression Problem
+#  using the "Boston" Dataset for Prediction and Estimation
+#
+#  Outcome: Getting familiar with underfitting and overfitting issues
 # -------------------------------------------------------------------
 
 ### https://daviddalpiaz.github.io/r4sl/knn-reg.html

@@ -1,6 +1,7 @@
 # -------------------------------------------------------------------
-# Purpose: Practical: Basic R Commands for Data Processing (Part 1)
-# Author : Liew How Hui (2025)
+# Purpose: Introction to R (Part 1)
+# Detail: Basic R Commands for Data Processing, Numerical Summaries
+# Author : Liew How Hui (2026)
 # Reference: http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%202%20Lab.txt
 # License: BSD-3
 # Software: R 4.1+
@@ -223,7 +224,7 @@ f = 7L %% 5L    # Modulo
 ## Dates are internally represented as integer
 ##
 
-mydates = as.Date("2025-01-01")
+mydates = as.Date("2026-01-01")
 today = Sys.Date()
 
 #
@@ -341,7 +342,7 @@ summary(x)
 # seed number is probably mentioned in SSIF but you don't need to
 # take SSIF just like anyone driving a car does not need to know
 # how to design and construct a car.
-set.seed(2025)
+set.seed(2026)
 
 # r = random numbers, 50 = 50 elements, unif = uniform dist.
 x.unif = runif(50)
@@ -377,9 +378,10 @@ table(c(1,0,1,0,1), c("Y","N","N","Y","Y"))
 # Weibull                rweibull  pweibull     qweibull  dweibull  
 #
 # Ref: https://www.stat.umn.edu/geyer/old/5101/rlook.html
+#      Lecture Notes Topic 1
 # -------------------------------------------------------------------
 
-set.seed(2025)
+set.seed(2026)
 x1 = rnorm(200, mean=60, sd=15)   # X ~ Normal(60,15^2)
 x2 = rbinom(200, size=100, prob=0.5)   # X ~ Binom(100, 0.5) ≈ Normal?
 x3 = rpois(200, lambda=2.5)       # X ~ Poisson(2.5) ≈ Exponential?

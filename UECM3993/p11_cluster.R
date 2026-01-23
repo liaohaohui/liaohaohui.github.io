@@ -1,6 +1,7 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for Clustering in R
-# Author : Liew How Hui (2025)
+# Purpose: Unsupervised Learning (Part 2)
+# Detail: Clustering
+# Author : Liew How Hui (2026)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%2010%20Labs.txt
 #  2. https://altaf-ali.github.io/ISLR/chapter10/lab.html

@@ -1,6 +1,7 @@
 # -------------------------------------------------------------------
-# Purpose: Basic Commands for Data Processing in R (Part 2)
-# Author : Liew How Hui (2025)
+# Purpose: Introction to R (Part 2)
+# Detail: Indexing data, Graphical and Numerical Summaries
+# Author : Liew How Hui (2026)
 # License: BSD-3
 # Software: R 4.1+
 # Duration: 1 hour
@@ -255,7 +256,7 @@ tail(Auto)
 names(Auto)
 
 #
-# EDA : Numeric Univariate Analysis
+# EDA : Numeric Univariate Analysis --- Numerical Summaries
 #
 # 1. Check each column data type
 sapply(Auto, class)   # horsepower is "character", something wrong
@@ -313,7 +314,8 @@ dim(Auto)
 dim(Auto.clean)   # 5 rows removed
 
 #
-# EDA : Visual Univariate Analysis (Data Visualisation) => Histograms
+# Graphical Summaries in EDA : 
+#   Visual Univariate Analysis (Data Visualisation) => Histograms
 # hist() seems to remove NA's automatically 
 #
 par(mfrow=c(2,4))
@@ -373,61 +375,5 @@ table(Auto$cylinders, Auto$origin)
 #
 #  table is usually better for categorical data vs categorical data
 #
-
-
-# -------------------------------------------------------------------
-#  (C) Resampling for estimating statistics (corresponding to Topic 2)
-# -------------------------------------------------------------------
-
-#
-# Suppose the true model is rnorm(100, the.mean, the.stdv)
-#
-the.mean = 10
-the.stdv =  2   # standard deviation is 2
-set.seed(2025)  # Fix the starting value of random number generator
-the.samples = rnorm(100, the.mean, the.stdv)
-count = length(the.samples)
-#
-# For probability theory, we know the standard deviation of
-# the true model rnorm(100, the.mean, the.stdv) is the.stdv
-#
-# From the samples, the unbiased estimate of the.stdv is
-sd(the.samples)
-
-# Holdout Resampling Method Estimate
-# the 'sample' function depends on the seed
-set.seed(2025)
-idx = sample(count, 0.7*count)   # Linear Sampling of 70% of the Indices
-# We are 'resampling' from the samples!
-sd(the.samples[idx])
-
-# LOOCV
-loocv = 0    # create the variable 'loocv' for storing data
-for(i in 1:count) {
-  loocv[i] = sd(the.samples[-i])
-}
-mean(loocv)
-
-d.f = data.frame(x=1:20, y = (1:20)^2)
-loocv = 0
-for(i in 1:nrow(d.f)) {
-  m = lm(y ~ poly(x,2), d.f[-i,])
-  yhat = predict(m, d.f[i, ])
-  loocv[i] = (yhat-d.f[i,]$y)**2
-}
-
-# 10-fold CV
-# 100 data cut into 10-fold, each fold has 10 items
-range = 1:(count/10)
-fold = 0
-for(i in 1:10){
-  fold[i] = sd(the.samples[-(range+(i-1)*10)])
-}
-mean(fold)
-
-# Simple Boostrapping (Sample with Replacement)
-set.seed(2025)
-idx.boostrap = sample(count, 0.7*count, replace=TRUE)
-sd(the.samples[idx.boostrap])
 
 

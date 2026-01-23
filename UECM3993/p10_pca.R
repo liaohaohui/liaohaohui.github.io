@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for PCA in R for simple dimensional reduction
-#          and using it a preprocessing stage for supervised models
-# Author : Liew How Hui (2025)
+# Purpose: Unsupervised Learning (Part 1)
+# Detail: Principal component analysis for simple dimensional reduction
+# Author : Liew How Hui (2026)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%2010%20Labs.txt
 #  2. https://uc-r.github.io/pca
@@ -118,7 +118,7 @@ for (i in 1:40) {
 Nfigs = 40
 dataY = data.frame(label=rep(1:Nfigs,each=10))
 
-set.seed(2025)
+set.seed(2026)
 K = 10
 M = 7
 idx.train = rep(sample(K,M), Nfigs) + rep(K*(0:(Nfigs-1)), each=M)

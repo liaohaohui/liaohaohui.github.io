@@ -1,6 +1,7 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for Logistic Regression Models in R (Part 1)
-# Author : Liew How Hui (2025)
+# Purpose: Supervised Learning - Classification in R (Part 2)
+# Detail: Methods of classification --- Logistic Regression
+# Author : Liew How Hui (2026)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html

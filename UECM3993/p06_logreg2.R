@@ -1,6 +1,7 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for Logistic Regression Models in R (Part 2)
-# Author : Liew How Hui (2025)
+# Purpose: Application using Statistical Software (Part 2)
+# Detail: Case Study 1: Prediction and Estimation with Logistic Regression
+# Author : Liew How Hui (2026)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
@@ -71,8 +72,8 @@ performance = function(xtab, desc=""){
 
 
 # -------------------------------------------------------------------
-#  Practical : Analysis of the `Fraud' Dataset using Multinomial LR 
-#  nnet::multinom
+#  Case Study 1 : Prediction and Estimation of the `Fraud' Dataset 
+#  using Multinomial LR nnet::multinom
 # -------------------------------------------------------------------
 
 ### 
@@ -133,8 +134,8 @@ performance(table(yhat, fraud.test$tag), "LR (GLM with binomial) with K=2")
 
 
 # -------------------------------------------------------------------
-#  Practical : Analysis of the Fraud data using 1-hidden layer
-#  Neural Network nnet().
+#  Case Study 1 : Prediction and Estimation of the `Fraud' Dataset 
+#  using 1-hidden layer Neural Network nnet().
 #
 #  According to
 #  https://stackoverflow.com/questions/64835527/plot-neural-network-of-nnet-object
@@ -158,8 +159,8 @@ performance(table(yhat, fraud.test$tag), paste0("NN(hidden=",the.hidden.size,")"
 
 
 # -------------------------------------------------------------------
-#  Practical : Analysis of the `Iris flower' Dataset (K = 3 classes) 
-#  using Multinomial LR nnet::multinom
+#  Case Study 1 : Prediction and Estimation of the `Iris flower' 
+#  Dataset (K = 3 classes) using Multinomial LR nnet::multinom
 # -------------------------------------------------------------------
 
 # Since the ratio is 50:50:50, we can do linear sampling
@@ -183,8 +184,8 @@ performance(confusion.matrix)
 
 
 # -------------------------------------------------------------------
-#  Practical : Analysis of the Iris data using 1-hidden layer
-#  Neural Network nnet().
+#  Case Study 1 : Prediction and Estimation of the `Iris flower' 
+#  data using 1-hidden layer Neural Network nnet().
 # -------------------------------------------------------------------
 
 set.seed(123)    # For the random initial weights
@@ -196,7 +197,8 @@ performance(table(yhat, iris.test$Species), paste0("NN(hidden=",the.hidden.size,
 
 
 # -------------------------------------------------------------------
-#  Practical : Analysis of the `Fraud' Dataset using ElasticNet
+#  Case Study 1 : Prediction and Estimation of the `Fraud' Dataset 
+#  using ElasticNet
 #
 #  ElasticNet = GLM + Constraints on the coefficients b0, b1, ..., bp
 #  Combining `feature selection' & `parameter estimation'

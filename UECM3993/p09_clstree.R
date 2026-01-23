@@ -1,6 +1,8 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for Classification Tree Based Predictive Models in R
-# Author : Liew How Hui (2025)
+# Purpose: Supervised Learning - Classification in R (Part 4)
+# Detail: Methods of classification --- Classification Trees
+#         Models comparison: CART, ctree, C5.0
+# Author : Liew How Hui (2026)
 # References: 
 #  1. https://daviddalpiaz.github.io/r4sl/trees.html
 #  2. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%208%20Lab.txt
@@ -130,7 +132,7 @@ performance(cfmat2, "Categorical Feature+Tree")
 
 # -------------------------------------------------------------------
 #  Practical : Analysis of the `Carseats' Dataset (from ISLR2 or ISLR) 
-#  with CART, Conditional Inference Tree (ctree) and C5.0
+#  by comparing CART, Conditional Inference Tree (ctree) and C5.0 models
 # -------------------------------------------------------------------
 
 library(ISLR2)
@@ -342,7 +344,7 @@ performance(cf.mat, "\nCarseats with C5.0 tree")
 
 
 # -------------------------------------------------------------------
-#  Practical : Analysis of the `Iris' Dataset with CART tree, 
+#  Practical : Analysis of the `Iris' Dataset by comparing CART tree, 
 #  Conditional Inference Tree (partykit)
 # -------------------------------------------------------------------
 
@@ -428,7 +430,7 @@ credit_data = read.csv("credit_data.csv", stringsAsFactors=T)
 #
 # Linear Sampling
 #
-set.seed(2025)
+set.seed(2026)
 in_train   = sample(nrow(credit_data), size = 3000)
 train_data = credit_data[ in_train,]
 test_data  = credit_data[-in_train,]

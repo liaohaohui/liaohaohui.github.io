@@ -1,6 +1,7 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for LDA & QDA Models in R
-# Author : Liew How Hui (2025)
+# Purpose: Application using Statistical Software (Part 3)
+# Detail: Case study 2: Segmentation with Discriminant Analysis
+# Author : Liew How Hui (2026)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 #  2. http://euler.stat.yale.edu/~tba3/stat665/lectures/lec11/script11.html
@@ -72,11 +73,11 @@ performance = function(xtab, desc="", digits=7){
 
 #
 # LDA & QDA assumes the input data (X1,X2,...,Xp) needs to be NUMERIC 
-# and the data is separable or is related multivariate NORMAL distribution
+# and the data is segmented using multivariate NORMAL distribution
 #
 
 # -------------------------------------------------------------------
-#   Practical : Analyse the `Smarket' Dataset with LDA & QDA Classifier
+#   Case Study 2 : Segment the `Smarket' Dataset with LDA & QDA Classifiers
 #   following the main reference book
 # -------------------------------------------------------------------
 
@@ -138,7 +139,7 @@ performance(cfmat, "Smarket data analysis with QDA")
 
 
 # -------------------------------------------------------------------
-#   Practical : Analysis of the `Fraud' Dataset with LDA Classifier
+#   Case Study 2 : Segment of the `Fraud' Dataset with LDA Classifier
 #   assuming the categorical data are encoded as integers.
 # -------------------------------------------------------------------
 #https://liaohaohui.github.io/UECM3993/fraud.csv
@@ -208,7 +209,7 @@ performance(cfmat, "LR (with numeric input)")
 
 
 # -------------------------------------------------------------------
-#   Practical : Analysis of the `Auto' Dataset from ISLR2 with 
+#   Case Study 2 : Segment the `Auto' Dataset from ISLR2 with 
 #   LDA Classifier and comparing it with kNN (which requires
 #   input to be all numeric)
 # -------------------------------------------------------------------
@@ -275,9 +276,10 @@ for (k in c(1,5, 10,20,100)){
 #
 
 # -------------------------------------------------------------------
-#  Practical : Analyse the `MNIST' Dataset with LDA Classifier.
+#  Case Study 2 : Segment the `MNIST' Dataset with LDA Classifier
+#  (and other supervised learning models).
 #  `MNIST' Dataset is a beginner's image recognition example.
-#  Learn that the TIME for training/computation is MOSTLY VERY VERY LONG
+#  NOTE: the TIME for training/computation is MOSTLY VERY VERY LONG
 #
 #  The MNIST data mnist_train.psv (~7M) & mnist_test.psv (~2M) are
 #  obtained from https://github.com/statsmaths/stat665/find/gh-pages
@@ -298,7 +300,7 @@ X = 1 - (X + 1)*0.5
 plot(0,0)
 rasterImage(X,-1,-1,1,1)
 
-set.seed(2025)
+set.seed(2026)
 iset <- sample(nrow(train),5*7)   # Take 35 samples from training data
 par(mar=c(0,0,0,0))
 par(mfrow=c(5,7))
@@ -330,7 +332,7 @@ performance(cfmat, digits=2, "MNIST performance with LDA")
 # qda.fit = qda(V1 ~ ., train)
 
 #
-# Compare to other models
+# Compare to other supervised learning models
 #
 #predKnn = FNN::knn(Xtrain,Xtest,ytrain,k=3)  # quite slow
 library(class)

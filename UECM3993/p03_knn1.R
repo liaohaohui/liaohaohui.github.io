@@ -1,6 +1,7 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for kNN (k-Nearest Neighbour) Models in R (Part 1)
-# Author : Liew How Hui (2025)
+# Purpose: Supervised Learning - Classification in R (Part 1)
+# Detail: kNN (k-Nearest Neighbour) Method of Classification & Resampling Methods
+# Author : Liew How Hui (2026)
 # Reference: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
 # Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
@@ -320,5 +321,62 @@ for (i in ir) {
 }
 k = 2*ir+1
 plot(k, ACC, "b")
+
+
+# -------------------------------------------------------------------
+#  Practical: Resampling methods (Topic 2's K-fold CV & LOOCV)
+# -------------------------------------------------------------------
+
+#
+# Suppose the true model is rnorm(100, the.mean, the.stdv)
+#
+the.mean = 10
+the.stdv =  2   # standard deviation is 2
+set.seed(2026)  # Fix the starting value of random number generator
+the.samples = rnorm(100, the.mean, the.stdv)
+count = length(the.samples)
+#
+# For probability theory, we know the standard deviation of
+# the true model rnorm(100, the.mean, the.stdv) is the.stdv
+#
+# From the samples, the unbiased estimate of the.stdv is
+sd(the.samples)
+
+# Holdout Resampling Method Estimate
+# the 'sample' function depends on the seed
+set.seed(2026)
+idx = sample(count, 0.7*count)   # Linear Sampling of 70% of the Indices
+# We are 'resampling' from the samples!
+sd(the.samples[idx])
+
+# LOOCV
+loocv = 0    # create the variable 'loocv' for storing data
+for(i in 1:count) {
+  loocv[i] = sd(the.samples[-i])
+}
+mean(loocv)
+
+d.f = data.frame(x=1:20, y = (1:20)^2)
+loocv = 0
+for(i in 1:nrow(d.f)) {
+  m = lm(y ~ poly(x,2), d.f[-i,])
+  yhat = predict(m, d.f[i, ])
+  loocv[i] = (yhat-d.f[i,]$y)**2
+}
+
+# 10-fold CV
+# 100 data cut into 10-fold, each fold has 10 items
+range = 1:(count/10)
+fold = 0
+for(i in 1:10){
+  fold[i] = sd(the.samples[-(range+(i-1)*10)])
+}
+mean(fold)
+
+# Simple Boostrapping (Sample with Replacement)
+set.seed(2026)
+idx.boostrap = sample(count, 0.7*count, replace=TRUE)
+sd(the.samples[idx.boostrap])
+
 
 

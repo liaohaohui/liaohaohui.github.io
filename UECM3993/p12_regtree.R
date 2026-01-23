@@ -1,6 +1,7 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for Regression Trees & Regressive Predictive Models in R
-# Author : Liew How Hui (2025)
+# Purpose: Application using Statistical Software (Part 4)
+# Detail: Segmentation with Tree Models
+# Author : Liew How Hui (2026)
 # References: 
 #  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%208%20Lab.txt
 #  2. https://rstudio-pubs-static.s3.amazonaws.com/446972_323b4475ff0749228fe4057c4d7685f5.html
@@ -17,7 +18,7 @@
 # Practical 1 & 2
 #   => Basic R Data Processing (Data Frame ~ Excel Table)
 #   => Alternative: Dplyr technology (using pipeline)
-# Practical 3 - 11
+# Practical 3 - 9
 #   => All about classification problems (classifiers)
 # Practical 12:
 #   => Try to explore a little about regression problems
@@ -62,7 +63,7 @@ performance.regression.R2  = function(yhat, y){
 # 400 different stores
 #-------------------------------------------------------------------------
 library(ISLR2)
-set.seed(2025)
+set.seed(2026)
 idx = sample(nrow(Carseats), 0.7*nrow(Carseats))
 data.train = Carseats[ idx, ]
 data.test  = Carseats[-idx, ]
@@ -136,14 +137,7 @@ Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
 #install.packages("Cubist")
 library(Cubist)  # Extension of Quinlan's M5 tree
 reg.model = cubist(x=data.train[,2:11], y=data.train$Sales)
-Model.list = c(Model.list, "cubist (data.frame)")
-yhat = predict(reg.model, data.train)
-Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
-yhat = predict(reg.model, data.test)
-Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
-
-reg.model = cubist(x=as.matrix(data.train[,2:11]), y=data.train$Sales)
-Model.list = c(Model.list, "cubist (as.matrix)")
+Model.list = c(Model.list, "Cubist")
 yhat = predict(reg.model, data.train)
 Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
 yhat = predict(reg.model, data.test)
@@ -167,13 +161,13 @@ Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
 #
 # SLOW: Random Forest of Conditional Inference Trees
 #
-cat("Processing cforest ...\n")
-reg.model  = cforest(Sales ~ ., data.train)    # ntree=500, Very slow
-Model.list = c(Model.list, "cforest")
-yhat = predict(reg.model, data.train)
-Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
-yhat = predict(reg.model, data.test)
-Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
+#cat("Processing cforest ...\n")
+#reg.model  = cforest(Sales ~ ., data.train)    # ntree=500, Very slow
+#Model.list = c(Model.list, "cforest")
+#yhat = predict(reg.model, data.train)
+#Train.list = c(Train.list, performance.regression.MSE(yhat, data.train$Sales))
+#yhat = predict(reg.model, data.test)
+#Test.list  = c(Test.list, performance.regression.MSE(yhat, data.test$Sales))
 
 #
 # Boosting Trees
@@ -247,7 +241,7 @@ abline(0,1)
 
 cat("
 # -------------------------------------------------------------------
-#    Analysis of the `California Real Estate' Dataset with Regression Tree
+#    Segmentation of the `California Real Estate' Dataset with Regression Tree
 # -------------------------------------------------------------------
 ")
 # Original Source: https://raw.githubusercontent.com/jbryer/CompStats/master/Data/cadata.dat
@@ -279,17 +273,16 @@ partition.tree(tree.model2, ordvars=c("Longitude","Latitude"), add=TRUE)
 summary(tree.model2)
 
 # -------------------------------------------------------------------
-#  Example from Week 1 Slide => 1D Regression
+#  Example 1.7.7 from lecture notes => 1D Regression
 # -------------------------------------------------------------------
 NS = 30   # Number of data samples
-Xbeg = 0
-Xend = pi
-#Xbeg = -pi
-#Xend = 2*pi
+#Xbeg = 0; Xend = pi
+Xbeg = -pi; Xend = 2*pi
 # Deterministic input
 #X = seq(Xbeg,Xend,length.out=NS)
 # Random input
-set.seed(2025)
+set.seed(5)
+
 X = Xbeg + runif(NS,min=0,max=Xend)
 # Output without noise
 y = sin(X)
@@ -346,7 +339,7 @@ lines(Xx, predictions, pch='.', col=5, lwd=glw)
 # knn.reg (loaded earlier)
 knnk = 5
 predictions = knn.reg(d.f.train$X, test=data.frame(X=Xx), y=d.f.train$y, k=knnk)$pred
-#dev.new()
+dev.new()
 par(mfrow=c(1,3))
 original.data(paste("kNN regression", paste("(k=", knnk, ")", se="")))
 lines(Xx, predictions, pch='.', col=5, lwd=glw)

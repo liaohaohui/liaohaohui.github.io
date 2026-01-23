@@ -1,6 +1,8 @@
 # -------------------------------------------------------------------
-# Purpose: Practical for Naive Bayes Predictive Models in R
-# Author : Liew How Hui (2025)
+# Purpose: Supervised Learning - Classification in R (Part 3)
+# Detail: Methods of classification --- Naive Bayes (NB) Models
+#         Models comparison: Multinomial NB and Binary, etc.
+# Author : Liew How Hui (2026)
 # References: 
 #  1. http://www.dbenson.co.uk/Rparts/subpages/spamR/
 #  2. http://www.learnbymarketing.com/tutorials/naive-bayes-in-r/
@@ -119,7 +121,8 @@ performance(cfmat, "Performance of Naive Bayes with Laplace Smoothing")
 
 
 # -------------------------------------------------------------------
-#    Dataset 2: Spam Filtering with Naive Bayes Model
+#    Dataset 2: Spam Filtering with Naive Bayes Models
+#    Comparing Multinomial NB and Binary NB (and Categorical NB) models
 # -------------------------------------------------------------------
 
 d.f = read.csv(text='
@@ -135,7 +138,12 @@ spam,5,"Subscribe to ASTRO  ... with only RM250 per month"
 ham,5,"Why can\'t I get the right result?"
 ',header=F,col.names=c("Y","id", "content"))
 
-library(tm)  # Text Mining package.  For DocumentTermMatrix, VCorpus, ...
+#
+#  tm = Text Mining package.  For DocumentTermMatrix, VCorpus, ...
+#
+#  Optional Dependency "SnowballC" is for word stemming!
+#
+library(tm)
 corpus = VCorpus(VectorSource(d.f$content))
 # The DocumentTermMatrix can be slow for large data
 # and the stemming is too primitive and brutal!
