@@ -2,7 +2,7 @@
 # Purpose: Introction to R (Part 1)
 # Detail: Basic R Commands for Data Processing, Numerical Summaries
 # Author : Liew How Hui (2026)
-# Reference: http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%202%20Lab.txt
+# Reference: https://hastie.su.domains/ISLR2/Labs/R_Labs/Ch2-statlearn-lab.R
 # License: BSD-3
 # Software: R 4.1+
 # Duration: 1 hour
@@ -181,10 +181,10 @@ y5 = c(2,3)*c(5,4,5,3,5,5,5,2) + c(5,4,-2,3)
 #
 # We need to use lines() to add more data into a plot.
 #
-plot(x, y1)           # Points only
-lines(x, y2)          # Points only
-lines(x, y3, 'l')     # 'l' for lines
-lines(x, y4, 'l')
+plot(x, y1, ylim=c(-3,5))     # Plot; default : points
+points(x, y2)                 # Add points to Plot
+lines(x, y3)                  # Add lines to Plot
+lines(x, y4, 'b')             # Add lines with point to Plot
 
 #
 # Since y1 (sin()) has a range of [-1,1].  A plot based on

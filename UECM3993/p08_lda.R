@@ -2,10 +2,11 @@
 # Purpose: Application using Statistical Software (Part 3)
 # Detail: Case study 2: Segmentation with Discriminant Analysis
 # Author : Liew How Hui (2026)
-# Reference: 
-#  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
-#  2. http://euler.stat.yale.edu/~tba3/stat665/lectures/lec11/script11.html
-# Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
+# Reference:
+#   1. https://hastie.su.domains/ISLR2/Labs/R_Labs/Ch4-classification-lab.R
+#   2. https://www.statlearning.com/resources-second-edition
+# Data: ISLR2, https://liaohaohui.github.io/UECM3993/fraud.csv,
+#       https://github.com/statsmaths/stat665/find/gh-pages
 # License: BSD-3
 # Software: R 4.x & install.packages("ISLR2")
 # Duration: 1 hour

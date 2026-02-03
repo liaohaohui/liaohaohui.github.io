@@ -2,9 +2,10 @@
 # Purpose: Supervised Learning - Classification in R (Part 2)
 # Detail: Methods of classification --- Logistic Regression
 # Author : Liew How Hui (2026)
-# Reference: 
-#  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%204%20Lab.txt
-# Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
+# Reference:
+#   1. https://hastie.su.domains/ISLR2/Labs/R_Labs/Ch4-classification-lab.R
+#   2. https://www.statlearning.com/resources-second-edition
+# Data: ISLR2, https://liaohaohui.github.io/UECM3993/fraud.csv
 # License: BSD-3
 # Software: R 4.1+
 # Duration: 1 hour

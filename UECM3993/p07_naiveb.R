@@ -3,10 +3,10 @@
 # Detail: Methods of classification --- Naive Bayes (NB) Models
 #         Models comparison: Multinomial NB and Binary, etc.
 # Author : Liew How Hui (2026)
-# References: 
-#  1. http://www.dbenson.co.uk/Rparts/subpages/spamR/
-#  2. http://www.learnbymarketing.com/tutorials/naive-bayes-in-r/
-# Data   : fraud.csv
+# Reference:
+#   1. https://hastie.su.domains/ISLR2/Labs/R_Labs/Ch4-classification-lab.R
+#   2. https://www.statlearning.com/resources-second-edition
+# Data: ISLR2, https://liaohaohui.github.io/UECM3993/fraud.csv
 # License: BSD-3
 # Software: R 4.1+
 # Duration: 1 hour

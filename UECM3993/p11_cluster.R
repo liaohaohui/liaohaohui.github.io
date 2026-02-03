@@ -2,9 +2,11 @@
 # Purpose: Unsupervised Learning (Part 2)
 # Detail: Clustering
 # Author : Liew How Hui (2026)
-# Reference: 
-#  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%2010%20Labs.txt
-#  2. https://altaf-ali.github.io/ISLR/chapter10/lab.html
+# References: 
+#  1. https://hastie.su.domains/ISLR2/Labs/R_Labs/Ch12-unsup-lab.R
+#  2. https://www.statlearning.com/resources-second-edition
+#  3. https://altaf-ali.github.io/ISLR/chapter10/lab.html
+# Data: ISLR2, https://liaohaohui.github.io/UECM3993/clustering.csv
 # License: BSD-3
 # Software: R 4.1+
 # Duration: 1 hour

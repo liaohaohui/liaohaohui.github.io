@@ -5,10 +5,12 @@
 # Author : Liew How Hui (2026)
 # References: 
 #  1. https://daviddalpiaz.github.io/r4sl/trees.html
-#  2. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%208%20Lab.txt
-#  3. http://www.di.fc.ul.pt/~jpn/r/tree/tree.html
-#  4. https://cran.r-project.org/web/packages/C50/vignettes/C5.0.html
-# Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
+#  2. http://www.di.fc.ul.pt/~jpn/r/tree/tree.html
+#  3. https://cran.r-project.org/web/packages/C50/vignettes/C5.0.html
+#  4. https://hastie.su.domains/ISLR2/Labs/R_Labs/Ch4-classification-lab.R
+#  5. https://www.statlearning.com/resources-second-edition
+# Data: ISLR2, https://liaohaohui.github.io/UECM3993/fraud.csv,
+#       https://liaohaohui.github.io/UECM3993/credit_data.csv
 # License: BSD-3
 # Software: R 4.1+
 # Duration: 1 hour

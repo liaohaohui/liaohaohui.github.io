@@ -3,11 +3,11 @@
 # Detail: Segmentation with Tree Models
 # Author : Liew How Hui (2026)
 # References: 
-#  1. http://faculty.marshall.usc.edu/gareth-james/ISL/Chapter%208%20Lab.txt
+#  1. https://www.statlearning.com/resources-second-edition
 #  2. https://rstudio-pubs-static.s3.amazonaws.com/446972_323b4475ff0749228fe4057c4d7685f5.html
 #  3. http://www.di.fc.ul.pt/~jpn/r/tree/tree.html
 #  4. https://uc-r.github.io/regression_trees
-# Data   : http://faculty.marshall.usc.edu/gareth-james/ISL/data.html
+# Data: ISLR2, https://liaohaohui.github.io/UECM3993/cadata.dat
 # License: BSD-3
 # Software: R 4.1+
 # Duration: 1 hour
