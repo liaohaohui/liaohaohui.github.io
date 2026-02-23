@@ -35,12 +35,23 @@ summary(Smarket)
 #
 
 train = (Smarket$Year < 2005)
-attach(Smarket)
-train.X= cbind(Lag1,Lag2)[ train,]  # cbind = Column Binding
-train.y = Direction[train]
+
+### Technique from the main reference book:
+#attach(Smarket)
+#train.X= cbind(Lag1,Lag2)[ train,]  # cbind = Column Binding
+#train.y = Direction[train]
+#test.X = cbind(Lag1,Lag2)[!train,]
+#test.y = Direction[!train]  # Direction.2005, associated with Smarket.2005
+#detach(Smarket)
+
+### Following practical 2:
+train.X = Smarket[ train, c("Lag1","Lag2")]
+train.y = Smarket[ train, c("Direction")]
+test.X  = Smarket[train, c("Lag1","Lag2")]
+test.y  = Smarket[train, c("Direction")]
 test.X = cbind(Lag1,Lag2)[!train,]
 test.y = Direction[!train]  # Direction.2005, associated with Smarket.2005
-detach(Smarket)
+
 #set.seed(1)
 library(class)   # for knn() --- converts categorical data to integer
 #library(FNN)    # alternative for knn() --- no automatic conversion
