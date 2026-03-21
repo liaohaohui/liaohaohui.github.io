@@ -179,11 +179,11 @@ summary(classifier)
 coef(classifier)
 #
 # Let's check the word 'you':
-# p = length(dtm$dimnames$Terms) = 45
-# P(word='you'|Y='ham') = (2+1)/(28+45)
-# number of times the word 'you' occured in training data of class 'ham' = 2
+# p = length(dtm$dimnames$Terms) = 46
+# P(word='you'|Y='ham') = (1+1)/(28+46)   # you, your not merge in new version?
+# number of times the word 'you' occured in training data of class 'ham' = 1
 # number of words in training data of class 'ham' = 28
-# P(word='you'|Y='spam') = (0+1)/(9+45)
+# P(word='you'|Y='spam') = (0+1)/(9+46)
 # number of times the word 'you' occured in training data of class 'spam' = 0
 # number of words in training data of class 'spam' = 9
 #
