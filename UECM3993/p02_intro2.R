@@ -73,6 +73,9 @@ colMeans(A)
 apply(A, 1, var)    # variance along the rows
 apply(A, 2, var)    # variance along the columns
 
+# centering data
+# Ref: https://stackoverflow.com/questions/24520720/subtract-a-constant-vector-from-each-row-in-a-matrix-in-r
+X = scale(A, scale=FALSE)  # or X = sweep(X, 2, colMeans(X))
 
 
 # -------------------------------------------------------------------

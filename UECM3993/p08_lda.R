@@ -78,7 +78,7 @@ performance = function(xtab, desc="", digits=7){
 #
 
 # -------------------------------------------------------------------
-#   Case Study 2 : Segment the `Smarket' Dataset with LDA & QDA Classifiers
+#   Case Study 1 : Segment the `Smarket' Dataset with LDA & QDA Classifiers
 #   following the main reference book
 # -------------------------------------------------------------------
 
@@ -210,7 +210,7 @@ performance(cfmat, "LR (with numeric input)")
 
 
 # -------------------------------------------------------------------
-#   Case Study 2 : Segment the `Auto' Dataset from ISLR2 with 
+#   Case Study 3 : Segment the `Auto' Dataset from ISLR2 with 
 #   LDA Classifier and comparing it with kNN (which requires
 #   input to be all numeric)
 # -------------------------------------------------------------------
@@ -277,7 +277,7 @@ for (k in c(1,5, 10,20,100)){
 #
 
 # -------------------------------------------------------------------
-#  Case Study 2 : Segment the `MNIST' Dataset with LDA Classifier
+#  Case Study 4 : Segment the `MNIST' Dataset with LDA Classifier
 #  (and other supervised learning models).
 #  `MNIST' Dataset is a beginner's image recognition example.
 #  NOTE: the TIME for training/computation is MOSTLY VERY VERY LONG
