@@ -76,7 +76,7 @@ performance = function(xtab, desc=""){
 }
 
 # -------------------------------------------------------------------
-# Working with Case Study 1 from Lecture Slide s41_nb.pdf
+# Working with Case Study 1 from Lecture Slide
 # -------------------------------------------------------------------
 
 d.f = read.csv(text="
@@ -103,7 +103,7 @@ prob = predict(m, newX, type="prob")
 yhat = predict(m, newX, type="class")
 
 # -------------------------------------------------------------------
-# Working with Case Study 2 from Lecture Slide s41_nb.pdf
+# Working with Case Study 2 from Lecture Slide
 # -------------------------------------------------------------------
 
 d.f = read.csv(text="
@@ -123,7 +123,7 @@ print(m)   # Compare them to the lecture slides
 
 
 # -------------------------------------------------------------------
-# Working with Case Studies 3 & 6 from Lecture Slide s41_nb.pdf
+# Working with Case Studies 3 & 6 from Lecture Slide
 # -------------------------------------------------------------------
 
 d.f = read.table(text="
@@ -208,6 +208,55 @@ model.nb.lp = naive_bayes(tag~., data=fraud.train, laplace=1)
 pred.nb.lp = predict(model.nb.lp, fraud.test[,1:p])
 cfmat = table(pred.nb.lp, actual.fraud=fraud.test$tag)
 performance(cfmat, "Performance of Naive Bayes with Laplace Smoothing")
+
+# -------------------------------------------------------------------
+#    Dataset 1: Building LDA Model for Fraud Data
+# -------------------------------------------------------------------
+
+#https://liaohaohui.github.io/UECM3993/fraud.csv
+fraud = read.csv("fraud.csv", row.names=1)
+fraud$tag = factor(fraud$tag)
+
+# EDA
+par(mfrow=c(2,4))
+header = names(fraud)
+for(i in 1:7){
+   hist(fraud[,i], main=header[i])
+}
+
+# Holdout method on scaled Fraud Data
+set.seed(123)
+fraud_tag0 = fraud[fraud$tag=="0", ]
+fraud_tag1 = fraud[fraud$tag=="1", ]
+tag0_idx = sample(nrow(fraud_tag0), size=round(0.7*nrow(fraud_tag0)))
+tag1_idx = sample(nrow(fraud_tag1), size=round(0.7*nrow(fraud_tag1)))
+fraud.train = rbind(fraud_tag0[ tag0_idx,], fraud_tag1[ tag1_idx,])
+fraud.test  = rbind(fraud_tag0[-tag0_idx,], fraud_tag1[-tag1_idx,])
+normalise.vec <- function(column,ref.col) {
+    return ((column - mean(ref.col)) / sd(ref.col))
+}
+fraud.train.knn     = fraud.train
+fraud.test.knn      = fraud.test
+fraud.train.knn$age = normalise.vec(fraud.train.knn$age,fraud.train$age)
+fraud.test.knn$age  = normalise.vec(fraud.test.knn$age, fraud.train$age)
+fraud.train.knn$base_value = normalise.vec(
+    fraud.train.knn$base_value,fraud.train$base_value)
+fraud.test.knn$base_value  = normalise.vec(
+    fraud.test.knn$base_value, fraud.train$base_value)
+
+#
+# Training the LDA model
+#
+library(MASS)
+lda.fit = lda(tag ~ ., fraud.train.knn)
+#
+# Exercise: Looking at the trained LDA model
+#
+
+yhat = predict(lda.fit, fraud.test.knn)$class
+cfmat = table(yhat, fraud.test.knn$tag)
+performance(cfmat, "LDA")
+
 
 
 # -------------------------------------------------------------------

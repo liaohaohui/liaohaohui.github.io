@@ -322,9 +322,13 @@ cat("
 
 #https://liaohaohui.github.io/MEME19903/fraud.csv
 fraud = read.csv("fraud.csv")
+# Check the types
+sapply(fraud, class)
 ### change data type from integer to categorical
 col_fac = c("gender", "status", "employment", "account_link", "supplement", "tag")
 fraud[col_fac] = lapply(fraud[col_fac], factor)
+# Be careful when using it on a new data. E.g
+# d.f.new = data.frame(lapply(d.f.old, factor))
 
 #
 # Manual stratified sampling
@@ -366,9 +370,17 @@ print(anova(m, test="Chisq"))
 
 m0 = glm(default ~ 1, Default, family=binomial)   # Null Model
 m1 = glm(default ~ student, Default, family=binomial)
-m2 = glm(default ~ student + balance, Default, family=binomial)
+m2  = glm(default ~ student + balance, Default, family=binomial)
+m2b = glm(default ~ balance + income, Default, family=binomial)
+m2c = glm(default ~ student + income, Default, family=binomial)
 m3 = glm(default ~ student + balance + income, Default, family=binomial)
-print(anova(m0,m1,m2,m3,test="Chisq"))
+print(anova(m0,m1,m2,m2b,m2c,m3,test="Chisq"))
+
+#
+# More systematic subsets selection may be achieved by using
+# regsubsets from the leaps library.
+#
+
 
 cat("
 # -------------------------------------------------------------------
